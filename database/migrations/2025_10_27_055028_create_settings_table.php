@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: bảng singleton chứa cấu hình toàn site (logo, hotline, metadata mặc định).
+         * - Hai FK ảnh (logo/favicon) dùng nullOnDelete để nếu xóa media thì UI fallback placeholder.
+         * - Trường contact + meta giúp FE render header/footer mà không cần hardcode.
+         * - `extra` JSON để mở rộng nhanh mà không đổi schema.
+         */
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('logo_image_id')

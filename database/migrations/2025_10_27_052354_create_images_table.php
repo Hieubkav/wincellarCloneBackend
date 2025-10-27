@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: lưu metadata cho mọi file ảnh dùng chung để các module (product, article, brand, home component, ...)
+         * có thể tái sử dụng gallery một cách thống nhất.
+         * Lưu ý: `order=0` tương đương ảnh cover, partial unique ở mức DB giúp Filament tránh tạo 2 cover cho cùng model.
+         * Ý nghĩa từng nhóm trường:
+         * - `file_path`, `disk`, kích thước: phục vụ render responsive + job tối ưu ảnh.
+         * - `model_type/model_id`: khóa polymorphic để truy vết ảnh thuộc resource nào, hỗ trợ clean-up orphan.
+         * - `order`, `active`, `extra_attributes`: điều khiển hiển thị FE (cover, gallery, captions tùy biến).
+         */
         Schema::create('images', function (Blueprint $table) {
             $table->id();
             $table->string('file_path', 2048);

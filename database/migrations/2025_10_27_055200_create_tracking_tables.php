@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: thu thập dữ liệu hành vi (visitor/session/event) và tổng hợp daily để phục vụ dashboard 7/30/90 ngày.
+         * Thiết kế tách raw -> aggregate nhằm đảm bảo có thể purge raw >90 ngày nhưng vẫn giữ số liệu tổng.
+         */
+        // Lưu thông tin định danh ẩn danh để gộp nhiều session của cùng người dùng (cookie `anon_id`).
         Schema::create('visitors', function (Blueprint $table) {
             $table->id();
             $table->string('anon_id', 64)->unique();
@@ -23,6 +28,7 @@ return new class extends Migration
             $table->index('last_seen_at');
         });
 
+        // Một visitor có thể có nhiều session để tính thời lượng và phân tích funnel.
         Schema::create('visitor_sessions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('visitor_id')->constrained()->cascadeOnDelete();
@@ -34,6 +40,7 @@ return new class extends Migration
             $table->index(['visitor_id', 'started_at'], 'visitor_sessions_visitor_started_index');
         });
 
+        // Event raw: product_view/article_view/cta_contact, làm nguồn dữ liệu cho dashboard & redirect CTA.
         Schema::create('tracking_events', function (Blueprint $table) {
             $table->id();
             $table->foreignId('visitor_id')->constrained()->cascadeOnDelete();
@@ -50,6 +57,7 @@ return new class extends Migration
             $table->index(['article_id', 'event_type'], 'tracking_events_article_index');
         });
 
+        // Bảng tổng hợp daily giúp truy vấn 7/30/90/all-time nhanh, không phải scan hàng triệu event raw.
         Schema::create('tracking_event_aggregates_daily', function (Blueprint $table) {
             $table->id();
             $table->date('date');

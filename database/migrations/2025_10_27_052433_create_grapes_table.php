@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: chuẩn hóa giống nho để pivot nhiều-nhiều với sản phẩm.
+         * - `slug` giúp truy vấn nhanh qua API và xử lý redirect khi rename.
+         * - `description` ghi chú tasting note cơ bản, FE có thể hiển thị ở trang chi tiết sản phẩm.
+         */
         Schema::create('grapes', function (Blueprint $table) {
             $table->id();
             $table->string('name');

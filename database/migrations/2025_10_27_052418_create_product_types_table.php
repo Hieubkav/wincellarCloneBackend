@@ -11,6 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: phân loại chi tiết hơn trong từng category (ví dụ: sparkling, dessert, sake...) để hỗ trợ filter nhiều
+         * điều kiện đồng thời như tài liệu yêu cầu.
+         * - `slug` là khóa cho URL/redirect + mapping với seed dữ liệu lớn.
+         * - `description` dùng hiển thị tooltip/mega menu.
+         * - `order`, `active` giúp sắp xếp block filter và dễ dàng ẩn tạm qua admin.
+         */
         Schema::create('product_types', function (Blueprint $table) {
             $table->id();
             $table->string('name');

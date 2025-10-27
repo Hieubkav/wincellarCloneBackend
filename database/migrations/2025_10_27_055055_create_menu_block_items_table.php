@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: các link cụ thể trong mỗi block mega menu.
+         * - `badge` cho phép highlight (SALE/HOT/...) giống rule trong PLAN.md.
+         * - `meta` JSON chứa cấu hình mở rộng (ví dụ icon riêng, tracking tag).
+         * - Index theo `menu_block_id`, `order` để truy xuất nhanh khi render.
+         */
         Schema::create('menu_block_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('menu_block_id')->constrained('menu_blocks')->cascadeOnDelete();

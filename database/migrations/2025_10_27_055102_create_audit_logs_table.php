@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: lưu lại mọi hành động nhạy cảm trong admin (create/update/delete) để QA/Audit đối chiếu.
+         * - `user_id` nullable vì có job hệ thống (nightly) cũng ghi log.
+         * - `model_type`, `model_id`, `before`, `after` dùng để diff và export CSV theo yêu cầu v1.2.
+         * - `ip_hash` giúp truy vết bất thường mà vẫn tuân thủ yêu cầu không lưu raw IP.
+         */
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();

@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: định nghĩa menu cấp 1 (standard hoặc mega) để build header linh hoạt.
+         * - `type` xác định cách FE render (link đơn hay mega-menu).
+         * - `href` dùng cho menu đơn, `config` chứa dữ liệu tùy chỉnh (ví dụ mega hero).
+         * - `order`, `active` giúp reorder và bật/tắt block trong Filament.
+         */
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
             $table->string('title');

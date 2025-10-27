@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: chuẩn hóa thông tin quốc gia cho sản phẩm, giúp filter + analytics (thị trường theo country).
+         * - `code` (ISO2/3) dùng để kết nối với service bên ngoài và hiển thị icon quốc kỳ.
+         * - `slug` để phục vụ URL thân thiện và redirect.
+         */
         Schema::create('countries', function (Blueprint $table) {
             $table->id();
             $table->string('name');

@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: quản lý nội dung bài viết (editorial) cho landing, SEO, component EditorialSpotlight.
+         * - `slug` làm URL chính + trigger redirect khi rename.
+         * - `author_id` FK user để audit trách nhiệm biên tập.
+         * - `active`, trường meta giúp ẩn bài mà không xóa và tối ưu hiển thị trên social.
+         */
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
             $table->string('title');

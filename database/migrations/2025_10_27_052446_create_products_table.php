@@ -11,6 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: bảng trung tâm cho mọi nghiệp vụ sản phẩm (filter đa điều kiện, trang chi tiết, analytics).
+         * Các nhóm trường:
+         * - Dimension/lookup FK (`brand_id`, `product_category_id`, `type_id`, `country_id`, `region_id`) để filter và sinh breadcrumb.
+         * - Thông tin thương mại (`price`, `original_price`, `badges`) phục vụ CTA "Liên hệ", tính discount_percent server-side.
+         * - Thông tin cảm quan (`alcohol_percent`, `volume_ml`, `description`) để FE hiển thị spec sheet.
+         * - Trường SEO (`slug`, meta*) đảm bảo redirect tự sinh + meta fallback đúng như PLAN.md.
+         * Index được tối ưu cho use-case filter GET /san-pham (brand/country/region/type/category + price...).
+         */
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');

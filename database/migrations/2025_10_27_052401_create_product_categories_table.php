@@ -11,6 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: gom nhóm sản phẩm theo danh mục chính (vang, bia, thịt nguội, quà tặng) để phục vụ filter &
+         * điều hướng mega menu. Các trường giúp:
+         * - `slug` làm khóa business cho URL & redirect.
+         * - `description` để tooltip/SEO nếu cần mở rộng landing page.
+         * - `order`, `active` giúp Filament bật/tắt thứ tự mà không cần hardcode trên FE.
+         */
         Schema::create('product_categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');

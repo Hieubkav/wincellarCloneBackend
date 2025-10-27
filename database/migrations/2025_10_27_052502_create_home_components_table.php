@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: cấu hình trang chủ linh hoạt thông qua danh sách component (HeroCarousel, FavouriteProducts,...).
+         * - `type` định nghĩa preset FE sẽ render.
+         * - `config` (JSON) chứa payload động (danh sách product_id/article_id...) thay vì tạo nhiều bảng phụ.
+         * - `order`, `active` giúp reorder/ẩn block ngay trong Filament.
+         */
         Schema::create('home_components', function (Blueprint $table) {
             $table->id();
             $table->string('type', 50);

@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: mô tả từng block con trong mega menu (title + danh sách items).
+         * - FK `menu_id` cascade delete để khi bỏ menu cha sẽ dọn block con.
+         * - `order`, `active` đảm bảo FE render đúng thứ tự cột và dễ dàng ẩn block tạm thời.
+         */
         Schema::create('menu_blocks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('menu_id')->constrained('menus')->cascadeOnDelete();

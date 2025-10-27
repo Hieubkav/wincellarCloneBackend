@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: quản lý danh sách mạng xã hội để FE render header/footer.
+         * - `platform` + `url` là data chính, `icon_image_id` FK trực tiếp giúp hiển thị biểu tượng chuẩn.
+         * - `order`, `active` hỗ trợ thay đổi ưu tiên hiển thị/ẩn mà không xóa dữ liệu lịch sử.
+         */
         Schema::create('social_links', function (Blueprint $table) {
             $table->id();
             $table->string('platform');

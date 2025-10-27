@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: gắn nhiều giống nho cho một sản phẩm và ngược lại.
+         * - `order` dùng để đánh dấu giống nho chính (`order=0`) như rule trong PLAN.md, giúp FE highlight.
+         * - PK kép tránh duplicate, index nghịch để query theo grape -> product nhanh khi filter.
+         */
         Schema::create('product_grapes', function (Blueprint $table) {
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('grape_id')->constrained()->cascadeOnDelete();

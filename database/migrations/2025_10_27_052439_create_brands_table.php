@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: quản lý thương hiệu sản phẩm (nhà sản xuất, nhà phân phối).
+         * - `slug` để làm canonical URL + redirect khi rename.
+         * - `logo_image_id` FK ảnh trực tiếp vì brand thường có 1 logo cố định, tiện cho Filament chọn nhanh.
+         * - `description`, `active` dùng cho trang brand showcase & ẩn dòng khi hết hợp tác.
+         */
         Schema::create('brands', function (Blueprint $table) {
             $table->id();
             $table->string('name');

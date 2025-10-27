@@ -11,6 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: lưu redirect 301 tự sinh khi slug thay đổi (Product/Article) để đảm bảo SEO.
+         * - `from_slug` unique để không thể tạo trùng và đảm bảo middleware có thể resolve nhanh.
+         * - `target_type/target_id` giúp flatten chuỗi redirect và kiểm soát quyền (staff không được sửa).
+         * - `hit_count`, `last_triggered_at` phục vụ audit + job flatten chain (ưu tiên rule đang được truy cập).
+         */
         Schema::create('url_redirects', function (Blueprint $table) {
             $table->id();
             $table->string('from_slug')->unique();

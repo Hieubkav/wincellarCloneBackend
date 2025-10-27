@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /*
+         * Mục tiêu: cho phép mỗi sản phẩm gắn nhiều vùng (ví dụ blend từ nhiều appellation) và xác định vùng chính
+         * qua `order=0`. Pivot này hỗ trợ filter `region` đồng thời với country mà vẫn đảm bảo DISTINCT kết quả.
+         */
         Schema::create('product_regions', function (Blueprint $table) {
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('region_id')->constrained()->cascadeOnDelete();
