@@ -58,7 +58,12 @@ class CatalogTerm extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'product_term_assignments')
+        return $this->belongsToMany(
+            Product::class,
+            'product_term_assignments',
+            'term_id',
+            'product_id'
+        )
             ->withPivot(['is_primary', 'position', 'extra'])
             ->withTimestamps()
             ->orderByPivot('position');
