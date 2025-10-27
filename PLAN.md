@@ -110,25 +110,26 @@ erDiagram
   USERS {
     bigint id PK
     string name
-    string email UNIQUE
+    string email
     string password
-    enum role('admin','staff')
-    enum active('true','false')
-    timestamps
+    string role
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   AUDIT_LOGS {
     bigint id PK
-    bigint user_id FK NULL
+    bigint user_id
     string action
     longtext details_json
     datetime created_at
   }
 
   SETTINGS {
-    bigint id PK // =1
-    bigint logo_image_id FK NULL
-    bigint favicon_image_id FK NULL
+    bigint id PK
+    bigint logo_image_id
+    bigint favicon_image_id
     string site_name
     string hotline
     string address
@@ -137,177 +138,190 @@ erDiagram
     string meta_default_title
     string meta_default_description
     string meta_default_keywords
-    timestamps
+    datetime created_at
+    datetime updated_at
   }
 
   SOCIAL_LINKS {
     bigint id PK
     string name
     string url
-    bigint icon_image_id FK
+    bigint icon_image_id
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   IMAGES {
     bigint id PK
     string url
-    string alt_text NULL
-    text caption NULL
+    string alt_text
+    text caption
     string model_type
     bigint model_id
     int order
-    timestamps
+    datetime created_at
+    datetime updated_at
   }
 
   PRODUCT_CATEGORIES {
     bigint id PK
     string name
-    string slug UNIQUE
-    text description NULL
+    string slug
+    text description
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   PRODUCT_TYPES {
     bigint id PK
     string name
-    string slug UNIQUE
-    text description NULL
+    string slug
+    text description
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   BRANDS {
     bigint id PK
     string name
-    string slug UNIQUE
-    text description NULL
+    string slug
+    text description
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   COUNTRIES {
     bigint id PK
     string name
-    string slug UNIQUE
-    text description NULL
+    string slug
+    text description
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   REGIONS {
     bigint id PK
     string name
-    string slug UNIQUE
-    bigint country_id FK
-    text description NULL
+    string slug
+    bigint country_id
+    text description
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   GRAPES {
     bigint id PK
     string name
-    string slug UNIQUE
-    text description NULL
+    string slug
+    text description
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   PRODUCTS {
     bigint id PK
     string name
-    string slug UNIQUE
-    bigint product_category_id FK
-    bigint type_id FK NULL
-    bigint brand_id FK NULL
-    bigint country_id FK NULL
-    bigint region_id FK NULL // region chính (tùy)
-    bigint grape_id FK NULL  // grape chính (tùy)
+    string slug
+    bigint product_category_id
+    bigint type_id
+    bigint brand_id
+    bigint country_id
+    bigint region_id
+    bigint grape_id
     longtext description
-    int volume_ml NULL
-    decimal(5,2) alcohol_percent NULL
-    decimal(15,2) price DEFAULT 0
-    decimal(15,2) original_price DEFAULT 0
-    enum active('true','false') DEFAULT 'true'
+    int volume_ml
+    decimal alcohol_percent
+    decimal price
+    decimal original_price
+    boolean active
     int order
-    string meta_title NULL
-    string meta_description NULL
-    string meta_keywords NULL
-    timestamps
+    string meta_title
+    string meta_description
+    string meta_keywords
+    datetime created_at
+    datetime updated_at
   }
 
   PRODUCT_GRAPES {
-    bigint product_id FK
-    bigint grape_id FK
-    int order DEFAULT 0
-    PK(product_id, grape_id)
+    bigint product_id PK
+    bigint grape_id PK
+    int order
   }
 
   PRODUCT_REGIONS {
-    bigint product_id FK
-    bigint region_id FK
-    int order DEFAULT 0
-    PK(product_id, region_id)
+    bigint product_id PK
+    bigint region_id PK
+    int order
   }
 
   ARTICLES {
     bigint id PK
     string title
-    string slug UNIQUE
+    string slug
     longtext content
-    enum active('true','false') DEFAULT 'true'
-    string meta_title NULL
-    string meta_description NULL
-    string meta_keywords NULL
-    timestamps
+    boolean active
+    string meta_title
+    string meta_description
+    string meta_keywords
+    datetime created_at
+    datetime updated_at
   }
 
   MENUS {
     bigint id PK
     string title
-    enum type('normal','mega')
-    string href NULL
+    string type
+    string href
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   MENU_BLOCKS {
     bigint id PK
-    bigint menu_id FK
+    bigint menu_id
     string title
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   MENU_BLOCK_ITEMS {
     bigint id PK
-    bigint menu_block_id FK
+    bigint menu_block_id
     string label
     string href
-    string badge NULL
+    string badge
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   HOME_COMPONENTS {
     bigint id PK
-    enum type('HeroCarousel','DualBanner','CategoryGrid','FavouriteProducts','BrandShowcase','CollectionShowcase','EditorialSpotlight')
+    string type
     longtext config_json
     int order
-    enum active('true','false')
-    timestamps
+    boolean active
+    datetime created_at
+    datetime updated_at
   }
 
   VISITORS {
@@ -315,43 +329,46 @@ erDiagram
     string ip_address
     string user_agent
     string device
-    string country NULL
+    string country
     datetime first_seen_at
     datetime last_seen_at
-    timestamps
+    datetime created_at
+    datetime updated_at
   }
 
   VISITOR_SESSIONS {
     bigint id PK
-    bigint visitor_id FK
+    bigint visitor_id
     string session_key
     datetime start_time
-    datetime end_time NULL
-    int pages_viewed DEFAULT 0
-    timestamps
+    datetime end_time
+    int pages_viewed
+    datetime created_at
+    datetime updated_at
   }
 
   TRACKING_EVENTS {
     bigint id PK
-    bigint visitor_id FK
-    bigint visitor_session_id FK
-    enum event_type('page_view','click','scroll','contact_view','other')
+    bigint visitor_id
+    bigint visitor_session_id
+    string event_type
     string page_url
-    bigint product_id FK NULL
-    string country_snapshot NULL
-    longtext data_json NULL
+    bigint product_id
+    string country_snapshot
+    longtext data_json
     datetime created_at
   }
 
   URL_REDIRECTS {
     bigint id PK
-    string model_type // 'Product' | 'Article'
+    string model_type
     bigint model_id
-    string from_slug UNIQUE
+    string from_slug
     string to_slug
-    enum active('true','false') DEFAULT 'true'
+    boolean active
     datetime created_at
   }
+
 ```
 
 ---
