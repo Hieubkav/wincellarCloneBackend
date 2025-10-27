@@ -8,15 +8,15 @@
 
 ## 2. Thiết lập môi trường & cấu hình hệ thống
 
-- [x] Hoàn thiện `.env`, kết nối DB/queue/cache, cấu hình log channel
-- [x] Cấu hình CORS whitelist, rate limit 60 req/min, bảo mật PII (hash IP)
-- [x] Cài các package bắt buộc (Filament 4.x, tracking, media, audit...) và kiểm tra autoload
+- [X] Hoàn thiện `.env`, kết nối DB/queue/cache, cấu hình log channel
+- [X] Cấu hình CORS whitelist, rate limit 60 req/min, bảo mật PII (hash IP)
+- [X] Cài các package bắt buộc (Filament 4.x, tracking, media, audit...) và kiểm tra autoload
 
 ## 3. Thiết kế migrations + seed dữ liệu
 
-- [ ] Tạo đủ bảng danh mục, products, pivots grapes/regions, polymorphic `images`, `home_components`, tracking, redirects
-- [ ] Thêm index/constraint (slug unique, order=0 unique, FK on delete, partial cover) theo tài liệu
-- [ ] Viết seeder mẫu + seed hiệu năng (dataset lớn) để QA benchmark và FE test
+- [X] Tạo đủ bảng danh mục, products, pivots grapes/regions, polymorphic `images`, `home_components`, tracking, redirects
+- [X] Thêm index/constraint (slug unique, order=0 unique, FK on delete, partial cover) theo tài liệu
+- [X] Viết seeder mẫu + seed hiệu năng (dataset lớn) để QA benchmark và FE test
 
 ## 4. Khai báo models/relations/pivot
 
