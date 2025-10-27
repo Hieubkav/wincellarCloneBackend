@@ -1,10 +1,12 @@
 <?php
 
-use App\Http\Controllers\Api\ProductsController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('api')
     ->prefix('v1')
+    ->as('api.v1.')
     ->group(function (): void {
-        Route::get('san-pham', [ProductsController::class, 'index']);
+        require __DIR__.'/api/home.php';
+        require __DIR__.'/api/products.php';
+        require __DIR__.'/api/articles.php';
     });

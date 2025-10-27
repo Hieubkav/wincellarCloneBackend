@@ -28,13 +28,13 @@
 
 ## 5. Nghiệp vụ giá & khuyến mại
 
-- [ ] Service tính discount_percent (round 0 chữ số, trả `null` khi không giảm)
-- [ ] Validation price/original_price + rule hiển thị CTA Liên hệ khi price=0
-- [ ] Test case cho ngoại lệ (price<0, chia 0, discount âm, product inactive)
+- [X] Service tính discount_percent (round 0 chữ số, trả `null` khi không giảm)
+- [X] Validation price/original_price + rule hiển thị CTA Liên hệ khi price=0
+- [X] Test case cho ngoại lệ (price<0, chia 0, discount âm, product inactive)
 
 ## 6. API sản phẩm
 
-- [X] GET /san-pham: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
+- [ ] GET /san-pham: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
 - [ ] GET /san-pham/{slug}: breadcrumb, gallery, badges, 404 khi inactive hoặc không tồn tại
 - [ ] Tối ưu hiệu năng: caching nếu cần, kiểm tra EXPLAIN/index, đo P95/P99
 
