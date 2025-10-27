@@ -21,10 +21,10 @@
 
 ## 4. Module media & logo/icon
 
-- [ ] Implement gallery polymorphic, enforce order=0 là cover duy nhất
-- [ ] Xử lý logo/icon thông qua FK trực tiếp, nullify + toast khi xoá media đang được tham chiếu
-- [ ] Job dọn media orphan và cấu hình placeholder fallback cho từng loại resource
-- [ ] GET /san-pham: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
+- [X] Implement gallery polymorphic, enforce order=0 là cover duy nhất
+- [X] Xử lý logo/icon thông qua FK trực tiếp, nullify + toast khi xoá media đang được tham chiếu
+- [X] Job dọn media orphan và cấu hình placeholder fallback cho từng loại resource
+- [X] GET /san-pham: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
 
 ## 5. Nghiệp vụ giá & khuyến mại
 
@@ -34,7 +34,7 @@
 
 ## 6. API sản phẩm
 
-- [ ] GET /san-pham: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
+- [X] GET /san-pham: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
 - [ ] GET /san-pham/{slug}: breadcrumb, gallery, badges, 404 khi inactive hoặc không tồn tại
 - [ ] Tối ưu hiệu năng: caching nếu cần, kiểm tra EXPLAIN/index, đo P95/P99
 

@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasMediaGallery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Collection;
 
 class Product extends Model
 {
     use HasFactory;
+    use HasMediaGallery;
 
     /**
      * @var list<string>
@@ -58,18 +58,6 @@ class Product extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(ProductType::class);
-    }
-
-    public function images(): MorphMany
-    {
-        return $this->morphMany(Image::class, 'model')
-            ->orderBy('order');
-    }
-
-    public function coverImage(): MorphOne
-    {
-        return $this->morphOne(Image::class, 'model')
-            ->where('order', 0);
     }
 
     public function trackingEvents(): HasMany
@@ -148,5 +136,24 @@ class Product extends Model
         $terms = $this->getRelation('terms');
 
         return $terms;
+    }
+
+    protected function mediaPlaceholderKey(): string
+    {
+        return 'product';
+    }
+
+    public function getDiscountPercentAttribute(): ?int
+    {
+        $price = $this->price;
+        $original = $this->original_price;
+
+        if ($price === null || $original === null || $price <= 0 || $original <= 0 || $price >= $original) {
+            return null;
+        }
+
+        $percent = (int) round((($original - $price) / $original) * 100, 0, PHP_ROUND_HALF_UP);
+
+        return $percent > 0 ? $percent : null;
     }
 }
