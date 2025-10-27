@@ -1,8 +1,8 @@
-# Dự án web rượu/bia/thịt nguội/bánh – **Bản chốt theo phản hồi khách**
+Dự án web rượu/bia/thịt nguội/bánh – **Bản chốt cuối cùng gửi khách (v1.2 – 27/10/2025)**
 
-> Phiên bản: **1.1** (27/10/2025)
+> Phiên bản: **1.2** (27/10/2025)
 >
-> Thay đổi chính: cập nhật các **quyết định đã chốt** theo phản hồi 1→10; điều chỉnh API và ERD tương ứng.
+> Cập nhật: mô tả rõ **mối quan hệ hình ảnh (polymorphic)** giữa sản phẩm, bài viết, brand, settings, social link; hoàn thiện ERD và logic API.
 
 ---
 
@@ -23,117 +23,164 @@
    • Tự động tạo redirect 301 khi slug đổi.
 
    • Bảng `url_redirects(from_slug → to_slug)`; không giới hạn TTL.
-4. **Hình ảnh – OKE**
+4. **Hình ảnh – CHỐT (clarified)**
 
-   • Không bắt buộc có ảnh cover khi publish; nếu thiếu, FE dùng **placeholder** theo loại.
+   • Ảnh dùng  **một bảng polymorphic `images`** , có thể gắn với `Product`, `Article`, `Brand`, `Setting`, `SocialLink`… qua `model_type` + `model_id`.
 
-   • Admin được cảnh báo khi lưu/publish không có ảnh.
+   • Sản phẩm có  **nhiều ảnh (gallery)** , `order=0` là ảnh cover.
+
+   • Một số bảng (như `settings`, `social_links`) có **ảnh cố định 1-1** (logo, favicon, icon) qua FK trực tiếp (`logo_image_id`, `icon_image_id`).
 5. **Badge hiển thị – OKE**
 
-   • Dùng **enum** chuẩn: `SALE`, `HOT`, `NEW`, `LIMITED`.
+   • Enum chuẩn: `SALE`, `HOT`, `NEW`, `LIMITED`; cho phép label custom nếu cần.
 
-   • Cho phép **label tùy chỉnh** (text ngắn) nếu cần; enum vẫn ưu tiên để thống nhất style.
+   • FE hiển thị theo style thống nhất.
 6. **Giá khuyến mãi & % giảm – "để sẵn trong API"**
 
-   • Backend **tính sẵn** `discount_percent` (round 0–1 chữ số thập phân).
+   • Backend tính sẵn `discount_percent`; FE dùng tùy ý.
 
-   • FE **tùy** sử dụng: hiển thị `%` hoặc chỉ giá gạch.
-
-   • Logic: nếu `price>0` & `original_price>price` ⇒ `discount_percent = (original_price-price)/original_price*100`.
+   • `discount_percent = (original_price - price)/original_price * 100` (round 0–1 chữ số).
 7. **Analytics theo thời gian – CHỐT**
 
-   • Dashboard chọn  **7/30/90 ngày & all-time** ; export CSV.
+   • Dashboard chọn 7/30/90/all-time; export CSV.
 
-   • Có thể dọn `tracking_events` >90 ngày, vẫn giữ tổng quan.
+   • Có thể dọn dữ liệu chi tiết >90 ngày.
 8. **Ẩn sản phẩm/bài viết – CHỐT**
 
-   • Khi `active='false'`, mọi block/homepage bỏ qua item đó, không báo lỗi.
+   • Khi `active=false`, bỏ qua ở FE & home component.
 9. **Mega menu linh hoạt – OKE**
 
-   • Cho phép block tùy biến (ví dụ “Ưu đãi Tết”), tiêu đề + danh sách link custom, không giới hạn vào quốc gia/giống nho.
+   • Block tùy biến: tiêu đề + danh sách link custom (ví dụ “Ưu đãi Tết”).
 10. **Audit log trong Admin – OKE**
 
-    • Có trang **read-only** để tra cứu theo thời gian/action/user,  **export CSV** .
+    • Có trang  **read-only** , tra cứu theo user/action/time, export CSV.
 
 ---
 
-## B) Tóm tắt hệ thống (không đổi trọng yếu)
+## B) Tóm tắt hệ thống
 
-* **Không bán trực tiếp** ; CTA  **Liên hệ** .
-* **Trang** : Trang chủ (qua `home_components`), Trang lọc, Trang chi tiết, Editorial, Liên hệ.
-* **Header** : menu thường + mega menu;  **Footer** : settings + social links.
-* **Admin (Filament 4.x)** : quản lý sản phẩm/thuộc tính/danh mục, images, homepage blocks, menu, bài viết, settings, analytics, audit log.
-* **Phân quyền** : `admin`, `staff` (staff không chỉnh settings và không chỉnh/xóa user khác).
-* **SEO** : meta auto khi để trống.
-* **Tracking** : visitor, session, event.
-
----
-
-## C) ERD (Mermaid) – cập nhật theo bản chốt
-
-Xem ở\mermaid.rb
+* Không bán trực tiếp; CTA “Liên hệ”.
+* Trang: Trang chủ (qua `home_components`), Trang lọc, Trang chi tiết, Editorial, Liên hệ.
+* Header: menu thường + mega menu. Footer: settings + social links.
+* Admin (Filament 4.x): quản lý sản phẩm, danh mục, images (media library), homepage blocks, menu, bài viết, settings, analytics, audit log.
+* Phân quyền: `admin`, `staff` (staff không chỉnh settings hoặc user khác).
+* SEO: auto meta khi trống.
+* Tracking: visitor/session/event.
 
 ---
 
-## D) API/Controller – điều chỉnh theo bản chốt
+## C) ERD (Mermaid) – cập
 
-* **Danh sách sản phẩm** `GET /san-pham`
-  * Query: `brand[]`, `country[]`, `region[]`, `grape[]`, `type[]`, `price_min`, `price_max`, `alcohol_min`, `alcohol_max`…
-  * Mặc định sort `created_at DESC`; phân trang.
-  * Join pivot khi có `region[]`/`grape[]` nhiều giá trị.
-* **Chi tiết sản phẩm** `GET /san-pham/{slug}`
-  * Trả: product + gallery + breadcrumbs + **`discount_percent`** (tính sẵn).
-  * FE **có thể** dùng `%` hoặc bỏ qua, tùy UI.
-* **Bài viết** `GET /bai-viet`, `GET /bai-viet/{slug}`.
-* **Trang chủ** `GET /home`
-  * Build từ `home_components`; tự bỏ qua item inactive/404.
-* **Redirect**
-  * Middleware check `url_redirects.from_slug` → 301 đến `to_slug`.
+```
+
+```
+
+ nhật mô hình ảnh polymorphic
+
+```mermaid
+erDiagram
+  USERS ||--o{ AUDIT_LOGS : performs
+  USERS ||--o{ ARTICLES : writes
+
+  PRODUCTS ||--o{ IMAGES : has_many (gallery)
+  ARTICLES ||--o{ IMAGES : has_many (gallery)
+  BRANDS ||--o{ IMAGES : has_many
+  SETTINGS ||--o{ IMAGES : uses_logo_favicon
+  SOCIAL_LINKS ||--o{ IMAGES : uses_icon
+
+  PRODUCT_CATEGORIES ||--o{ PRODUCTS : groups
+  PRODUCT_TYPES ||--o{ PRODUCTS : types
+  BRANDS ||--o{ PRODUCTS : owns
+  COUNTRIES ||--o{ REGIONS : contains
+  REGIONS ||--o{ PRODUCTS : origin
+
+  GRAPES ||--o{ PRODUCT_GRAPES : pivot
+  PRODUCTS ||--o{ PRODUCT_GRAPES : pivot
+  REGIONS ||--o{ PRODUCT_REGIONS : pivot
+  PRODUCTS ||--o{ PRODUCT_REGIONS : pivot
+
+  MENUS ||--o{ MENU_BLOCKS : has
+  MENU_BLOCKS ||--o{ MENU_BLOCK_ITEMS : has
+
+  HOME_COMPONENTS }o--o{ PRODUCTS : via_config
+  HOME_COMPONENTS }o--o{ ARTICLES : via_config
+
+  VISITORS ||--o{ VISITOR_SESSIONS : has
+  VISITOR_SESSIONS ||--o{ TRACKING_EVENTS : groups
+  VISITORS ||--o{ TRACKING_EVENTS : triggers
+  PRODUCTS ||--o{ TRACKING_EVENTS : viewed
+
+  URL_REDIRECTS }o--|| PRODUCTS : to_product
+  URL_REDIRECTS }o--|| ARTICLES : to_article
+```
+
+---
+
+## D) API/Controller – chuẩn cuối
+
+* **GET /san-pham**
+
+  Query: `brand[]`, `country[]`, `region[]`, `grape[]`, `type[]`, `price_min`, `price_max`, `alcohol_min`, `alcohol_max`.
+
+  Trả kết quả có `discount_percent`, `main_image_url`, `gallery[]`.
+
+  Sort mặc định: `created_at DESC`.
+* **GET /san-pham/{slug}**
+
+  Trả: product + gallery + breadcrumbs + `discount_percent`.
+* **GET /bai-viet** , **GET /bai-viet/{slug}**
+
+  FE hiển thị thumbnail từ `images` (`model_type='Article'`).
+* **GET /home**
+
+  Build từ `home_components` (bỏ qua inactive items).
+* **Redirect middleware**
+
+  Check `url_redirects.from_slug` → 301 → `to_slug`.
 
 ---
 
 ## E) Index/Performance
 
-* **Sản phẩm** : `INDEX (brand_id, country_id, region_id, type_id, product_category_id)`, `INDEX (alcohol_percent)`, `INDEX (volume_ml)`, `INDEX (price)`.
-* **Pivot** : PK composite + index nghịch `grape_id`, `region_id`.
-* **Tracking** : `tracking_events(product_id, created_at)`, `tracking_events(visitor_id, visitor_session_id)`.
-* **Slug/Redirect** : `UNIQUE(slug)`; `url_redirects.from_slug UNIQUE`.
+* `INDEX (brand_id, country_id, region_id, type_id, product_category_id)`.
+* `INDEX (alcohol_percent)`, `INDEX (volume_ml)`, `INDEX (price)`.
+* Pivot: PK composite + index nghịch.
+* `tracking_events(product_id, created_at)`; `url_redirects.from_slug UNIQUE`.
 
 ---
 
-## F) Quy ước FE (không đổi)
+## F) FE Convention
 
-* **Giá** : `price>0` → hiển thị VND; nếu `original_price>price` → giá gạch + **% giảm** (nếu FE dùng). `price=0` → "Liên hệ".
-* **Sort list** : `created_at DESC` (trừ nơi dùng `order`).
-* **Slug** : tự sinh; cập nhật theo tên;  **có redirect** .
-* **Ảnh** : cover = `order=0`; vắng cover dùng placeholder.
-* **Homepage** : render `active='true'` theo `order ASC, created_at DESC`.
+* `price>0` → hiển thị giá VND; `price=0` → “Liên hệ”.
+* `original_price>price` → hiển thị giá gạch + % giảm.
+* Ảnh: `order=0` = cover, placeholder khi rỗng.
+* Slug tự sinh, có redirect.
+* Home render `active=true` theo `order ASC`.
 
 ---
 
 ## G) Filament Resources
 
-* Product, Category, Type, Brand, Country, Region, Grape,  **Product↔Grape (pivot)** ,  **Product↔Region (pivot)** .
-* Article, Image (Media), Menu, MenuBlock, MenuBlockItem.
-* HomeComponent (form JSON theo type).
-* Settings (singleton), SocialLink.
-* Tracking (read-only),  **AuditLog (read-only)** .
+* Product, Category, Type, Brand, Country, Region, Grape, Product↔Grape, Product↔Region.
+* Article, Image (media), Menu, MenuBlock, MenuBlockItem.
+* HomeComponent, Settings (singleton), SocialLink.
+* Tracking (read-only), AuditLog (read-only).
 
 ---
 
-## H) Checklist gửi khách nghiệm thu
+## H) Checklist nghiệm thu
 
-* [ ] Filter multi-select chạy nhanh (EXPLAIN OK).
-* [ ] Redirect slug cũ hoạt động 301.
-* [ ] Placeholder ảnh nhất quán.
-* [ ] `discount_percent` có trong API; FE hiển thị tùy chọn.
-* [ ] Analytics 7/30/90/all + export.
-* [ ] Staff bị khóa Settings & User management.
-* [ ] SEO auto meta + OG từ ảnh cover.
+* [X] Multi-filter hoạt động mượt (EXPLAIN OK).
+* [X] Redirect slug 301 hoạt động.
+* [X] Placeholder ảnh đúng loại.
+* [X] API trả `discount_percent`.
+* [X] Analytics 7/30/90/all-time ok.
+* [X] Staff bị hạn chế Settings/User.
+* [X] SEO meta auto + OG image.
 
 ---
 
-### Phụ lục – Cấu hình `home_components` (tham khảo)
+### Phụ lục – Config `home_components`
 
 * **HeroCarousel** : `{ "slides": [{"image_id":1,"alt":"..."}] }`
 * **DualBanner** : `{ "banners": [{"image_id":1,"alt":"...","href":"/abc"}] }`
