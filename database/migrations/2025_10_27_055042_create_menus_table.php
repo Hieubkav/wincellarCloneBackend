@@ -19,7 +19,11 @@ return new class extends Migration
          */
         Schema::create('menus', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
+            $table->string('title')->nullable();
+            $table->foreignId('term_id')
+                ->nullable()
+                ->constrained('catalog_terms')
+                ->nullOnDelete();
             $table->string('type', 20)->default('standard'); // standard | mega
             $table->string('href', 2048)->nullable();
             $table->json('config')->nullable();
@@ -28,6 +32,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['active', 'order']);
+            $table->index(['term_id', 'type'], 'menus_term_type_index');
         });
     }
 

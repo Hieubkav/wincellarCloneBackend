@@ -2,9 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\CatalogAttributeGroup;
+use App\Models\CatalogTerm;
 use Carbon\Carbon;
 use Database\Seeders\Support\SeederContext;
+use Faker\Generator;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -17,26 +21,37 @@ class LookupTableSeeder extends Seeder
         $now = $context->now();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('product_grapes')->truncate();
-        DB::table('product_regions')->truncate();
+        DB::table('product_term_assignments')->truncate();
         DB::table('products')->truncate();
-        DB::table('brands')->truncate();
-        DB::table('grapes')->truncate();
-        DB::table('regions')->truncate();
-        DB::table('countries')->truncate();
+        DB::table('catalog_terms')->truncate();
+        DB::table('catalog_attribute_groups')->truncate();
         DB::table('product_types')->truncate();
         DB::table('product_categories')->truncate();
-        DB::table('images')->truncate();
         Schema::enableForeignKeyConstraints();
 
         $this->seedCategories($context, $now);
         $this->seedTypes($context, $now);
-        $countryIds = $this->seedCountriesAndRegions($context, $faker, $now);
-        $this->seedGrapes($context, $now);
-        $this->seedBrands($context, $faker, $now);
 
-        // Uống các ID đã seed để ProductSeeder có thể dùng lại.
-        DB::table('countries')->whereIn('id', $countryIds)->update(['updated_at' => Carbon::now()]);
+        $groups = $this->seedAttributeGroups($context, $now);
+        $this->seedBrandTerms($context, $faker, $now, $groups['brand']);
+        $originMap = $this->seedOriginTerms($context, $faker, $now, $groups['origin']);
+        $this->seedGrapeTerms($context, $now, $groups['grape']);
+        $this->seedAccessoryTerms($context, $now, $groups['accessory_type']);
+        $this->seedMaterialTerms($context, $now, $groups['material']);
+        $this->seedFlavorTerms($context, $now, $groups['flavor_profile']);
+
+        // Lưu mapping origin vào metadata chung (để ProductSeeder có thể sử dụng nếu cần).
+        $originConfig = array_merge(
+            $groups['origin']->display_config ?? [],
+            [
+                'dataset' => 'hierarchy',
+                'country_term_ids' => array_values($originMap['countries']),
+            ]
+        );
+
+        DB::table('catalog_attribute_groups')
+            ->where('id', $groups['origin']->id)
+            ->update(['display_config' => json_encode($originConfig)]);
     }
 
     private function seedCategories(SeederContext $context, Carbon $now): void
@@ -44,13 +59,11 @@ class LookupTableSeeder extends Seeder
         $categories = [
             'Rượu vang',
             'Rượu mạnh',
-            'Bia thủ công',
-            'Giỏ quà & hampers',
-            'Thịt nguội & phô mai',
-            'Đồ uống không cồn',
-            'Phụ kiện bar',
-            'Combo tiệc',
-            'Quà doanh nghiệp',
+            'Bia craft',
+            'Phô mai & charcuterie',
+            'Combo quà tặng',
+            'Dụng cụ & phụ kiện bar',
+            'Ly & decanter',
             'Đặc sản vùng miền',
         ];
 
@@ -58,7 +71,7 @@ class LookupTableSeeder extends Seeder
         $faker = $context->faker();
 
         while (count($categories) < $target) {
-            $categories[] = $faker->unique()->words(3, true);
+            $categories[] = ucfirst($faker->unique()->words(3, true));
         }
 
         $rows = [];
@@ -67,7 +80,7 @@ class LookupTableSeeder extends Seeder
                 'id' => $index + 1,
                 'name' => $name,
                 'slug' => $context->uniqueSlug('product_categories', $name),
-                'description' => $index < 5 ? "Danh mục {$name} phục vụ nhu cầu tiệc và quà tặng." : null,
+                'description' => $index < 5 ? "Danh mục {$name} phục vụ nhu cầu trải nghiệm & quà tặng cao cấp." : null,
                 'order' => $index,
                 'active' => true,
                 'created_at' => $now,
@@ -92,11 +105,12 @@ class LookupTableSeeder extends Seeder
             'Bourbon',
             'Cognac',
             'Rum',
+            'Gin',
             'Craft Lager',
             'IPA',
             'Stout',
-            'Gin',
-            'Non-alcoholic spirits',
+            'Ly pha lê',
+            'Dụng cụ bar chuyên nghiệp',
         ];
 
         $target = $context->count('product_types', count($types));
@@ -112,7 +126,7 @@ class LookupTableSeeder extends Seeder
                 'id' => $index + 1,
                 'name' => $name,
                 'slug' => $context->uniqueSlug('product_types', $name),
-                'description' => $index < 6 ? "Phân nhóm {$name} cho filter nâng cao." : null,
+                'description' => $index < 10 ? "Phân nhóm {$name} phục vụ filter nâng cao." : null,
                 'order' => $index,
                 'active' => true,
                 'created_at' => $now,
@@ -124,145 +138,410 @@ class LookupTableSeeder extends Seeder
     }
 
     /**
-     * @return array<int> danh sách country id đã seed.
+     * @return array{brand: CatalogAttributeGroup, origin: CatalogAttributeGroup, grape: CatalogAttributeGroup, accessory_type: CatalogAttributeGroup, material: CatalogAttributeGroup, flavor_profile: CatalogAttributeGroup}
      */
-    private function seedCountriesAndRegions(SeederContext $context, \Faker\Generator $faker, Carbon $now): array
+    private function seedAttributeGroups(SeederContext $context, Carbon $now): array
     {
-        $countries = [
-            ['name' => 'France', 'code' => 'FR', 'regions' => ['Bordeaux', 'Burgundy', 'Champagne', 'Loire Valley', 'Rhône Valley', 'Alsace']],
-            ['name' => 'Italy', 'code' => 'IT', 'regions' => ['Tuscany', 'Piedmont', 'Veneto', 'Sicily', 'Lombardy', 'Friuli']],
-            ['name' => 'Spain', 'code' => 'ES', 'regions' => ['Rioja', 'Ribera del Duero', 'Priorat', 'Rías Baixas', 'Catalunya', 'Navarra']],
-            ['name' => 'United States', 'code' => 'US', 'regions' => ['Napa Valley', 'Sonoma', 'Willamette', 'Finger Lakes', 'Paso Robles', 'Washington State']],
-            ['name' => 'Australia', 'code' => 'AU', 'regions' => ['Barossa Valley', 'Margaret River', 'Hunter Valley', 'Yarra Valley', 'McLaren Vale', 'Coonawarra']],
-            ['name' => 'Chile', 'code' => 'CL', 'regions' => ['Maipo Valley', 'Colchagua', 'Casablanca', 'Aconcagua', 'Itata', 'Limarí']],
-            ['name' => 'Argentina', 'code' => 'AR', 'regions' => ['Mendoza', 'Patagonia', 'Salta', 'San Juan', 'La Rioja', 'Catamarca']],
-            ['name' => 'Germany', 'code' => 'DE', 'regions' => ['Mosel', 'Rheingau', 'Pfalz', 'Franconia', 'Nahe', 'Baden']],
-            ['name' => 'New Zealand', 'code' => 'NZ', 'regions' => ['Marlborough', 'Central Otago', 'Hawke\'s Bay', 'Martinborough', 'Nelson', 'Auckland']],
-            ['name' => 'Portugal', 'code' => 'PT', 'regions' => ['Douro', 'Dão', 'Alentejo', 'Vinho Verde', 'Bairrada', 'Lisboa']],
-            ['name' => 'South Africa', 'code' => 'ZA', 'regions' => ['Stellenbosch', 'Paarl', 'Swartland', 'Walker Bay', 'Franschhoek', 'Constantia']],
-            ['name' => 'Japan', 'code' => 'JP', 'regions' => ['Yamanashi', 'Nagano', 'Hokkaido', 'Tohoku', 'Kyushu', 'Okayama']],
+        $groups = [
+            [
+                'code' => 'brand',
+                'name' => 'Thương hiệu',
+                'filter_type' => 'single',
+                'is_primary' => true,
+                'position' => 0,
+                'display_config' => ['icon' => 'lucide:factory'],
+            ],
+            [
+                'code' => 'origin',
+                'name' => 'Xuất xứ',
+                'filter_type' => 'hierarchy',
+                'is_primary' => true,
+                'position' => 1,
+                'display_config' => ['icon' => 'lucide:globe-2', 'show_flag' => true],
+            ],
+            [
+                'code' => 'grape',
+                'name' => 'Giống nho',
+                'filter_type' => 'multi',
+                'is_primary' => false,
+                'position' => 2,
+                'display_config' => ['icon' => 'lucide:leaf'],
+            ],
+            [
+                'code' => 'accessory_type',
+                'name' => 'Loại phụ kiện',
+                'filter_type' => 'multi',
+                'is_primary' => false,
+                'position' => 3,
+                'display_config' => ['icon' => 'lucide:box'],
+            ],
+            [
+                'code' => 'material',
+                'name' => 'Chất liệu chính',
+                'filter_type' => 'multi',
+                'is_primary' => false,
+                'position' => 4,
+                'display_config' => ['icon' => 'lucide:layers'],
+            ],
+            [
+                'code' => 'flavor_profile',
+                'name' => 'Hương vị',
+                'filter_type' => 'tag',
+                'is_primary' => false,
+                'position' => 5,
+                'display_config' => ['icon' => 'lucide:sparkles'],
+            ],
         ];
 
-        $targetCountries = min($context->count('countries', count($countries)), count($countries));
-        $countries = array_slice($countries, 0, $targetCountries);
-
-        $regionTarget = max(1, $context->count('regions_per_country', 5));
-
-        $countryRows = [];
-        $regionRows = [];
-        $countryIds = [];
-        $countryId = 1;
-        $regionId = 1;
-
-        foreach ($countries as $country) {
-            $countryRows[] = [
-                'id' => $countryId,
-                'name' => $country['name'],
-                'code' => $country['code'],
-                'slug' => $context->uniqueSlug('countries', $country['name']),
+        $rows = [];
+        foreach ($groups as $index => $group) {
+            $rows[] = [
+                'id' => $index + 1,
+                'code' => $group['code'],
+                'name' => $group['name'],
+                'filter_type' => $group['filter_type'],
+                'is_filterable' => true,
+                'is_primary' => $group['is_primary'],
+                'position' => $group['position'],
+                'display_config' => json_encode($group['display_config']),
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
-
-            $regions = $country['regions'];
-            while (count($regions) < $regionTarget) {
-                $regions[] = $faker->unique()->city();
-            }
-            $regions = array_slice($regions, 0, $regionTarget);
-
-            foreach ($regions as $order => $regionName) {
-                $regionRows[] = [
-                    'id' => $regionId,
-                    'country_id' => $countryId,
-                    'name' => $regionName,
-                    'slug' => $context->uniqueSlug('regions', "{$regionName}-{$country['code']}"),
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-                $regionId++;
-            }
-
-            $countryIds[] = $countryId;
-            $countryId++;
-            $faker->unique(true);
         }
 
-        DB::table('countries')->insert($countryRows);
-        DB::table('regions')->insert($regionRows);
+        DB::table('catalog_attribute_groups')->insert($rows);
 
-        return $countryIds;
+        /** @var Collection<string, CatalogAttributeGroup> $groupCollection */
+        $groupCollection = CatalogAttributeGroup::query()
+            ->whereIn('code', collect($groups)->pluck('code'))
+            ->get()
+            ->keyBy('code');
+
+        return $groupCollection->all();
     }
 
-    private function seedGrapes(SeederContext $context, Carbon $now): void
+    /**
+     * @return array{countries: array<string,int>, regions: array<int, array<int>>}
+     */
+    private function seedOriginTerms(SeederContext $context, Generator $faker, Carbon $now, CatalogAttributeGroup $group): array
     {
-        $grapes = [
-            'Cabernet Sauvignon',
-            'Merlot',
-            'Pinot Noir',
-            'Syrah',
-            'Grenache',
-            'Malbec',
-            'Tempranillo',
-            'Sangiovese',
-            'Nebbiolo',
-            'Barbera',
-            'Cabernet Franc',
-            'Petit Verdot',
-            'Chardonnay',
-            'Sauvignon Blanc',
-            'Riesling',
-            'Viognier',
-            'Gewürztraminer',
-            'Pinot Gris',
-            'Albariño',
-            'Moscato',
-            'Torrontés',
-            'Carmenere',
-            'Zinfandel',
-            'Touriga Nacional',
-            'Semillon',
-            'Chenin Blanc',
-            'Fiano',
-            'Assyrtiko',
-            'Grüner Veltliner',
-            'Verdejo',
-            'Dolcetto',
-            'Gamay',
-            'Lambrusco',
-            'Tannat',
-            'Aglianico',
-            'Lagrein',
-            'Marsanne',
-            'Roussanne',
-            'Viura',
-            'Monastrell',
-        ];
+        $dataset = $this->originDataset();
+        $countries = [];
+        $regions = [];
+        $position = 0;
 
-        $target = $context->count('grapes', count($grapes));
+        foreach ($dataset as $data) {
+            $slug = $context->uniqueSlug('catalog_terms.origin', $data['name']);
+            $countryId = DB::table('catalog_terms')->insertGetId([
+                'group_id' => $group->id,
+                'parent_id' => null,
+                'name' => $data['name'],
+                'slug' => $slug,
+                'description' => $data['description'] ?? null,
+                'icon_type' => 'emoji',
+                'icon_value' => $data['flag'] ?? '🌍',
+                'metadata' => json_encode([
+                    'type' => 'country',
+                    'code' => $data['code'],
+                    'continent' => $data['continent'] ?? null,
+                ]),
+                'is_active' => true,
+                'position' => $position++,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            $countries[$data['code']] = $countryId;
+
+            $regionPosition = 0;
+            foreach ($data['regions'] as $regionName) {
+                $regionSlug = $context->uniqueSlug('catalog_terms.origin', "{$data['code']}-{$regionName}");
+                $regionId = DB::table('catalog_terms')->insertGetId([
+                    'group_id' => $group->id,
+                    'parent_id' => $countryId,
+                    'name' => $regionName,
+                    'slug' => $regionSlug,
+                    'description' => $faker->sentence(12),
+                    'icon_type' => 'lucide',
+                    'icon_value' => 'map-pinned',
+                    'metadata' => json_encode([
+                        'type' => 'region',
+                        'country_code' => $data['code'],
+                    ]),
+                    'is_active' => true,
+                    'position' => $regionPosition++,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+
+                $regions[$countryId][] = $regionId;
+            }
+        }
+
+        return [
+            'countries' => $countries,
+            'regions' => $regions,
+        ];
+    }
+
+    private function seedBrandTerms(SeederContext $context, Generator $faker, Carbon $now, CatalogAttributeGroup $group): void
+    {
+        $brands = $this->brandDataset();
+        $target = $context->count('terms.brand', count($brands));
+
+        while (count($brands) < $target) {
+            $brands[] = $faker->unique()->company();
+        }
+
+        $position = 0;
+        foreach ($brands as $name) {
+            $slug = $context->uniqueSlug('catalog_terms.brand', $name);
+
+            DB::table('catalog_terms')->insert([
+                'group_id' => $group->id,
+                'parent_id' => null,
+                'name' => $name,
+                'slug' => $slug,
+                'description' => $faker->sentence(16),
+                'icon_type' => 'lucide',
+                'icon_value' => 'factory',
+                'metadata' => json_encode([
+                    'type' => 'brand',
+                    'founded_year' => random_int(1850, 2015),
+                ]),
+                'is_active' => true,
+                'position' => $position++,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+    }
+
+    private function seedGrapeTerms(SeederContext $context, Carbon $now, CatalogAttributeGroup $group): void
+    {
+        $grapes = $this->grapeDataset();
+        $target = $context->count('terms.grape', count($grapes));
         $faker = $context->faker();
 
         while (count($grapes) < $target) {
             $grapes[] = ucfirst($faker->unique()->word());
         }
 
-        $rows = [];
         foreach ($grapes as $index => $name) {
-            $rows[] = [
-                'id' => $index + 1,
+            DB::table('catalog_terms')->insert([
+                'group_id' => $group->id,
+                'parent_id' => null,
                 'name' => $name,
-                'slug' => $context->uniqueSlug('grapes', $name),
-                'description' => $index < 15 ? "{$name} thường cho hương vị nổi bật, phù hợp pairing đa dạng." : null,
+                'slug' => $context->uniqueSlug('catalog_terms.grape', $name),
+                'description' => $index < 20 ? "{$name} nổi bật với cấu trúc cân bằng và tiềm năng ủ lâu." : null,
+                'icon_type' => 'lucide',
+                'icon_value' => 'grape',
+                'metadata' => json_encode([
+                    'type' => 'grape',
+                    'skin_color' => $index % 2 === 0 ? 'black' : 'white',
+                ]),
+                'is_active' => true,
+                'position' => $index,
                 'created_at' => $now,
                 'updated_at' => $now,
+            ]);
+        }
+    }
+
+    private function seedAccessoryTerms(SeederContext $context, Carbon $now, CatalogAttributeGroup $group): void
+    {
+        $types = [
+            ['name' => 'Ly vang đỏ', 'icon' => 'lucide:wine', 'metadata' => ['usage' => 'wine']],
+            ['name' => 'Ly vang trắng', 'icon' => 'lucide:glass-water', 'metadata' => ['usage' => 'wine']],
+            ['name' => 'Ly whisky', 'icon' => 'lucide:glass', 'metadata' => ['usage' => 'spirit']],
+            ['name' => 'Ly cocktail', 'icon' => 'lucide:martini', 'metadata' => ['usage' => 'cocktail']],
+            ['name' => 'Bình decanter', 'icon' => 'lucide:bottle', 'metadata' => ['usage' => 'wine']],
+            ['name' => 'Shaker', 'icon' => 'lucide:wand', 'metadata' => ['usage' => 'bar_tool']],
+            ['name' => 'Dụng cụ đo', 'icon' => 'lucide:ruler', 'metadata' => ['usage' => 'bar_tool']],
+            ['name' => 'Khui chuyên nghiệp', 'icon' => 'lucide:sparkle', 'metadata' => ['usage' => 'bar_tool']],
+        ];
+
+        $target = $context->count('terms.accessory_type', count($types));
+        $faker = $context->faker();
+
+        while (count($types) < $target) {
+            $types[] = [
+                'name' => ucfirst($faker->unique()->words(2, true)),
+                'icon' => 'lucide:package',
+                'metadata' => ['usage' => 'misc'],
             ];
         }
 
-        DB::table('grapes')->insert($rows);
+        foreach ($types as $index => $type) {
+            DB::table('catalog_terms')->insert([
+                'group_id' => $group->id,
+                'parent_id' => null,
+                'name' => $type['name'],
+                'slug' => $context->uniqueSlug('catalog_terms.accessory_type', $type['name']),
+                'description' => $faker->sentence(14),
+                'icon_type' => 'lucide',
+                'icon_value' => $type['icon'],
+                'metadata' => json_encode($type['metadata']),
+                'is_active' => true,
+                'position' => $index,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
     }
 
-    private function seedBrands(SeederContext $context, \Faker\Generator $faker, Carbon $now): void
+    private function seedMaterialTerms(SeederContext $context, Carbon $now, CatalogAttributeGroup $group): void
     {
-        $brands = [
+        $materials = [
+            ['name' => 'Pha lê', 'icon' => 'lucide:sparkles', 'metadata' => ['safety' => 'handwash']],
+            ['name' => 'Thủy tinh cao cấp', 'icon' => 'lucide:glass-water', 'metadata' => ['safety' => 'dishwasher_safe']],
+            ['name' => 'Thép không gỉ', 'icon' => 'lucide:hammer', 'metadata' => ['safety' => 'dishwasher_safe']],
+            ['name' => 'Gỗ sồi', 'icon' => 'lucide:trees', 'metadata' => ['safety' => 'handwash']],
+            ['name' => 'Da thuộc', 'icon' => 'lucide:wallet', 'metadata' => ['safety' => 'dry_clean']],
+            ['name' => 'Silicone', 'icon' => 'lucide:circle-dashed', 'metadata' => ['safety' => 'dishwasher_safe']],
+        ];
+
+        $target = $context->count('terms.material', count($materials));
+        $faker = $context->faker();
+
+        while (count($materials) < $target) {
+            $materials[] = [
+                'name' => ucfirst($faker->unique()->word()),
+                'icon' => 'lucide:layers',
+                'metadata' => ['safety' => $faker->randomElement(['dishwasher_safe', 'handwash'])],
+            ];
+        }
+
+        foreach ($materials as $index => $material) {
+            DB::table('catalog_terms')->insert([
+                'group_id' => $group->id,
+                'parent_id' => null,
+                'name' => $material['name'],
+                'slug' => $context->uniqueSlug('catalog_terms.material', $material['name']),
+                'description' => $index < 4 ? "{$material['name']} tạo nên texture sang trọng cho sản phẩm." : null,
+                'icon_type' => 'lucide',
+                'icon_value' => $material['icon'],
+                'metadata' => json_encode($material['metadata']),
+                'is_active' => true,
+                'position' => $index,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+    }
+
+    private function seedFlavorTerms(SeederContext $context, Carbon $now, CatalogAttributeGroup $group): void
+    {
+        $flavors = [
+            ['name' => 'Trái cây chín', 'color' => '#b71540'],
+            ['name' => 'Hoa trắng', 'color' => '#ffd460'],
+            ['name' => 'Gia vị ấm', 'color' => '#82589f'],
+            ['name' => 'Gỗ sồi', 'color' => '#a0522d'],
+            ['name' => 'Khoáng chất', 'color' => '#487eb0'],
+            ['name' => 'Thảo mộc tươi', 'color' => '#44bd32'],
+        ];
+
+        $target = $context->count('terms.flavor_profile', count($flavors));
+        $faker = $context->faker();
+
+        while (count($flavors) < $target) {
+            $flavors[] = [
+                'name' => ucfirst($faker->unique()->words(2, true)),
+                'color' => $faker->hexColor(),
+            ];
+        }
+
+        foreach ($flavors as $index => $flavor) {
+            DB::table('catalog_terms')->insert([
+                'group_id' => $group->id,
+                'parent_id' => null,
+                'name' => $flavor['name'],
+                'slug' => $context->uniqueSlug('catalog_terms.flavor_profile', $flavor['name']),
+                'description' => $faker->sentence(10),
+                'icon_type' => 'emoji',
+                'icon_value' => '✨',
+                'metadata' => json_encode(['color' => $flavor['color']]),
+                'is_active' => true,
+                'position' => $index,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+    }
+
+    /**
+     * @return array<int, array{name: string, code: string, flag?: string, continent?: string, description?: string, regions: array<int, string>}>
+     */
+    private function originDataset(): array
+    {
+        return [
+            [
+                'name' => 'Pháp',
+                'code' => 'FR',
+                'flag' => '🇫🇷',
+                'continent' => 'Europe',
+                'description' => 'Cái nôi của terroir Bordeaux, Burgundy và Champagne.',
+                'regions' => ['Bordeaux', 'Burgundy', 'Champagne', 'Rhône Valley', 'Loire Valley', 'Provence'],
+            ],
+            [
+                'name' => 'Ý',
+                'code' => 'IT',
+                'flag' => '🇮🇹',
+                'continent' => 'Europe',
+                'description' => 'Đa dạng phong cách từ Piemonte đến Sicily.',
+                'regions' => ['Toscana', 'Piemonte', 'Veneto', 'Sicilia', 'Puglia', 'Friuli'],
+            ],
+            [
+                'name' => 'Tây Ban Nha',
+                'code' => 'ES',
+                'flag' => '🇪🇸',
+                'continent' => 'Europe',
+                'regions' => ['Rioja', 'Ribera del Duero', 'Priorat', 'Rías Baixas', 'Toro'],
+            ],
+            [
+                'name' => 'Mỹ',
+                'code' => 'US',
+                'flag' => '🇺🇸',
+                'continent' => 'North America',
+                'regions' => ['Napa Valley', 'Sonoma', 'Willamette', 'Columbia Valley', 'Finger Lakes'],
+            ],
+            [
+                'name' => 'Úc',
+                'code' => 'AU',
+                'flag' => '🇦🇺',
+                'continent' => 'Oceania',
+                'regions' => ['Barossa Valley', 'Margaret River', 'Hunter Valley', 'Yarra Valley', 'McLaren Vale'],
+            ],
+            [
+                'name' => 'Chile',
+                'code' => 'CL',
+                'flag' => '🇨🇱',
+                'continent' => 'South America',
+                'regions' => ['Maipo Valley', 'Colchagua', 'Casablanca', 'Bio-Bio'],
+            ],
+            [
+                'name' => 'Việt Nam',
+                'code' => 'VN',
+                'flag' => '🇻🇳',
+                'continent' => 'Asia',
+                'regions' => ['Đà Lạt', 'Thủ Đức', 'Long Biên', 'Trung Sơn'],
+            ],
+            [
+                'name' => 'Đức',
+                'code' => 'DE',
+                'flag' => '🇩🇪',
+                'continent' => 'Europe',
+                'regions' => ['Mosel', 'Rheingau', 'Pfalz', 'Nahe'],
+            ],
+        ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function brandDataset(): array
+    {
+        return [
             'Château Margaux',
             'Château Lafite Rothschild',
             'Penfolds',
@@ -303,52 +582,57 @@ class LookupTableSeeder extends Seeder
             'Ron Zacapa',
             'Jose Cuervo',
             'Patrón',
+            'Riedel',
+            'Spiegelau',
+            'Zalto',
         ];
+    }
 
-        $target = $context->count('brands', count($brands));
-
-        while (count($brands) < $target) {
-            $brands[] = $faker->unique()->company();
-        }
-
-        $brandRows = [];
-        $imageRows = [];
-
-        foreach ($brands as $index => $name) {
-            $id = $index + 1;
-            $slug = $context->uniqueSlug('brands', $name);
-            $imageId = $context->nextImageId();
-
-            $brandRows[] = [
-                'id' => $id,
-                'name' => $name,
-                'slug' => $slug,
-                'description' => $faker->sentence(12),
-                'logo_image_id' => $imageId,
-                'active' => true,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-
-            $imageRows[] = [
-                'id' => $imageId,
-                'file_path' => "brands/{$slug}.jpg",
-                'disk' => 'public',
-                'alt' => "{$name} logo",
-                'width' => 512,
-                'height' => 512,
-                'mime' => 'image/jpeg',
-                'model_type' => $context->modelClass('brand'),
-                'model_id' => $id,
-                'order' => 0,
-                'active' => true,
-                'extra_attributes' => json_encode(['source' => 'seeder']),
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-        }
-
-        DB::table('images')->insert($imageRows);
-        DB::table('brands')->insert($brandRows);
+    /**
+     * @return array<int, string>
+     */
+    private function grapeDataset(): array
+    {
+        return [
+            'Cabernet Sauvignon',
+            'Merlot',
+            'Pinot Noir',
+            'Syrah',
+            'Grenache',
+            'Tempranillo',
+            'Sangiovese',
+            'Malbec',
+            'Zinfandel',
+            'Nebbiolo',
+            'Cabernet Franc',
+            'Petit Verdot',
+            'Carmenère',
+            'Barbera',
+            'Touriga Nacional',
+            'Chardonnay',
+            'Sauvignon Blanc',
+            'Riesling',
+            'Viognier',
+            'Gewürztraminer',
+            'Semillon',
+            'Pinot Grigio',
+            'Albariño',
+            'Chenin Blanc',
+            'Moscato',
+            'Muscat Ottonel',
+            'Furmint',
+            'Grüner Veltliner',
+            'Marsanne',
+            'Roussanne',
+            'Verdejo',
+            'Dolcetto',
+            'Gamay',
+            'Lambrusco',
+            'Tannat',
+            'Aglianico',
+            'Lagrein',
+            'Viura',
+            'Monastrell',
+        ];
     }
 }

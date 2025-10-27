@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Collection;
 
 class Product extends Model
 {
@@ -20,11 +22,8 @@ class Product extends Model
     protected $fillable = [
         'name',
         'slug',
-        'brand_id',
         'product_category_id',
         'type_id',
-        'country_id',
-        'region_id',
         'description',
         'price',
         'original_price',
@@ -51,11 +50,6 @@ class Product extends Model
         ];
     }
 
-    public function brand(): BelongsTo
-    {
-        return $this->belongsTo(Brand::class);
-    }
-
     public function productCategory(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class);
@@ -64,30 +58,6 @@ class Product extends Model
     public function type(): BelongsTo
     {
         return $this->belongsTo(ProductType::class);
-    }
-
-    public function country(): BelongsTo
-    {
-        return $this->belongsTo(Country::class);
-    }
-
-    public function region(): BelongsTo
-    {
-        return $this->belongsTo(Region::class);
-    }
-
-    public function regions(): BelongsToMany
-    {
-        return $this->belongsToMany(Region::class, 'product_regions')
-            ->withPivot('order')
-            ->orderByPivot('order');
-    }
-
-    public function grapes(): BelongsToMany
-    {
-        return $this->belongsToMany(Grape::class, 'product_grapes')
-            ->withPivot('order')
-            ->orderByPivot('order');
     }
 
     public function images(): MorphMany
@@ -112,8 +82,71 @@ class Product extends Model
         return $this->hasMany(TrackingEventAggregateDaily::class);
     }
 
-    public function scopeActive($query)
+    public function termAssignments(): HasMany
+    {
+        return $this->hasMany(ProductTermAssignment::class);
+    }
+
+    public function terms(): BelongsToMany
+    {
+        return $this->belongsToMany(CatalogTerm::class, 'product_term_assignments')
+            ->withPivot(['is_primary', 'position', 'extra'])
+            ->withTimestamps()
+            ->orderByPivot('position');
+    }
+
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('active', true);
+    }
+
+    public function scopeWhereHasTerm(Builder $query, string $groupCode, $termIds): Builder
+    {
+        $termIds = collect($termIds)->filter()->values();
+        if ($termIds->isEmpty()) {
+            return $query;
+        }
+
+        return $query->whereHas('terms', function (Builder $termQuery) use ($groupCode, $termIds) {
+            $termQuery->whereIn('catalog_terms.id', $termIds)
+                ->whereHas('group', fn (Builder $groupQuery) => $groupQuery->where('code', $groupCode));
+        });
+    }
+
+    public function primaryTerm(string $groupCode): ?CatalogTerm
+    {
+        $terms = $this->ensureTermsLoaded();
+
+        return $terms->first(function (CatalogTerm $term) use ($groupCode) {
+            return optional($term->group)->code === $groupCode
+                && (bool) $term->pivot?->is_primary === true;
+        });
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, CatalogTerm>
+     */
+    public function termsByGroup(string $groupCode): Collection
+    {
+        $terms = $this->ensureTermsLoaded();
+
+        return $terms
+            ->filter(fn (CatalogTerm $term) => optional($term->group)->code === $groupCode)
+            ->values();
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, CatalogTerm>
+     */
+    protected function ensureTermsLoaded(): Collection
+    {
+        if (!$this->relationLoaded('terms')) {
+            $this->load(['terms.group']);
+        }
+
+        /** @var \Illuminate\Support\Collection<int, CatalogTerm> $terms */
+        $terms = $this->getRelation('terms');
+
+        return $terms;
     }
 }

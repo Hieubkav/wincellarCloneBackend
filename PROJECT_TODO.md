@@ -10,11 +10,11 @@
 
 - [X] Hoàn thiện `.env`, kết nối DB/queue/cache, cấu hình log channel
 - [X] Cấu hình CORS whitelist, rate limit 60 req/min, bảo mật PII (hash IP)
-- [X] Cài các package bắt buộc (Filament 4.x, tracking, media, audit...) và kiểm tra autoload
-
+- [X] T?o d? b?ng danh m?c, products, taxonomy (catalog_attribute_groups/terms/pivot), polymorphic `images`, `home_components`, tracking, redirects
+- [X] Th�m index/constraint (slug unique, is_primary unique theo pivot, FK on delete, partial cover) theo t�i li?u
 ## 3. Thiết kế migrations + seed dữ liệu
 
-- [X] Tạo đủ bảng danh mục, products, pivots grapes/regions, polymorphic `images`, `home_components`, tracking, redirects
+- [X] T?o model + relation cho Product, Article, CatalogAttributeGroup/CatalogTerm/ProductTermAssignment, Tracking*, UrlRedirect, HomeComponent, Setting...
 - [X] Thêm index/constraint (slug unique, order=0 unique, FK on delete, partial cover) theo tài liệu
 - [X] Viết seeder mẫu + seed hiệu năng (dataset lớn) để QA benchmark và FE test
 
@@ -35,7 +35,7 @@
 - [ ] Implement gallery polymorphic, enforce `order=0` là cover duy nhất
 - [ ] Xử lý logo/icon thông qua FK trực tiếp, nullify + toast khi xóa media đang được tham chiếu
 - [ ] Job dọn media orphan và cấu hình placeholder fallback cho từng loại resource
-
+- [ ] `GET /san-pham`: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
 ## 7. Nghiệp vụ giá & khuyến mãi
 
 - [ ] Service tính `discount_percent` (round 0 chữ số, trả `null` khi không giảm)
@@ -44,7 +44,7 @@
 
 ## 8. API sản phẩm
 
-- [ ] `GET /san-pham`: multi-filter brand/country/region/grape/type + price/alcohol range, sort, DISTINCT, meta pagination
+- [ ] `GET /san-pham`: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
 - [ ] `GET /san-pham/{slug}`: breadcrumb, gallery, badges, 404 khi inactive hoặc không tồn tại
 - [ ] Tối ưu hiệu năng: caching nếu cần, kiểm tra EXPLAIN/index, đo P95/P99
 

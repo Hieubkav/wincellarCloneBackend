@@ -17,19 +17,29 @@ class SeederContext
         'sample' => [
             'label' => 'sample',
             'counts' => [
-                'brands' => 12,
                 'product_categories' => 6,
-                'product_types' => 8,
-                'countries' => 8,
-                'regions_per_country' => 5,
-                'grapes' => 20,
-                'products' => 120,
+                'product_types' => 10,
+                'terms' => [
+                    'brand' => 24,
+                    'grape' => 24,
+                    'accessory_type' => 8,
+                    'material' => 6,
+                    'flavor_profile' => 6,
+                ],
+                'products' => 150,
                 'articles' => 18,
             ],
             'ranges' => [
                 'product_images' => [2, 4],
-                'product_grapes' => [2, 4],
-                'product_regions' => [1, 2],
+                'product_terms' => [
+                    'brand' => [1, 1],
+                    'origin_country' => [1, 1],
+                    'origin_region' => [0, 2],
+                    'grape' => [2, 4],
+                    'accessory_type' => [0, 2],
+                    'material' => [0, 2],
+                    'flavor_profile' => [1, 3],
+                ],
             ],
             'flags' => [
                 'seed_home_components' => true,
@@ -39,19 +49,29 @@ class SeederContext
         'large' => [
             'label' => 'large',
             'counts' => [
-                'brands' => 40,
                 'product_categories' => 10,
-                'product_types' => 16,
-                'countries' => 12,
-                'regions_per_country' => 12,
-                'grapes' => 40,
+                'product_types' => 18,
+                'terms' => [
+                    'brand' => 60,
+                    'grape' => 40,
+                    'accessory_type' => 12,
+                    'material' => 10,
+                    'flavor_profile' => 10,
+                ],
                 'products' => 100000,
                 'articles' => 120,
             ],
             'ranges' => [
-                'product_images' => [1, 2],
-                'product_grapes' => [2, 5],
-                'product_regions' => [1, 3],
+                'product_images' => [1, 3],
+                'product_terms' => [
+                    'brand' => [1, 1],
+                    'origin_country' => [1, 1],
+                    'origin_region' => [1, 3],
+                    'grape' => [2, 5],
+                    'accessory_type' => [0, 3],
+                    'material' => [0, 3],
+                    'flavor_profile' => [1, 4],
+                ],
             ],
             'flags' => [
                 'seed_home_components' => false,
@@ -141,7 +161,6 @@ class SeederContext
         return Arr::get([
             'product' => 'App\\Models\\Product',
             'article' => 'App\\Models\\Article',
-            'brand' => 'App\\Models\\Brand',
             'home_component' => 'App\\Models\\HomeComponent',
             'menu' => 'App\\Models\\Menu',
             'social_link' => 'App\\Models\\SocialLink',
@@ -175,4 +194,3 @@ class SeederContext
         return random_int(180_000, 6_500_000);
     }
 }
-

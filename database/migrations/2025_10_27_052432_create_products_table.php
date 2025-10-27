@@ -12,23 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         /*
-         * Mục tiêu: bảng trung tâm cho mọi nghiệp vụ sản phẩm (filter đa điều kiện, trang chi tiết, analytics).
+         * Mục tiêu: bảng trung tâm cho nghiệp vụ sản phẩm (filter đa điều kiện, trang chi tiết, analytics).
          * Các nhóm trường:
-         * - Dimension/lookup FK (`brand_id`, `product_category_id`, `type_id`, `country_id`, `region_id`) để filter và sinh breadcrumb.
-         * - Thông tin thương mại (`price`, `original_price`, `badges`) phục vụ CTA "Liên hệ", tính discount_percent server-side.
-         * - Thông tin cảm quan (`alcohol_percent`, `volume_ml`, `description`) để FE hiển thị spec sheet.
-         * - Trường SEO (`slug`, meta*) đảm bảo redirect tự sinh + meta fallback đúng như PLAN.md.
-         * Index được tối ưu cho use-case filter GET /san-pham (brand/country/region/type/category + price...).
+         * - Dimension cố định (`product_category_id`, `type_id`) dùng FK vì xuất hiện thường xuyên trong UI & báo cáo.
+         * - Bộ lọc linh hoạt (brand, origin, grape, material, ...) quản lý qua taxonomy nên không còn FK trực tiếp.
+         * - Thông tin thương mại (`price`, `original_price`, `badges`) phục vụ CTA "Liên hệ" và tính discount_percent tại BE.
+         * - Thông tin cảm quan (`alcohol_percent`, `volume_ml`, `description`) để FE dựng spec sheet / filter range.
+         * - Trường SEO (`slug`, meta*) đảm bảo redirect tự sinh + meta fallback theo PLAN.md.
          */
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->foreignId('brand_id')->constrained()->restrictOnDelete();
             $table->foreignId('product_category_id')->constrained()->restrictOnDelete();
             $table->foreignId('type_id')->constrained('product_types')->restrictOnDelete();
-            $table->foreignId('country_id')->constrained()->restrictOnDelete();
-            $table->foreignId('region_id')->nullable()->constrained()->nullOnDelete();
             $table->text('description')->nullable();
             $table->unsignedBigInteger('price')->default(0);
             $table->unsignedBigInteger('original_price')->default(0);
@@ -40,13 +37,10 @@ return new class extends Migration
             $table->text('meta_description')->nullable();
             $table->timestamps();
 
-            $table->index(
-                ['brand_id', 'country_id', 'region_id', 'type_id', 'product_category_id'],
-                'products_filter_index'
-            );
             $table->index('price');
             $table->index('alcohol_percent');
             $table->index('volume_ml');
+            $table->index(['type_id', 'product_category_id'], 'products_type_category_index');
         });
     }
 
@@ -58,3 +52,4 @@ return new class extends Migration
         Schema::dropIfExists('products');
     }
 };
+

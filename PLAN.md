@@ -23,14 +23,14 @@
 * Trang chi tiết sản phẩm (gallery, badge, discount, breadcrumbs).
 * Trang bài viết (list/chi tiết, thumbnail từ `images`).
 * Trang liên hệ (CTA click tracking).
-* Header: menu thường + **mega menu** linh hoạt (block tuỳ biến).
+* Header: menu thuong + **mega menu** linh hoat (block tu dong lay tu taxonomy + item thu cong).
 * Footer: settings + social links.
 
 ### 3. Phạm vi chức năng (BE/API/Admin)
 
 * API sản phẩm/bài viết/home, filter & sort mặc định.
 * **Redirect 301 tự sinh** khi slug đổi;  **không cho nhập thủ công** .
-* Ảnh dùng  **bảng polymorphic `images`** ; một số bảng (settings, social_links, brand logo/icon) dùng  **FK trực tiếp** .
+* Ảnh dùng  **bảng polymorphic `images`** ; một số bảng (settings, social_links, catalog_terms icon (term dùng icon type image)) dùng  **FK trực tiếp** .
 * Tính **`discount_percent`** ở BE (làm tròn  **0 chữ số** ).
 * **Analytics** theo khoảng 7/30/90/all-time;  **event CTA “Liên hệ”** ; dọn raw >90 ngày;  **bảng aggregate daily** .
 * Phân quyền: `admin`, `staff` (staff không chỉnh settings/user/redirects/roles).
@@ -47,24 +47,18 @@
 ### 1) Danh mục & sản phẩm
 
 * **products**
-  * `id`, `name`, `slug` (unique), `brand_id FK`, `product_category_id FK`, `type_id FK`, `country_id FK`, `region_id FK NULLABLE`,
+  * `id`, `name`, `slug` (unique), `product_category_id FK`, `type_id FK`,
   * Thuộc tính: `price` (>=0), `original_price` (>=0), `alcohol_percent` (0..100), `volume_ml` (int >=0), `badges` (SET/JSON: `SALE|HOT|NEW|LIMITED` + custom), `active` (bool),
   * SEO: `meta_title NULL`, `meta_description NULL`,
-  * Chỉ số: `INDEX (brand_id, country_id, region_id, type_id, product_category_id)`, `INDEX (price)`, `INDEX (alcohol_percent)`, `INDEX (volume_ml)`, `UNIQUE (slug)`.
+  * Chỉ số: `INDEX (type_id, product_category_id)`, `INDEX (price)`, `INDEX (alcohol_percent)`, `INDEX (volume_ml)`, `UNIQUE (slug)`.
 * **product_categories** : `id`, `name`, `slug unique`, `order`, `active`.
 * **product_types** : `id`, `name`, `slug unique`, `order`, `active`.
-* **brands** : `id`, `name`, `slug unique`, `logo_image_id FK images.id NULL`, `active`.
-* **countries** : `id`, `name`, `code` (ISO2/3), `slug unique`.
-* **regions** : `id`, `country_id FK`, `name`, `slug unique`.
-* **grapes** (danh mục giống nho): `id`, `name`, `slug unique`.
-* **product_grapes** (pivot): `product_id FK`, `grape_id FK`, `order INT DEFAULT 1`,
-  * `PRIMARY KEY (product_id, grape_id)`,
-  * `INDEX (grape_id, product_id)`,
-  * **Quy ước “chính”** : product có thể đánh dấu giống nho “chính” bằng **order=0** trên pivot (mỗi product–grape tối đa 1 row, order=0 được QA kiểm tra ở mục quy tắc).
-* **product_regions** (pivot): `product_id FK`, `region_id FK`, `order INT DEFAULT 1`,
-  * `PRIMARY KEY (product_id, region_id)`, `INDEX (region_id, product_id)`.
-  * Tương tự, có thể đánh dấu “chính” bằng  **order=0** .
-
+* **catalog_attribute_groups** : `id`, `code UNIQUE`, `name`, `filter_type` (`single|multi|hierarchy|range|tag`), `is_filterable BOOL`, `is_primary BOOL`, `position INT`, `display_config JSON`.
+* **catalog_terms** : `id`, `group_id FK`, `parent_id FK NULLABLE`, `name`, `slug unique per group`, `description TEXT NULL`, `icon_type`, `icon_value`, `metadata JSON NULL`, `is_active BOOL`, `position INT`.
+* **product_term_assignments** (pivot taxonomy): `id`, `product_id FK`, `term_id FK`, `is_primary BOOL`, `position INT`, `extra JSON NULL`, `created_at`, `updated_at`,
+  * `UNIQUE (product_id, term_id)`;
+  * `INDEX (term_id, product_id)`;
+  * **Quy u?c "ch�nh"** : d�nh `is_primary=true` cho term ch�nh (brand, country, region...) d? hi?n breadcrumb/spec.
 ### 2) Nội dung & cấu hình
 
 * **articles** : `id`, `title`, `slug unique`, `excerpt`, `content`, `author_id FK users.id`, `active`, SEO fields.
@@ -72,7 +66,9 @@
   * **Index** : `INDEX (model_type, model_id)`,  **unique cover** : `UNIQUE (model_type, model_id, order)` với ràng buộc `order=0` chỉ duy nhất  **1 ảnh cover** /model, enforced bằng **partial index** (Postgres) hoặc trigger (MySQL).
 * **settings** (singleton): cặp key→value hoặc cột tường minh; `logo_image_id FK images.id NULL`, `favicon_image_id FK images.id NULL`.
 * **social_links** : `id`, `platform`, `url`, `icon_image_id FK images.id NULL`, `active`.
-* **menus** ,  **menu_blocks** ,  **menu_block_items** : cấu hình mega menu linh hoạt (block = tiêu đề + list links).
+* **menus** : `id`, `title NULL`, `term_id FK catalog_terms NULL`, `type ENUM('standard','mega')`, `href NULL`, `config JSON`, `order`, `active`.
+* **menu_blocks** : `id`, `menu_id FK`, `title`, `attribute_group_id FK catalog_attribute_groups NULL`, `max_terms NULL`, `config JSON`, `order`, `active`.
+* **menu_block_items** : `id`, `menu_block_id FK`, `term_id FK catalog_terms NULL`, `label NULL`, `href NULL`, `badge NULL`, `meta JSON`, `order`, `active`.
 * **home_components** : `id`, `type ENUM`, `config JSON`, `order`, `active`.
 
 ### 3) Tracking & analytics
@@ -176,15 +172,15 @@ erDiagram
 
 * **Enforce** : unique partial `order=0`/model; nếu 2 request đồng thời set `order=0`, request đến sau bị 409 (conflict).
 
-1. **Logo/Icon** (FK trực tiếp): `brands.logo_image_id`, `settings.logo_image_id/favicon_image_id`, `social_links.icon_image_id`.
+1. **Logo/Icon** (FK trực tiếp): `settings.logo_image_id/favicon_image_id`, `social_links.icon_image_id`, `catalog_terms.icon_value (icon_type=image)`.
    * Có thể **không** có dòng `images` tương ứng (không bắt buộc tạo dòng polymorphic).
 2. **Xoá ảnh đang được dùng bởi FK** : **`NULLIFY` + cảnh báo** (log + toast Admin).
 
 * Không chặn xoá; sau xoá, UI hiển thị  **placeholder** .
 
-1. **Xoá model cha** (product/article/brand…):
+1. **Xoá model cha** (product/article/catalog_term…):
    * Chính sách gallery: **soft-delete ảnh** hoặc **orphan cho phép** → dọn định kỳ bằng job “media garbage collector”.
-2. **Placeholder** : nếu không có cover, FE dùng placeholder theo loại (product/article/brand/icon).
+2. **Placeholder** : nếu không có cover, FE dùng placeholder theo loại (product/article/catalog_term/icon).
 
 ### C. Giá & khuyến mãi
 
@@ -205,7 +201,7 @@ erDiagram
 
 ### D. Lọc sản phẩm & hiệu năng
 
-1. **Tham số** : `brand[]`, `country[]`, `region[]`, `grape[]`, `type[]`, `price_min/max`, `alcohol_min/max`, `page`, `per_page`.
+1. **Tham s?** : `terms[brand][]`, `terms[origin.country][]`, `terms[origin.region][]`, `terms[grape][]`, `type[]`, `price_min/max`, `alcohol_min/max`, `page`, `per_page`.
 2. **Hành vi** :
 
 * Nhiều giá trị ⇒ `WHERE IN`/join pivot; sau join phải **DISTINCT** theo `products.id`.
@@ -238,7 +234,7 @@ erDiagram
 * **Auto meta** khi trống:
   * `meta_title`: cắt ≤ 60 ký tự (không vỡ từ).
   * `meta_description`: cắt ≤ 160 ký tự.
-  * `og:image`: ưu tiên product cover → brand logo → site default (tỷ lệ ~1.91:1; khuyến nghị 1200×630).
+  * `og:image`: ưu tiên product cover → term icon (n?u icon_type=image) → site default (tỷ lệ ~1.91:1; khuyến nghị 1200×630).
 * **Sitemap** : không liệt kê resource inactive.
 * **Canonical** : luôn là slug hiện tại.
 
@@ -270,7 +266,7 @@ erDiagram
 
 ### 1) `GET /san-pham`
 
- **Query** : `brand[]`, `country[]`, `region[]`, `grape[]`, `type[]`, `price_min`, `price_max`, `alcohol_min`, `alcohol_max`, `page`, `per_page`, `sort`
+ **Query** : `terms[brand][]`, `terms[origin.country][]`, `terms[origin.region][]`, `terms[grape][]`, `type[]`, `price_min`, `price_max`, `alcohol_min`, `alcohol_max`, `page`, `per_page`, `sort`
 
 **200**
 
@@ -286,7 +282,7 @@ erDiagram
       "discount_percent": 33,
       "main_image_url": "https://.../img1.jpg",
       "gallery": [{"url": "https://.../img1.jpg", "order": 0}, {"url": "https://.../img2.jpg", "order": 1}],
-      "brand": {"id": 1, "name": "Brand X"},
+      "brand_term": {"id": 1, "name": "Brand X"},
       "country": {"id": 2, "name": "Pháp"},
       "alcohol_percent": 13.5,
       "volume_ml": 750,
@@ -389,7 +385,7 @@ erDiagram
 * **DualBanner** : `{ "banners": [{"image_id":1,"alt":"...","href":"/abc"}] }`
 * **CategoryGrid** : `{ "categories": [{"name":"Vang đỏ","image_id":1,"href":"/..."}] }`
 * **FavouriteProducts** : `{ "products": [{"product_id":1,"badge":"SALE"}] }`
-* **BrandShowcase** : `{ "brands": [{"brand_id":1,"href":"/..."}] }`
+* **BrandShowcase** : `{ "brands": [{"term_id":1,"href":"/..."}] }`
 * **CollectionShowcase** : `{ "title":"Rượu Vang","subtitle":"...","description":"...","ctaLabel":"Xem thêm","ctaHref":"/ruou-vang","tone":"wine|spirit","products":[{"product_id":1,"badge":"HOT"}] }`
 * **EditorialSpotlight** : `{ "title":"Cẩm nang rượu","articles":[{"article_id":1}] }`
 
@@ -414,7 +410,7 @@ erDiagram
 ### E. Test data seed gợi ý
 
 * 100k products; mỗi product 3–5 grapes (pivot ~350k), 1–2 regions (pivot ~150k).
-* 20 brands, 50 regions/10 countries, 40 grapes.
+* Term dataset: ~40 brand terms, ~40 origin countries + 80 sub-regions, ~40 grape terms.
 * 30% sản phẩm có `original_price > price`.
 * 10% inactive.
 * Sự kiện: 30 ngày gần nhất ~ 3M `product_view`, 200k `cta_contact`.
@@ -422,3 +418,14 @@ erDiagram
 ---
 
  **Kết luận** : Tài liệu này phản ánh các quyết định **đã chốt** (v1.2), bao gồm cập nhật quan trọng:  **redirect auto** ,  **`discount_percent=null` & làm tròn 0** ,  **polymorphic images + FK nullify** ,  **thêm event CTA & aggregates daily** , cùng toàn bộ luật/ngoại lệ để QA nghiệm thu khắt khe vẫn rõ ràng và đo được.
+
+
+
+
+
+
+
+
+
+
+

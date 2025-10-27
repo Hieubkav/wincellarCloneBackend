@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Brand extends Model
+class MenuBlock extends Model
 {
     use HasFactory;
 
@@ -15,10 +15,12 @@ class Brand extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'name',
-        'slug',
-        'description',
-        'logo_image_id',
+        'menu_id',
+        'title',
+        'attribute_group_id',
+        'max_terms',
+        'config',
+        'order',
         'active',
     ];
 
@@ -28,18 +30,27 @@ class Brand extends Model
     protected function casts(): array
     {
         return [
+            'config' => 'array',
+            'max_terms' => 'int',
+            'order' => 'int',
             'active' => 'bool',
         ];
     }
 
-    public function products(): HasMany
+    public function menu(): BelongsTo
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsTo(Menu::class);
     }
 
-    public function logoImage(): BelongsTo
+    public function attributeGroup(): BelongsTo
     {
-        return $this->belongsTo(Image::class, 'logo_image_id');
+        return $this->belongsTo(CatalogAttributeGroup::class, 'attribute_group_id');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(MenuBlockItem::class)
+            ->orderBy('order');
     }
 
     public function scopeActive($query)
@@ -47,3 +58,4 @@ class Brand extends Model
         return $query->where('active', true);
     }
 }
+

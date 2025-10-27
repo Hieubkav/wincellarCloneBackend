@@ -20,11 +20,18 @@ return new class extends Migration
             $table->id();
             $table->foreignId('menu_id')->constrained('menus')->cascadeOnDelete();
             $table->string('title');
+            $table->foreignId('attribute_group_id')
+                ->nullable()
+                ->constrained('catalog_attribute_groups')
+                ->nullOnDelete();
+            $table->unsignedInteger('max_terms')->nullable();
+            $table->json('config')->nullable();
             $table->unsignedInteger('order')->default(0);
             $table->boolean('active')->default(true);
             $table->timestamps();
 
             $table->index(['menu_id', 'order']);
+            $table->index(['attribute_group_id', 'order'], 'menu_blocks_group_order_index');
         });
     }
 

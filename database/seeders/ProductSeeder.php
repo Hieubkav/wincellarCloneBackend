@@ -4,8 +4,10 @@ namespace Database\Seeders;
 
 use Database\Seeders\Support\SeederContext;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
@@ -15,10 +17,10 @@ class ProductSeeder extends Seeder
     {
         $context = SeederContext::get();
         $faker = $context->faker();
+        $now = $context->now();
 
         Schema::disableForeignKeyConstraints();
-        DB::table('product_grapes')->truncate();
-        DB::table('product_regions')->truncate();
+        DB::table('product_term_assignments')->truncate();
         DB::table('products')->truncate();
         Schema::enableForeignKeyConstraints();
 
@@ -27,30 +29,30 @@ class ProductSeeder extends Seeder
             ->where('model_type', $context->modelClass('product'))
             ->delete();
 
-        $categories = DB::table('product_categories')->select('id', 'name')->get();
-        $types = DB::table('product_types')->select('id', 'name')->get();
-        $brands = DB::table('brands')->select('id', 'name')->get();
-        $countries = DB::table('countries')->select('id', 'name')->get();
-        $regions = DB::table('regions')->select('id', 'country_id', 'name')->get()->groupBy('country_id');
-        $grapes = DB::table('grapes')->select('id', 'name')->get();
+        $categories = DB::table('product_categories')->select('id', 'name', 'slug')->get();
+        $types = DB::table('product_types')->select('id', 'name', 'slug')->get();
+        $taxonomy = $this->loadTaxonomy();
 
-        $productCount = $context->count('products', 120);
+        $productCount = $context->count('products', 150);
         $imageRange = $context->range('product_images', [1, 3]);
-        $grapeRange = $context->range('product_grapes', [2, 4]);
-        $regionRange = $context->range('product_regions', [1, 2]);
-
         $productRows = [];
         $imageRows = [];
-        $productGrapes = [];
-        $productRegions = [];
+        $termAssignments = [];
         $productId = 1;
 
         for ($i = 0; $i < $productCount; $i++, $productId++) {
             $category = $categories->random();
             $type = $types->random();
-            $brand = $brands->random();
-            $country = $countries->random();
-            $regionCollection = $regions->get($country->id, collect());
+
+            $isAccessory = $this->isAccessoryProduct($category->slug, $type->slug);
+            $isWine = $this->isWineType($type->slug);
+
+            $brand = $this->pickRandom($taxonomy['brand']);
+            $originCountry = $this->pickRandom($taxonomy['origin_countries']);
+            $originRegions = $this->pickTermsWithinRange(
+                $context->range('product_terms.origin_region', [0, 2]),
+                $taxonomy['origin_regions']->get($originCountry->id) ?? collect()
+            );
 
             $name = $this->generateProductName($context, $brand->name, $type->name);
             $slug = $context->uniqueSlug('products', $name);
@@ -58,6 +60,7 @@ class ProductSeeder extends Seeder
             $price = $context->randomPrice();
             $originalPrice = $price;
             $discounted = random_int(1, 100) <= 35;
+
             if ($discounted) {
                 $originalPrice = (int) round($price * random_int(110, 145) / 100);
             }
@@ -67,47 +70,85 @@ class ProductSeeder extends Seeder
                 $badges = array_merge($badges ?? [], ['SALE']);
             }
 
-            $selectedRegions = $this->pickRegions($regionCollection, $regionRange);
-            $primaryRegionId = $selectedRegions[0]['region_id'] ?? null;
-
-            $selectedGrapes = $this->pickGrapes($grapes, $grapeRange);
-
             $productRows[] = [
                 'id' => $productId,
                 'name' => $name,
                 'slug' => $slug,
-                'brand_id' => $brand->id,
                 'product_category_id' => $category->id,
                 'type_id' => $type->id,
-                'country_id' => $country->id,
-                'region_id' => $primaryRegionId,
                 'description' => $faker->paragraphs(random_int(2, 4), true),
                 'price' => $price,
                 'original_price' => $originalPrice,
-                'alcohol_percent' => $context->randomAlcohol(),
-                'volume_ml' => $context->randomVolume(),
+                'alcohol_percent' => $isAccessory ? null : $context->randomAlcohol(),
+                'volume_ml' => $isAccessory ? null : $context->randomVolume(),
                 'badges' => $badges ? json_encode($badges) : null,
                 'active' => random_int(1, 100) > 7,
                 'meta_title' => "{$name} | Wincellar",
                 'meta_description' => $faker->sentence(20),
-                'created_at' => $context->now(),
-                'updated_at' => $context->now(),
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
 
-            foreach ($selectedGrapes as $indexGrape => $grapeId) {
-                $productGrapes[] = [
-                    'product_id' => $productId,
-                    'grape_id' => $grapeId,
-                    'order' => $indexGrape === 0 ? 0 : $indexGrape + 1,
-                ];
+            // Term assignments
+            $termAssignments[] = $this->makeAssignment($productId, $brand->id, true, 0, $now);
+
+            $termAssignments[] = $this->makeAssignment($productId, $originCountry->id, true, 0, $now, [
+                'context' => 'origin_country',
+            ]);
+
+            foreach ($originRegions as $index => $region) {
+                $termAssignments[] = $this->makeAssignment($productId, $region->id, $index === 0 && !$isAccessory, $index + 1, $now, [
+                    'context' => 'origin_region',
+                ]);
             }
 
-            foreach ($selectedRegions as $regionData) {
-                $productRegions[] = [
-                    'product_id' => $productId,
-                    'region_id' => $regionData['region_id'],
-                    'order' => $regionData['order'],
-                ];
+            if ($isWine) {
+                $grapeTerms = $this->pickTermsWithinRange(
+                    $context->range('product_terms.grape', [2, 4]),
+                    $taxonomy['grape']
+                );
+
+                foreach ($grapeTerms as $index => $term) {
+                    $termAssignments[] = $this->makeAssignment($productId, $term->id, $index === 0, $index, $now, [
+                        'context' => 'grape_composition',
+                        'percentage' => $faker->numberBetween(10, 70),
+                    ]);
+                }
+            }
+
+            $flavorTerms = $this->pickTermsWithinRange(
+                $context->range('product_terms.flavor_profile', [1, 3]),
+                $taxonomy['flavor_profile']
+            );
+
+            foreach ($flavorTerms as $index => $term) {
+                $termAssignments[] = $this->makeAssignment($productId, $term->id, false, $index, $now, [
+                    'context' => 'flavor_profile',
+                ]);
+            }
+
+            if ($isAccessory) {
+                $accessoryTerms = $this->pickTermsWithinRange(
+                    $context->range('product_terms.accessory_type', [1, 2]),
+                    $taxonomy['accessory_type']
+                );
+
+                foreach ($accessoryTerms as $index => $term) {
+                    $termAssignments[] = $this->makeAssignment($productId, $term->id, $index === 0, $index, $now, [
+                        'context' => 'accessory_type',
+                    ]);
+                }
+
+                $materialTerms = $this->pickTermsWithinRange(
+                    $context->range('product_terms.material', [1, 2]),
+                    $taxonomy['material']
+                );
+
+                foreach ($materialTerms as $index => $term) {
+                    $termAssignments[] = $this->makeAssignment($productId, $term->id, $index === 0, $index, $now, [
+                        'context' => 'material',
+                    ]);
+                }
             }
 
             $imageTotal = max($imageRange[0], random_int($imageRange[0], max($imageRange[0], $imageRange[1])));
@@ -128,22 +169,22 @@ class ProductSeeder extends Seeder
                         'palette' => $faker->safeColorName(),
                         'shot' => $imgIndex === 0 ? 'cover' : 'detail',
                     ]),
-                    'created_at' => $context->now(),
-                    'updated_at' => $context->now(),
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ];
             }
 
             if ($productId % self::CHUNK_SIZE === 0) {
-                $this->flush($productRows, $imageRows, $productGrapes, $productRegions);
+                $this->flush($productRows, $imageRows, $termAssignments);
             }
         }
 
-        $this->flush($productRows, $imageRows, $productGrapes, $productRegions);
+        $this->flush($productRows, $imageRows, $termAssignments);
 
         $faker->unique(true);
     }
 
-    private function flush(array &$products, array &$images, array &$grapes, array &$regions): void
+    private function flush(array &$products, array &$images, array &$assignments): void
     {
         if (!empty($products)) {
             DB::table('products')->insert($products);
@@ -155,15 +196,54 @@ class ProductSeeder extends Seeder
             $images = [];
         }
 
-        if (!empty($grapes)) {
-            DB::table('product_grapes')->insert($grapes);
-            $grapes = [];
+        if (!empty($assignments)) {
+            DB::table('product_term_assignments')->insert($assignments);
+            $assignments = [];
         }
+    }
 
-        if (!empty($regions)) {
-            DB::table('product_regions')->insert($regions);
-            $regions = [];
-        }
+    /**
+     * @return array{
+     *     brand: Collection<int, object>,
+     *     origin_countries: Collection<int, object>,
+     *     origin_regions: Collection<int, Collection<int, object>>,
+     *     grape: Collection<int, object>,
+     *     accessory_type: Collection<int, object>,
+     *     material: Collection<int, object>,
+     *     flavor_profile: Collection<int, object>
+     * }
+     */
+    private function loadTaxonomy(): array
+    {
+        $terms = DB::table('catalog_terms')
+            ->join('catalog_attribute_groups', 'catalog_terms.group_id', '=', 'catalog_attribute_groups.id')
+            ->select(
+                'catalog_terms.id',
+                'catalog_terms.name',
+                'catalog_terms.slug',
+                'catalog_terms.parent_id',
+                'catalog_terms.metadata',
+                'catalog_attribute_groups.code as group_code'
+            )
+            ->where('catalog_terms.is_active', true)
+            ->orderBy('catalog_terms.position')
+            ->get()
+            ->map(function ($term) {
+                $term->metadata = $term->metadata ? json_decode($term->metadata, true) : [];
+                return $term;
+            });
+
+        $origin = $terms->where('group_code', 'origin');
+
+        return [
+            'brand' => $terms->where('group_code', 'brand')->values(),
+            'origin_countries' => $origin->whereNull('parent_id')->values(),
+            'origin_regions' => $origin->whereNotNull('parent_id')->groupBy('parent_id'),
+            'grape' => $terms->where('group_code', 'grape')->values(),
+            'accessory_type' => $terms->where('group_code', 'accessory_type')->values(),
+            'material' => $terms->where('group_code', 'material')->values(),
+            'flavor_profile' => $terms->where('group_code', 'flavor_profile')->values(),
+        ];
     }
 
     private function generateProductName(SeederContext $context, string $brandName, string $typeName): string
@@ -175,54 +255,69 @@ class ProductSeeder extends Seeder
         return trim("{$brandName} {$descriptor} {$typeName} {$vintage}");
     }
 
-    /**
-     * @return array<int>
-     */
-    private function pickGrapes($grapes, array $range): array
+    private function isAccessoryProduct(string $categorySlug, string $typeSlug): bool
     {
-        $available = $grapes->count();
-        if ($available === 0) {
-            return [];
-        }
+        return Str::contains($categorySlug, ['phu-kien', 'ly', 'dung-cu'])
+            || Str::contains($typeSlug, ['ly', 'dung-cu', 'decanter']);
+    }
 
-        $min = max(1, $range[0]);
-        $max = max($min, $range[1]);
-        $target = min($available, random_int($min, $max));
-
-        $selected = $grapes->random($target);
-        if ($selected instanceof \Illuminate\Support\Collection) {
-            return $selected->pluck('id')->all();
-        }
-
-        return [$selected->id];
+    private function isWineType(string $typeSlug): bool
+    {
+        return Str::contains($typeSlug, ['vang', 'wine', 'sparkling', 'champagne']);
     }
 
     /**
-     * @return array<int, array{region_id:int,order:int}>
+     * @param \Illuminate\Support\Collection<int, object> $pool
      */
-    private function pickRegions($regions, array $range): array
+    private function pickRandom(Collection $pool)
     {
-        if ($regions->count() === 0) {
-            return [];
+        if ($pool->isEmpty()) {
+            throw new \RuntimeException('Taxonomy pool is empty.');
         }
 
-        $min = max(1, $range[0]);
-        $max = max($min, $range[1]);
-        $take = min($regions->count(), random_int($min, $max));
+        return $pool->random();
+    }
 
-        $selected = $regions->random($take);
-        $selectedIds = $selected instanceof \Illuminate\Support\Collection
-            ? $selected->pluck('id')->unique()->values()
-            : collect([$selected->id]);
+    /**
+     * @param array<int, int> $range
+     * @param \Illuminate\Support\Collection<int, object> $pool
+     * @return \Illuminate\Support\Collection<int, object>
+     */
+    private function pickTermsWithinRange(array $range, Collection $pool): Collection
+    {
+        $min = max(0, $range[0] ?? 0);
+        $max = max($min, $range[1] ?? $min);
 
-        $result = [];
-        foreach ($selectedIds as $index => $regionId) {
-            $result[] = [
-                'region_id' => $regionId,
-                'order' => $index === 0 ? 0 : $index + 1,
-            ];
+        if ($pool->isEmpty() || $max === 0) {
+            return collect();
         }
 
-        return $result;
+        $take = min($pool->count(), random_int($min, $max));
+        if ($take === 0) {
+            return collect();
+        }
+
+        $selected = $pool->random($take);
+
+        return $selected instanceof Collection ? $selected->values() : collect([$selected]);
+    }
+
+    private function makeAssignment(
+        int $productId,
+        int $termId,
+        bool $isPrimary,
+        int $position,
+        \DateTimeInterface $timestamp,
+        array $extra = []
+    ): array {
+        return [
+            'product_id' => $productId,
+            'term_id' => $termId,
+            'is_primary' => $isPrimary,
+            'position' => $position,
+            'extra' => empty($extra) ? null : json_encode($extra),
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ];
     }
 }

@@ -20,8 +20,12 @@ return new class extends Migration
         Schema::create('menu_block_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('menu_block_id')->constrained('menu_blocks')->cascadeOnDelete();
-            $table->string('label');
-            $table->string('href', 2048);
+            $table->foreignId('term_id')
+                ->nullable()
+                ->constrained('catalog_terms')
+                ->nullOnDelete();
+            $table->string('label')->nullable();
+            $table->string('href', 2048)->nullable();
             $table->string('badge', 50)->nullable();
             $table->json('meta')->nullable();
             $table->unsignedInteger('order')->default(0);
@@ -29,6 +33,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['menu_block_id', 'order']);
+            $table->index(['term_id', 'menu_block_id'], 'menu_block_items_term_index');
         });
     }
 
