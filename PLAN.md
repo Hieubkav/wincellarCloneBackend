@@ -29,7 +29,7 @@
 ### 3. Phạm vi chức năng (BE/API/Admin)
 
 * API sản phẩm/bài viết/home, filter & sort mặc định.
-* **Redirect 301 tự sinh** khi slug đổi;  **không cho nhập thủ công** .
+* Slug thay đổi trả 404 nếu không cập nhật liên kết; dự án không triển khai redirect tự động.
 * Ảnh dùng  **bảng polymorphic `images`** ; một số bảng (settings, social_links, catalog_terms icon (term dùng icon type image)) dùng  **FK trực tiếp** .
 * Tính **`discount_percent`** ở BE (làm tròn  **0 chữ số** ).
 * **Analytics** theo khoảng 7/30/90/all-time;  **event CTA “Liên hệ”** ; dọn raw >90 ngày;  **bảng aggregate daily** .
@@ -85,12 +85,12 @@
 
 ### 4) Redirect & audit
 
-* **url_redirects**  *(tự sinh, không nhập tay)* :
+* **url_redirects** *(tùy chọn, nhập tay khi cần)* :
 
   `id`, `from_slug VARCHAR UNIQUE`, `to_slug VARCHAR`, `target_type ENUM('Product','Article')`, `target_id BIGINT`, `created_at`,
 
   * **Ràng buộc** : `from_slug != to_slug`; **không** cho phép trùng với slug hiện hữu của resource.
-  * **Logic** : chỉ tạo khi slug đổi; không cho tạo thủ công trên Admin.
+  * **Ghi chú** : không có cơ chế tự sinh; Admin chỉ tạo/thay đổi khi thật sự cần chuyển hướng.
 * **users** : `id`, `name`, `email unique`, `role ENUM('admin','staff')`, `password_hash`, `active`.
 * **audit_logs** : `id`, `user_id FK`, `action`, `model_type`, `model_id`, `before JSON NULL`, `after JSON NULL`, `ip_hash`, `created_at`.
 * **Read-only** trong Admin.
@@ -141,31 +141,12 @@ erDiagram
 
 ## III) Luật chi tiết & Xử lý ngoại lệ
 
-### A. Slug & Redirect 301 (tự sinh,  **không nhập tay** )
+### A. Slug & 404
 
-1. **Sinh slug** : từ tên → normalize (lowercase, NFC), thay khoảng trắng bằng `-`, bỏ ký tự không an toàn (whitelist `[a-z0-9-]`).
-2. **Đảm bảo unique** : nếu trùng slug đã tồn tại cho cùng `model_type`, thêm hậu tố `-1`, `-2`, `-3`, … cho tới khi unique.
-
-* Ví dụ: `ruou-vang` trùng → `ruou-vang-1`, tiếp tục `ruou-vang-2`...
-
-1. **Đổi slug** : khi cập nhật `name` hoặc sửa `slug` thủ công (nếu bật), hệ thống:
-
-* Tạo bản ghi `url_redirects(from_slug=old, to_slug=new, target_type, target_id)`.
-* **Không** cho phép tạo redirect nếu `from_slug` trùng slug **hiện hữu** (resource đang sống).
-
-1. **Middleware redirect** : 301 từ `from_slug` →  **đích cuối** :
-
-* Resolve chuỗi (A→B, B→C) và trả 301 **thẳng** tới C (flatten runtime).
-* **Max-hop=5** để chặn vòng lặp; nếu vượt, trả 404 và ghi log cảnh báo.
-* Bảo toàn query string và fragment (`?utm=...`, `#hash`).
-
-1. **Xoá/khôi phục** :
-
-* Nếu slug đổi về  **slug cũ** : có thể **xoá** redirect tương ứng để tránh vòng.
-* Purge cache/CDN liên quan.
-
-1. **Canonical** : luôn trỏ slug hiện tại; **không** canonical về `from_slug`.
-
+1. **Chuẩn slug**: khuyến nghị normalize (lowercase, thay khoảng trắng bằng ``-``, bỏ ký tự không an toàn) khi seed hoặc nhập tay để nhất quán SEO.
+2. **Unique**: dựa trên ràng buộc DB; nếu trùng trả về 422 để người nhập điều chỉnh (không tự gắn hậu tố).
+3. **Đổi slug**: đường dẫn cũ sẽ trả 404 nếu không cập nhật liên kết; chỉ tạo ``url_redirects`` thủ công khi business thật sự cần giữ đường dẫn cũ.
+4. **Canonical**: luôn dùng slug hiện tại.
 ### B. Ảnh (polymorphic) & FK trực tiếp (logo/icon)
 
 1. **Gallery** : dùng `images(model_type, model_id, order)`; `order=0` là **cover** (duy nhất).
@@ -255,7 +236,7 @@ erDiagram
 * 200: thành công.
 * 400: tham số phạm vi sai (`price_min > price_max`, `alcohol_min > alcohol_max`).
 * 401/403: chưa đăng nhập/không đủ quyền Admin.
-* 404: slug không tồn tại, resource inactive, vượt max-hop redirect.
+* 404: slug không tồn tại hoặc resource inactive.
 * 409: xung đột cover `order=0`.
 * 422: dữ liệu không hợp lệ (giá âm/NaN).
 * 500: lỗi không xác định (ghi log + correlation id).
@@ -320,14 +301,6 @@ erDiagram
 
 * Build từ `home_components` (`active=true`, `order ASC`). Bỏ qua tham chiếu đến sản phẩm/bài viết/ảnh  **đã inactive hoặc bị xoá** ; ghi log cảnh báo.
 
-### 5) Redirect middleware
-
-* Kiểm tra `url_redirects.from_slug` → 301 tới **đích cuối** `to_slug` của resource mục tiêu.
-* Bảo toàn query/fragment.
-* Vượt 5 hop hoặc loop → 404.
-
----
-
 ## V) Hiệu năng & Chỉ số
 
 * **Mục tiêu** : P95 `GET /san-pham` < 100ms với dữ liệu lớn; P99 < 200ms.
@@ -351,20 +324,17 @@ erDiagram
 ## VII) Migrations & Jobs đề nghị
 
 * **DB constraints** :
-* `products.slug` unique; normalize trước khi insert.
+* `products.slug` unique; chuẩn hoá slug ở layer nhập liệu/seed.
 * `price >= 0`, `original_price >= 0`, `0 <= alcohol_percent <= 100`.
 * Unique partial cover `(model_type, model_id, order=0)`.
 * **Jobs** :
 * Nightly: build `tracking_event_aggregates_daily`, purge raw >90d.
-* Nightly: **flatten redirect chains** (A→B, B→C ⇒ A→C), xoá link trung gian.
 * Weekly: media GC dọn ảnh orphan.
-* **Slug backfill** : script normalize toàn bộ slug cũ + tạo redirect tương ứng.
 
 ---
 
 ## VIII) Checklist nghiệm thu (QA)
 
-* [ ] Redirect chain ≤ 5 hop, không loop; giữ query & fragment.
 * [ ] Canonical/OG đúng sau đổi slug (không trỏ về `from_slug`).
 * [ ] DISTINCT sản phẩm khi filter nhiều pivot; không trùng.
 * [ ] Cover `order=0` duy nhất cho mỗi model; conflict trả 409.
@@ -417,7 +387,7 @@ erDiagram
 
 ---
 
- **Kết luận** : Tài liệu này phản ánh các quyết định **đã chốt** (v1.2), bao gồm cập nhật quan trọng:  **redirect auto** ,  **`discount_percent=null` & làm tròn 0** ,  **polymorphic images + FK nullify** ,  **thêm event CTA & aggregates daily** , cùng toàn bộ luật/ngoại lệ để QA nghiệm thu khắt khe vẫn rõ ràng và đo được.
+**Kết luận** : Tài liệu này phản ánh các quyết định **đã chốt** (v1.2), bao gồm cập nhật quan trọng: slug đổi trả 404 (không redirect auto),  **`discount_percent=null` & làm tròn 0** ,  **polymorphic images + FK nullify** ,  **thêm event CTA & aggregates daily** , cùng toàn bộ luật/ngoại lệ để QA nghiệm thu khắt khe vẫn rõ ràng và đo được.
 
 
 
