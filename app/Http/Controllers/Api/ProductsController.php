@@ -47,6 +47,7 @@ class ProductsController extends Controller
                 'price' => $product->price,
                 'original_price' => $product->original_price,
                 'discount_percent' => $product->discount_percent,
+                'show_contact_cta' => $product->should_show_contact_cta,
                 'main_image_url' => $product->cover_image_url,
                 'gallery' => $product->gallery_for_output->all(),
                 'brand_term' => $this->transformTerm($product->primaryTerm('brand')),

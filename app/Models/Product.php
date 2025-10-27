@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasMediaGallery;
+use App\Support\Product\ProductPricing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,13 @@ class Product extends Model
 {
     use HasFactory;
     use HasMediaGallery;
+
+    protected static function booted(): void
+    {
+        static::saving(function (Product $product): void {
+            ProductPricing::assertValidPricing($product->price, $product->original_price);
+        });
+    }
 
     /**
      * @var list<string>
@@ -145,15 +153,11 @@ class Product extends Model
 
     public function getDiscountPercentAttribute(): ?int
     {
-        $price = $this->price;
-        $original = $this->original_price;
+        return ProductPricing::discountPercent($this->price, $this->original_price);
+    }
 
-        if ($price === null || $original === null || $price <= 0 || $original <= 0 || $price >= $original) {
-            return null;
-        }
-
-        $percent = (int) round((($original - $price) / $original) * 100, 0, PHP_ROUND_HALF_UP);
-
-        return $percent > 0 ? $percent : null;
+    public function getShouldShowContactCtaAttribute(): bool
+    {
+        return ProductPricing::shouldShowContactCta($this->price);
     }
 }
