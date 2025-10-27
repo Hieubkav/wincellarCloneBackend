@@ -1,479 +1,425 @@
-## 0. Tóm tắt tính năng web
+# Dự án web rượu/bia/thịt nguội/bánh – **Bản chốt theo phản hồi khách**
 
-* Web giới thiệu sản phẩm rượu/bia/thịt nguội/bánh. Không bán trực tiếp, nút kêu gọi hành động là liên hệ.
-* Trang chính:
-  * Trang chủ (cấu hình bằng các block động `home_components`).
-  * Trang lọc sản phẩm (filter theo các thuộc tính).
-  * Trang chi tiết sản phẩm.
-  * Trang bài viết / editorial.
-  * Trang liên hệ.
-* Header có menu thường + mega menu (cấu hình động).
-* Footer hiển thị thông tin công ty (settings) + mạng xã hội (social_links).
-* Admin (Filament 4.x):
-  * Quản lý sản phẩm, danh mục, thuộc tính lọc.
-  * Quản lý homepage block.
-  * Quản lý menu.
-  * Quản lý bài viết.
-  * Quản lý settings chung.
-  * Xem analytics traffic.
-  * Nhật ký thao tác (audit_logs).
-* Phân quyền: `admin` và `staff`. Staff KHÔNG được chỉnh `settings` và KHÔNG được chỉnh/xoá user khác.
-* SEO: tự sinh meta nếu admin không nhập.
-* Tracking: đếm visitor, session, event → có thể xem top sản phẩm xem nhiều / top quốc gia.
+> Phiên bản: **1.1** (27/10/2025)
+>
+> Thay đổi chính: cập nhật các **quyết định đã chốt** theo phản hồi 1→10; điều chỉnh API và ERD tương ứng.
 
 ---
 
-## Quy ước chung
+## A) Quyết định đã chốt (1 → 10)
 
-* Tất cả bảng public ra FE đều có:
-  * `id` PK (bigint AI)
-  * `order` int default 0 (dùng cho ưu tiên hiển thị thủ công)
-  * `active` enum('true','false') default 'true' (ẩn/hiện)
-  * `created_at`, `updated_at`
-* KHÔNG dùng `softDeletes()` của Laravel.
-* FE list mặc định sort theo `created_at DESC`. `order` chỉ là ưu tiên thủ công trong 1 số view đặc biệt (ví dụ block trên trang chủ), không phải sort global.
-* SEO tự sinh: nếu meta_* null thì backend sẽ generate dựa theo name/title/description khi lưu.
-* Slug: luôn có ở entity public. Slug sẽ **được cập nhật lại** theo tên mới mỗi lần admin đổi tên.
-* Ảnh: dùng bảng `images` duy nhất. Ảnh có `order`, và **ảnh có `order = 0` được xem là ảnh chính/cover** cho entity đó.
-* Giá:
-  * `price` (giá bán hiện tại, VND)
-  * `original_price` (giá gốc trước khuyến mãi)
-  * Nếu `price = 0` thì FE hiển thị "Liên hệ".
+1. **Giống nho / Vùng sản xuất – CHỐT**
 
----
+   • Hỗ trợ **nhiều giống nho** và **nhiều vùng** qua pivot `product_grapes`, `product_regions`.
 
-## 1. Quản trị người dùng
+   • Có thể đánh dấu **“chính”** bằng `order=0` trên pivot để hiển thị marketing.
+2. **Filter sản phẩm nhiều giá trị – CHỐT**
 
-### users
+   • UI  **multi-select** ; backend `WHERE IN`/join pivot.
 
-* id
-* name
-* email (unique)
-* password
-* role enum('admin','staff')
-* active enum('true','false') default 'true'
-* created_at, updated_at
+   • Hỗ trợ lọc: loại, thương hiệu, quốc gia, vùng, giống nho, tầm giá, dung tích, nồng độ.
+3. **Đổi slug & Redirect – CHỐT**
 
-Quyền:
+   • Tự động tạo redirect 301 khi slug đổi.
 
-* staff không được chỉnh `settings`.
-* staff không được chỉnh/xoá user khác.
+   • Bảng `url_redirects(from_slug → to_slug)`; không giới hạn TTL.
+4. **Hình ảnh – OKE**
 
-### audit_logs (log thao tác quản trị)
+   • Không bắt buộc có ảnh cover khi publish; nếu thiếu, FE dùng **placeholder** theo loại.
 
-* id
-* user_id FK -> users.id nullable (null nếu system job)
-* action (enum hoặc string hẹp):
-  * `CREATE_PRODUCT`, `UPDATE_PRODUCT`, `DELETE_PRODUCT`
-  * `UPDATE_SETTINGS`
-  * `UPDATE_MENU`
-  * `UPDATE_HOME_COMPONENT`
-  * `CREATE_ARTICLE`, `UPDATE_ARTICLE`, `DELETE_ARTICLE`
-* details_json longtext // lưu payload/diff để truy vết
-* created_at
+   • Admin được cảnh báo khi lưu/publish không có ảnh.
+5. **Badge hiển thị – OKE**
 
-Chính sách lưu trữ:
+   • Dùng **enum** chuẩn: `SALE`, `HOT`, `NEW`, `LIMITED`.
 
-* Cron tự xoá các bản ghi >90 ngày.
+   • Cho phép **label tùy chỉnh** (text ngắn) nếu cần; enum vẫn ưu tiên để thống nhất style.
+6. **Giá khuyến mãi & % giảm – "để sẵn trong API"**
+
+   • Backend **tính sẵn** `discount_percent` (round 0–1 chữ số thập phân).
+
+   • FE **tùy** sử dụng: hiển thị `%` hoặc chỉ giá gạch.
+
+   • Logic: nếu `price>0` & `original_price>price` ⇒ `discount_percent = (original_price-price)/original_price*100`.
+7. **Analytics theo thời gian – CHỐT**
+
+   • Dashboard chọn  **7/30/90 ngày & all-time** ; export CSV.
+
+   • Có thể dọn `tracking_events` >90 ngày, vẫn giữ tổng quan.
+8. **Ẩn sản phẩm/bài viết – CHỐT**
+
+   • Khi `active='false'`, mọi block/homepage bỏ qua item đó, không báo lỗi.
+9. **Mega menu linh hoạt – OKE**
+
+   • Cho phép block tùy biến (ví dụ “Ưu đãi Tết”), tiêu đề + danh sách link custom, không giới hạn vào quốc gia/giống nho.
+10. **Audit log trong Admin – OKE**
+
+    • Có trang **read-only** để tra cứu theo thời gian/action/user,  **export CSV** .
 
 ---
 
-## 2. Thiết lập hệ thống / footer / mạng xã hội
+## B) Tóm tắt hệ thống (không đổi trọng yếu)
 
-### settings (singleton id=1)
-
-* id (hardcode = 1)
-* site_name
-* logo_image_id FK -> images.id (nullable)
-* favicon_image_id FK -> images.id (nullable)
-* hotline
-* address
-* hours (giờ mở cửa)
-* email
-* meta_default_title
-* meta_default_description
-* meta_default_keywords
-* created_at, updated_at
-
-> Admin chỉ có 1 record. FE dùng record id=1.
-
-### social_links
-
-* id
-* name (ví dụ: "Facebook", "Zalo") → dùng hiển thị label luôn
-* url
-* icon_image_id FK -> images.id
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-> Chỉ cần 1 icon cho mỗi mạng xã hội (không cần dark mode).
+* **Không bán trực tiếp** ; CTA  **Liên hệ** .
+* **Trang** : Trang chủ (qua `home_components`), Trang lọc, Trang chi tiết, Editorial, Liên hệ.
+* **Header** : menu thường + mega menu;  **Footer** : settings + social links.
+* **Admin (Filament 4.x)** : quản lý sản phẩm/thuộc tính/danh mục, images, homepage blocks, menu, bài viết, settings, analytics, audit log.
+* **Phân quyền** : `admin`, `staff` (staff không chỉnh settings và không chỉnh/xóa user khác).
+* **SEO** : meta auto khi để trống.
+* **Tracking** : visitor, session, event.
 
 ---
 
-## 3. Media
+## C) ERD (Mermaid) – cập nhật theo bản chốt
 
-### images (kho media dùng chung cho mọi nơi)
+```mermaid
+erDiagram
+  USERS ||--o{ AUDIT_LOGS : performs
+  USERS ||--o{ ARTICLES : writes
 
-* id
-* url (string)
-* alt_text (string nullable)
-* caption (text nullable)
-* model_type (string: 'Product', 'Article', 'Brand', 'HomeComponent', 'Setting', 'Menu', ...)
-* model_id (bigint)
-* order int default 0
-* created_at, updated_at
+  SETTINGS ||--o{ IMAGES : uses
+  SOCIAL_LINKS ||--|| IMAGES : icon
 
-Quy ước:
+  PRODUCT_CATEGORIES ||--o{ PRODUCTS : groups
+  PRODUCT_TYPES ||--o{ PRODUCTS : types
+  BRANDS ||--o{ PRODUCTS : owns
+  COUNTRIES ||--o{ REGIONS : contains
+  REGIONS ||--o{ PRODUCTS : origin
 
-* Mỗi entity có thể có nhiều ảnh (gallery). Ảnh có `order=0` là ảnh chính.
-* Thương hiệu (brand) logo cũng lấy ở đây, không cần field riêng.
+  GRAPES ||--o{ PRODUCT_GRAPES : pivot
+  PRODUCTS ||--o{ PRODUCT_GRAPES : pivot
+  REGIONS ||--o{ PRODUCT_REGIONS : pivot
+  PRODUCTS ||--o{ PRODUCT_REGIONS : pivot
+
+  PRODUCTS ||--o{ IMAGES : gallery
+  ARTICLES ||--o{ IMAGES : gallery
+
+  MENUS ||--o{ MENU_BLOCKS : has
+  MENU_BLOCKS ||--o{ MENU_BLOCK_ITEMS : has
+
+  HOME_COMPONENTS }o--o{ PRODUCTS : via_config
+  HOME_COMPONENTS }o--o{ ARTICLES : via_config
+
+  VISITORS ||--o{ VISITOR_SESSIONS : has
+  VISITOR_SESSIONS ||--o{ TRACKING_EVENTS : groups
+  VISITORS ||--o{ TRACKING_EVENTS : triggers
+  PRODUCTS ||--o{ TRACKING_EVENTS : viewed
+
+  URL_REDIRECTS }o--|| PRODUCTS : to_product
+  URL_REDIRECTS }o--|| ARTICLES : to_article
+
+  USERS {
+    bigint id PK
+    string name
+    string email UNIQUE
+    string password
+    enum role('admin','staff')
+    enum active('true','false')
+    timestamps
+  }
+
+  AUDIT_LOGS {
+    bigint id PK
+    bigint user_id FK NULL
+    string action
+    longtext details_json
+    datetime created_at
+  }
+
+  SETTINGS {
+    bigint id PK // =1
+    bigint logo_image_id FK NULL
+    bigint favicon_image_id FK NULL
+    string site_name
+    string hotline
+    string address
+    string hours
+    string email
+    string meta_default_title
+    string meta_default_description
+    string meta_default_keywords
+    timestamps
+  }
+
+  SOCIAL_LINKS {
+    bigint id PK
+    string name
+    string url
+    bigint icon_image_id FK
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  IMAGES {
+    bigint id PK
+    string url
+    string alt_text NULL
+    text caption NULL
+    string model_type
+    bigint model_id
+    int order
+    timestamps
+  }
+
+  PRODUCT_CATEGORIES {
+    bigint id PK
+    string name
+    string slug UNIQUE
+    text description NULL
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  PRODUCT_TYPES {
+    bigint id PK
+    string name
+    string slug UNIQUE
+    text description NULL
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  BRANDS {
+    bigint id PK
+    string name
+    string slug UNIQUE
+    text description NULL
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  COUNTRIES {
+    bigint id PK
+    string name
+    string slug UNIQUE
+    text description NULL
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  REGIONS {
+    bigint id PK
+    string name
+    string slug UNIQUE
+    bigint country_id FK
+    text description NULL
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  GRAPES {
+    bigint id PK
+    string name
+    string slug UNIQUE
+    text description NULL
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  PRODUCTS {
+    bigint id PK
+    string name
+    string slug UNIQUE
+    bigint product_category_id FK
+    bigint type_id FK NULL
+    bigint brand_id FK NULL
+    bigint country_id FK NULL
+    bigint region_id FK NULL // region chính (tùy)
+    bigint grape_id FK NULL  // grape chính (tùy)
+    longtext description
+    int volume_ml NULL
+    decimal(5,2) alcohol_percent NULL
+    decimal(15,2) price DEFAULT 0
+    decimal(15,2) original_price DEFAULT 0
+    enum active('true','false') DEFAULT 'true'
+    int order
+    string meta_title NULL
+    string meta_description NULL
+    string meta_keywords NULL
+    timestamps
+  }
+
+  PRODUCT_GRAPES {
+    bigint product_id FK
+    bigint grape_id FK
+    int order DEFAULT 0
+    PK(product_id, grape_id)
+  }
+
+  PRODUCT_REGIONS {
+    bigint product_id FK
+    bigint region_id FK
+    int order DEFAULT 0
+    PK(product_id, region_id)
+  }
+
+  ARTICLES {
+    bigint id PK
+    string title
+    string slug UNIQUE
+    longtext content
+    enum active('true','false') DEFAULT 'true'
+    string meta_title NULL
+    string meta_description NULL
+    string meta_keywords NULL
+    timestamps
+  }
+
+  MENUS {
+    bigint id PK
+    string title
+    enum type('normal','mega')
+    string href NULL
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  MENU_BLOCKS {
+    bigint id PK
+    bigint menu_id FK
+    string title
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  MENU_BLOCK_ITEMS {
+    bigint id PK
+    bigint menu_block_id FK
+    string label
+    string href
+    string badge NULL
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  HOME_COMPONENTS {
+    bigint id PK
+    enum type('HeroCarousel','DualBanner','CategoryGrid','FavouriteProducts','BrandShowcase','CollectionShowcase','EditorialSpotlight')
+    longtext config_json
+    int order
+    enum active('true','false')
+    timestamps
+  }
+
+  VISITORS {
+    bigint id PK
+    string ip_address
+    string user_agent
+    string device
+    string country NULL
+    datetime first_seen_at
+    datetime last_seen_at
+    timestamps
+  }
+
+  VISITOR_SESSIONS {
+    bigint id PK
+    bigint visitor_id FK
+    string session_key
+    datetime start_time
+    datetime end_time NULL
+    int pages_viewed DEFAULT 0
+    timestamps
+  }
+
+  TRACKING_EVENTS {
+    bigint id PK
+    bigint visitor_id FK
+    bigint visitor_session_id FK
+    enum event_type('page_view','click','scroll','contact_view','other')
+    string page_url
+    bigint product_id FK NULL
+    string country_snapshot NULL
+    longtext data_json NULL
+    datetime created_at
+  }
+
+  URL_REDIRECTS {
+    bigint id PK
+    string model_type // 'Product' | 'Article'
+    bigint model_id
+    string from_slug UNIQUE
+    string to_slug
+    enum active('true','false') DEFAULT 'true'
+    datetime created_at
+  }
+```
 
 ---
 
-## 4. Danh mục & thuộc tính sản phẩm
+## D) API/Controller – điều chỉnh theo bản chốt
 
-Chia 2 lớp:
-
-1. Marketing group (để admin tự gom sản phẩm theo ý muốn, ví dụ "Sản phẩm khác", "Đùi heo muối")
-2. Thuộc tính filter chuyên sâu (loại rượu, giống nho, vùng nổi tiếng...).
-
-### product_categories (nhóm marketing / dùng cho menu SẢN PHẨM KHÁC, banner, grouping lớn)
-
-* id
-* name (vd: "Rượu vang", "Rượu mạnh", "Bánh", "Đùi heo muối")
-* slug (unique trong bảng)
-* description text nullable
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-### product_types (kiểu/loại đồ uống hoặc style như "Rượu vang đỏ", "Champagne", "Bia")
-
-* id
-* name
-* slug (unique trong bảng)
-* description text nullable
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-### brands
-
-* id
-* name
-* slug
-* description text nullable
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-> Logo/thương hiệu: chọn thông qua bảng `images` (morph, order=0 là logo chính khi FE hiển thị carousel BrandShowcase).
-
-### countries
-
-* id
-* name
-* slug
-* description text nullable
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-### regions
-
-(VD: Bordeaux, Tuscany, California...)
-
-* id
-* name
-* slug
-* country_id FK -> countries.id
-* description text nullable
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-### grapes
-
-(VD: Cabernet Sauvignon, Merlot...)
-
-* id
-* name
-* slug
-* description text nullable
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-⚠ Business pending:
-
-* Hiện tại 1 sản phẩm chọn được 1 grape và 1 region. Nếu khách yêu cầu "nhiều giống nho" hoặc "nhiều vùng" thì cần bảng pivot `product_grapes(product_id, grape_id)` và `product_regions(product_id, region_id)` ngay từ đầu để khỏi migrate sau.
+* **Danh sách sản phẩm** `GET /san-pham`
+  * Query: `brand[]`, `country[]`, `region[]`, `grape[]`, `type[]`, `price_min`, `price_max`, `alcohol_min`, `alcohol_max`…
+  * Mặc định sort `created_at DESC`; phân trang.
+  * Join pivot khi có `region[]`/`grape[]` nhiều giá trị.
+* **Chi tiết sản phẩm** `GET /san-pham/{slug}`
+  * Trả: product + gallery + breadcrumbs + **`discount_percent`** (tính sẵn).
+  * FE **có thể** dùng `%` hoặc bỏ qua, tùy UI.
+* **Bài viết** `GET /bai-viet`, `GET /bai-viet/{slug}`.
+* **Trang chủ** `GET /home`
+  * Build từ `home_components`; tự bỏ qua item inactive/404.
+* **Redirect**
+  * Middleware check `url_redirects.from_slug` → 301 đến `to_slug`.
 
 ---
 
-## 5. Sản phẩm
+## E) Index/Performance
 
-### products
-
-* id
-* name
-* slug (unique trong bảng)
-* product_category_id FK -> product_categories.id (bắt buộc)
-* type_id FK -> product_types.id (nullable)
-* brand_id FK -> brands.id (nullable)
-* country_id FK -> countries.id (nullable)
-* region_id FK -> regions.id (nullable)
-* grape_id FK -> grapes.id (nullable)
-* description longtext (rich editor)
-* volume_ml int nullable (dung tích chai)
-* alcohol_percent decimal(5,2) nullable (nồng độ cồn)
-* price decimal(15,2) default 0           // giá bán hiện tại
-* original_price decimal(15,2) default 0   // giá gốc để show giảm giá
-* active enum('true','false') default 'true'
-* order int default 0
-* meta_title nullable
-* meta_description nullable
-* meta_keywords nullable
-* created_at, updated_at
-
-Quy tắc FE hiển thị giá sản phẩm:
-
-* Nếu `price > 0`:
-  * Hiển thị `price` theo VND.
-  * Nếu `original_price > price` thì hiển thị cả original_price bị gạch (giá khuyến mãi).
-* Nếu `price = 0`:
-  * Hiển thị chữ "Liên hệ".
-
-Index gợi ý (performance filter trang danh sách sản phẩm):
-
-* INDEX brand_id, country_id, region_id, grape_id, type_id, product_category_id
-* INDEX alcohol_percent, volume_ml, price
-
-Ảnh sản phẩm:
-
-* morphMany(images) với `model_type='Product'`.
-* Ảnh có `order = 0` là ảnh chính dùng ở listing, hero card, FavouriteProducts, CollectionShowcase...
-
-Slug sản phẩm:
-
-* Slug auto-generate từ name.
-* Khi admin đổi name thì slug cũng đổi theo name mới.
+* **Sản phẩm** : `INDEX (brand_id, country_id, region_id, type_id, product_category_id)`, `INDEX (alcohol_percent)`, `INDEX (volume_ml)`, `INDEX (price)`.
+* **Pivot** : PK composite + index nghịch `grape_id`, `region_id`.
+* **Tracking** : `tracking_events(product_id, created_at)`, `tracking_events(visitor_id, visitor_session_id)`.
+* **Slug/Redirect** : `UNIQUE(slug)`; `url_redirects.from_slug UNIQUE`.
 
 ---
 
-## 6. Bài viết / EditorialSpotlight
+## F) Quy ước FE (không đổi)
 
-### articles
-
-* id
-* title
-* slug (unique trong bảng)
-* content longtext (rich editor)
-* active enum('true','false') default 'true'  // nếu false thì không show ra FE
-* meta_title nullable
-* meta_description nullable
-* meta_keywords nullable
-* created_at, updated_at
-
-Ảnh cover bài viết:
-
-* morphMany(images) với `model_type='Article'`.
-* Ảnh `order=0` là thumbnail khi show trong `EditorialSpotlight`.
-
-Không cần `excerpt` / mô tả ngắn. Bài viết chỉ là phần phụ phục vụ brand/SEO.
+* **Giá** : `price>0` → hiển thị VND; nếu `original_price>price` → giá gạch + **% giảm** (nếu FE dùng). `price=0` → "Liên hệ".
+* **Sort list** : `created_at DESC` (trừ nơi dùng `order`).
+* **Slug** : tự sinh; cập nhật theo tên;  **có redirect** .
+* **Ảnh** : cover = `order=0`; vắng cover dùng placeholder.
+* **Homepage** : render `active='true'` theo `order ASC, created_at DESC`.
 
 ---
 
-## 7. Menu điều hướng (normal / mega)
+## G) Filament Resources
 
-### menus (mục cấp 1 trên header)
-
-* id
-* title (VD: "RƯỢU VANG", "RƯỢU MẠNH", "SẢN PHẨM KHÁC")
-* type enum('normal','mega')
-* href nullable (dùng cho menu thường bấm là đi thẳng)
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-### menu_blocks (cột trong mega menu)
-
-* id
-* menu_id FK -> menus.id
-* title (VD: "THEO LOẠI RƯỢU", "THEO QUỐC GIA")
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-### menu_block_items (link con trong từng block)
-
-* id
-* menu_block_id FK -> menu_blocks.id
-* label (VD: "PHÁP", "Ý", "CABERNET SAUVIGNON")
-* href (VD: "/san-pham?country=france")
-* badge nullable (VD: "HOT") // chỉ là text ngắn, không cần style riêng
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-Mega menu logic:
-
-* Mega menu có nhiều `menu_blocks`, mỗi block có nhiều `menu_block_items`.
-* Menu thường (`type='normal'`) có thể chỉ cần `href`.
+* Product, Category, Type, Brand, Country, Region, Grape,  **Product↔Grape (pivot)** ,  **Product↔Region (pivot)** .
+* Article, Image (Media), Menu, MenuBlock, MenuBlockItem.
+* HomeComponent (form JSON theo type).
+* Settings (singleton), SocialLink.
+* Tracking (read-only),  **AuditLog (read-only)** .
 
 ---
 
-## 8. Homepage components (layout trang chủ)
+## H) Checklist gửi khách nghiệm thu
 
-Use case: Admin có thể reorder, thêm nhiều block cùng type, tắt/mở block. Áp dụng cho TRANG CHỦ.
-
-### home_components
-
-* id
-* type enum(
-
-  'HeroCarousel',          // slider hero đầu trang
-
-  'DualBanner',            // 2 banner song song
-
-  'CategoryGrid',          // lưới danh mục nổi bật
-
-  'FavouriteProducts',     // danh sách sp nổi bật cuộn ngang
-
-  'BrandShowcase',         // carousel logo thương hiệu
-
-  'CollectionShowcase',    // block bộ sưu tập (vang / mạnh)
-
-  'EditorialSpotlight'     // block bài viết
-
-  )
-* config_json longtext
-
-  * HeroCarousel: {"slides":[{"image_id":1,"alt":"..."}, ...]}
-  * DualBanner: {"banners":[{"image_id":1,"alt":"...","href":"/abc"},{...}]}
-  * CategoryGrid: {"categories":[{"name":"Vang đỏ","image_id":1,"href":"/..."}, ...]}
-  * FavouriteProducts: {"products":[{"product_id":1,"badge":"Sale"}, ...]}
-  * BrandShowcase: {"brands":[{"brand_id":1,"href":"/..."}, ...]}
-  * CollectionShowcase: {
-
-    "title":"Rượu Vang",
-
-    "subtitle":"...",
-
-    "description":"...",
-
-    "ctaLabel":"Xem thêm",
-
-    "ctaHref":"/ruou-vang",
-
-    "tone":"wine" | "spirit",
-
-    "products":[{"product_id":1,"badge":"HOT"}, ...]
-
-    }
-  * EditorialSpotlight: {"title":"Cẩm nang rượu","articles":[{"article_id":1}, ...]}
-* order int default 0
-* active enum('true','false')
-* created_at, updated_at
-
-Quy tắc render FE:
-
-* FE hiển thị tất cả block `home_components.active='true'` theo `created_at DESC`, hoặc nếu muốn custom ưu tiên tay thì admin chỉnh `order` và FE có thể sort `order ASC, created_at DESC`.
-* Có thể có nhiều block cùng `type` (ví dụ 2 lần CollectionShowcase).
-* Không có block nào bắt buộc chỉ tồn tại 1 record: admin tự do.
-* Nếu một block tham chiếu sản phẩm/bài viết inactive, FE sẽ bỏ qua item đó (ẩn từng item) thay vì render link 404.
+* [ ] Filter multi-select chạy nhanh (EXPLAIN OK).
+* [ ] Redirect slug cũ hoạt động 301.
+* [ ] Placeholder ảnh nhất quán.
+* [ ] `discount_percent` có trong API; FE hiển thị tùy chọn.
+* [ ] Analytics 7/30/90/all + export.
+* [ ] Staff bị khóa Settings & User management.
+* [ ] SEO auto meta + OG từ ảnh cover.
 
 ---
 
-## 9. Tracking / Analytics
+### Phụ lục – Cấu hình `home_components` (tham khảo)
 
-### visitors
-
-* id
-* ip_address
-* user_agent
-* device (desktop/mobile/tablet/other)
-* country nullable
-* first_seen_at datetime
-* last_seen_at datetime
-* created_at, updated_at
-
-> 1 visitor ~ 1 client duy nhất theo fingerprint FE (localStorage token). Dùng để đếm tổng khách khác nhau từng ghé site.
-
-### visitor_sessions
-
-* id
-* visitor_id FK -> visitors.id
-* session_key (string) // random cho mỗi phiên truy cập (ví dụ mỗi lần mở site mới)
-* start_time datetime
-* end_time datetime nullable
-* pages_viewed int default 0
-* created_at, updated_at
-
-### tracking_events
-
-* id
-* visitor_id FK -> visitors.id
-* visitor_session_id FK -> visitor_sessions.id
-* event_type enum('page_view','click','scroll','contact_view','other')
-* page_url
-* product_id FK -> products.id nullable  // để đếm top sản phẩm xem nhiều nhất
-* country_snapshot string nullable        // country tại thời điểm event để đếm top quốc gia traffic
-* data_json longtext nullable
-* created_at
-
-Retention:
-
-* Có thể cron xoá `tracking_events` >90 ngày nếu cần giảm size.
-* `visitors` và `visitor_sessions` không xoá để còn số tổng lifetime.
-
----
-
-## 10. Quan hệ chính tóm tắt
-
-* users 1-n articles
-* users 1-n audit_logs
-* settings 1-n images (logo, favicon)
-* social_links 1-1 icon image (qua images)
-* product_categories 1-n products
-* product_types 1-n products
-* brands 1-n products
-* countries 1-n regions
-* regions 1-n products
-* grapes 1-n products
-* products 1-n images (morphMany)
-* articles 1-n images (morphMany)
-* menus 1-n menu_blocks 1-n menu_block_items
-* home_components dùng images/products/articles gián tiếp qua `config_json`
-* visitors 1-n visitor_sessions 1-n tracking_events
-* products 1-n tracking_events (page_view gắn vào product_id)
-
----
-
-## 11. Câu hỏi QA senior cần khách chốt (bản cập nhật)
-
-1. Giống nho / vùng sản xuất:
-   * Mỗi chai rượu có thể có nhiều giống nho (blend) và/hoặc nhiều vùng/vùng phụ không? Hay business chỉ cần chọn 1 giống nho + 1 vùng chính hiển thị marketing? (Nếu cần nhiều -> tạo thêm bảng `product_grapes` & `product_regions` ngay từ đầu.)
-2. Dữ liệu filter sản phẩm:
-   * Khách hàng khi lọc sản phẩm (trang filter) họ có muốn lọc theo nhiều giá trị cùng lúc không? Ví dụ chọn 2 giống nho một lúc. Nếu CÓ thì backend sau này phải hỗ trợ `whereIn`, và UI filter sẽ cần multi-select.
-3. Chính sách đổi slug:
-   * Slug sẽ auto đổi khi đổi tên sản phẩm / bài viết. FE có cần redirect slug cũ -> slug mới không, hay chấp nhận link cũ bị 404? (nếu cần redirect thì backend phải lưu lịch sử slug cũ ở 1 bảng nữa.)
-4. Hình ảnh:
-   * Admin có phải luôn upload ít nhất 1 ảnh (order=0) cho sản phẩm và bài viết không? Nếu thiếu ảnh thì FE hiển thị placeholder hay ẩn block đó?
-5. FavouriteProducts và CollectionShowcase:
-   * Business có muốn hiển thị badge kiểu "SALE", "HOT"… Bạn có muốn quy ước danh sách badge cố định (enum) hay cho phép gõ text tự do? (Hiện đang để text tự do.)
-6. Giá khuyến mãi:
-   * Khi có `original_price` > `price`, frontend sẽ hiển thị giá gạch và phần trăm giảm hay chỉ giá gạch? Nếu cần % giảm thì FE phải tự tính hay backend trả sẵn?
-7. Analytics / báo cáo:
-   * Admin có dashboard cần xem:
-     * Top sản phẩm được xem nhiều nhất (theo `tracking_events.product_id`).
-     * Top quốc gia truy cập (theo `tracking_events.country_snapshot`).
-   * Cần thêm thống kê theo khoảng thời gian (7 ngày / 30 ngày / all time) không? Nếu có thì backend cần query theo `created_at`.
-8. Ẩn sản phẩm / bài viết:
-   * Khi `active='false'`, FE sẽ tự động bỏ qua mục đó trong mọi block homepage. Xác nhận là đúng mong muốn (tức là nếu admin tắt 1 sản phẩm hot thì block FavouriteProducts có thể tự ít item đi mà không báo lỗi).
-9. Mega menu:
-   * Admin có muốn tự thêm block trong mega menu để đẩy marketing tạm thời (ví dụ block "Ưu đãi Tết") không? Nếu có thì `menu_blocks` có thể chứa bất kỳ title + list link custom, không chỉ quốc gia / giống nho.
-10. Audit log:
-    * Có cần xem audit_logs trong admin UI (Filament) để biết ai đã chỉnh cái gì gần đây không? Nếu có thì sẽ build thêm Resource readonly.
-
---> Khi khách confirm 10 câu trên, migration và Filament Resource có thể được code ổn định không cần thay đổi schema nữa.
+* **HeroCarousel** : `{ "slides": [{"image_id":1,"alt":"..."}] }`
+* **DualBanner** : `{ "banners": [{"image_id":1,"alt":"...","href":"/abc"}] }`
+* **CategoryGrid** : `{ "categories": [{"name":"Vang đỏ","image_id":1,"href":"/..."}] }`
+* **FavouriteProducts** : `{ "products": [{"product_id":1,"badge":"SALE"}] }`
+* **BrandShowcase** : `{ "brands": [{"brand_id":1,"href":"/..."}] }`
+* **CollectionShowcase** : `{ "title":"Rượu Vang","subtitle":"...","description":"...","ctaLabel":"Xem thêm","ctaHref":"/ruou-vang","tone":"wine|spirit","products":[{"product_id":1,"badge":"HOT"}] }`
+* **EditorialSpotlight** : `{ "title":"Cẩm nang rượu","articles":[{"article_id":1}] }`
