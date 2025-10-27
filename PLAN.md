@@ -1,94 +1,118 @@
-Dự án web rượu/bia/thịt nguội/bánh – **Bản chốt cuối cùng gửi khách (v1.2 – 27/10/2025)**
+# Tài liệu chốt v1.2 – Web rượu/bia/thịt nguội/bánh (27/10/2025)
 
-> Phiên bản: **1.2** (27/10/2025)
->
-> Cập nhật: mô tả rõ **mối quan hệ hình ảnh (polymorphic)** giữa sản phẩm, bài viết, brand, settings, social link; hoàn thiện ERD và logic API.
+**Phiên bản:** 1.2
 
----
+**Ngày chốt:** 27/10/2025
 
-## A) Quyết định đã chốt (1 → 10)
-
-1. **Giống nho / Vùng sản xuất – CHỐT**
-
-   • Hỗ trợ **nhiều giống nho** và **nhiều vùng** qua pivot `product_grapes`, `product_regions`.
-
-   • Có thể đánh dấu **“chính”** bằng `order=0` trên pivot để hiển thị marketing.
-2. **Filter sản phẩm nhiều giá trị – CHỐT**
-
-   • UI  **multi-select** ; backend `WHERE IN`/join pivot.
-
-   • Hỗ trợ lọc: loại, thương hiệu, quốc gia, vùng, giống nho, tầm giá, dung tích, nồng độ.
-3. **Đổi slug & Redirect – CHỐT**
-
-   • Tự động tạo redirect 301 khi slug đổi.
-
-   • Bảng `url_redirects(from_slug → to_slug)`; không giới hạn TTL.
-4. **Hình ảnh – CHỐT (clarified)**
-
-   • Ảnh dùng  **một bảng polymorphic `images`** , có thể gắn với `Product`, `Article`, `Brand`, `Setting`, `SocialLink`… qua `model_type` + `model_id`.
-
-   • Sản phẩm có  **nhiều ảnh (gallery)** , `order=0` là ảnh cover.
-
-   • Một số bảng (như `settings`, `social_links`) có **ảnh cố định 1-1** (logo, favicon, icon) qua FK trực tiếp (`logo_image_id`, `icon_image_id`).
-5. **Badge hiển thị – OKE**
-
-   • Enum chuẩn: `SALE`, `HOT`, `NEW`, `LIMITED`; cho phép label custom nếu cần.
-
-   • FE hiển thị theo style thống nhất.
-6. **Giá khuyến mãi & % giảm – "để sẵn trong API"**
-
-   • Backend tính sẵn `discount_percent`; FE dùng tùy ý.
-
-   • `discount_percent = (original_price - price)/original_price * 100` (round 0–1 chữ số).
-7. **Analytics theo thời gian – CHỐT**
-
-   • Dashboard chọn 7/30/90/all-time; export CSV.
-
-   • Có thể dọn dữ liệu chi tiết >90 ngày.
-8. **Ẩn sản phẩm/bài viết – CHỐT**
-
-   • Khi `active=false`, bỏ qua ở FE & home component.
-9. **Mega menu linh hoạt – OKE**
-
-   • Block tùy biến: tiêu đề + danh sách link custom (ví dụ “Ưu đãi Tết”).
-10. **Audit log trong Admin – OKE**
-
-    • Có trang  **read-only** , tra cứu theo user/action/time, export CSV.
+**Mục tiêu:** Tài liệu kỹ thuật–QA chốt cuối, đủ để Dev/QA/PM triển khai–nghiệm thu không mơ hồ. Bao quát: mục tiêu & chức năng, schema & ERD, luật vận hành/ngoại lệ, API, hiệu năng, bảo mật, checklist.
 
 ---
 
-## B) Tóm tắt hệ thống
+## I) Mục tiêu & Chức năng
 
-* Không bán trực tiếp; CTA “Liên hệ”.
-* Trang: Trang chủ (qua `home_components`), Trang lọc, Trang chi tiết, Editorial, Liên hệ.
-* Header: menu thường + mega menu. Footer: settings + social links.
-* Admin (Filament 4.x): quản lý sản phẩm, danh mục, images (media library), homepage blocks, menu, bài viết, settings, analytics, audit log.
-* Phân quyền: `admin`, `staff` (staff không chỉnh settings hoặc user khác).
-* SEO: auto meta khi trống.
-* Tracking: visitor/session/event.
+### 1. Mục tiêu
+
+* Website giới thiệu & tra cứu sản phẩm (rượu/bia/thịt nguội/bánh)  **không bán trực tiếp** ; CTA chính:  **“Liên hệ”** .
+* Tối ưu SEO, tốc độ, và báo cáo hành vi (view, CTA).
+* Admin (Filament 4.x) quản trị nội dung, hình ảnh (polymorphic), menu, trang chủ, analytics, audit.
+
+### 2. Phạm vi chức năng chính (FE)
+
+* Trang chủ (build từ `home_components`, bỏ qua item inactive).
+* Trang lọc sản phẩm (multi-filter: loại, thương hiệu, quốc gia, vùng, giống nho, tầm giá, dung tích, nồng độ).
+* Trang chi tiết sản phẩm (gallery, badge, discount, breadcrumbs).
+* Trang bài viết (list/chi tiết, thumbnail từ `images`).
+* Trang liên hệ (CTA click tracking).
+* Header: menu thường + **mega menu** linh hoạt (block tuỳ biến).
+* Footer: settings + social links.
+
+### 3. Phạm vi chức năng (BE/API/Admin)
+
+* API sản phẩm/bài viết/home, filter & sort mặc định.
+* **Redirect 301 tự sinh** khi slug đổi;  **không cho nhập thủ công** .
+* Ảnh dùng  **bảng polymorphic `images`** ; một số bảng (settings, social_links, brand logo/icon) dùng  **FK trực tiếp** .
+* Tính **`discount_percent`** ở BE (làm tròn  **0 chữ số** ).
+* **Analytics** theo khoảng 7/30/90/all-time;  **event CTA “Liên hệ”** ; dọn raw >90 ngày;  **bảng aggregate daily** .
+* Phân quyền: `admin`, `staff` (staff không chỉnh settings/user/redirects/roles).
+* SEO: tự sinh meta/OG khi trống; canonical theo slug hiện tại.
+* Tracking: visitor/session/event (view, cta_contact).
+* Audit log read-only: tra cứu theo user/action/time, export CSV.
 
 ---
 
-## C) ERD (Mermaid) – cập
+## II) Bảng – Trường – Quan hệ – ERD
 
-```
+> Ghi chú chung: DB quan hệ (MySQL 8+/PostgreSQL 13+). Kiểu dữ liệu dưới đây ở dạng tổng quát; khi triển khai, map sang RDBMS cụ thể. Tất cả `*_id` là BIGINT UNSIGNED (hoặc UUID nếu chọn), `created_at/updated_at` là timestamp với timezone.
 
-```
+### 1) Danh mục & sản phẩm
 
- nhật mô hình ảnh polymorphic
+* **products**
+  * `id`, `name`, `slug` (unique), `brand_id FK`, `product_category_id FK`, `type_id FK`, `country_id FK`, `region_id FK NULLABLE`,
+  * Thuộc tính: `price` (>=0), `original_price` (>=0), `alcohol_percent` (0..100), `volume_ml` (int >=0), `badges` (SET/JSON: `SALE|HOT|NEW|LIMITED` + custom), `active` (bool),
+  * SEO: `meta_title NULL`, `meta_description NULL`,
+  * Chỉ số: `INDEX (brand_id, country_id, region_id, type_id, product_category_id)`, `INDEX (price)`, `INDEX (alcohol_percent)`, `INDEX (volume_ml)`, `UNIQUE (slug)`.
+* **product_categories** : `id`, `name`, `slug unique`, `order`, `active`.
+* **product_types** : `id`, `name`, `slug unique`, `order`, `active`.
+* **brands** : `id`, `name`, `slug unique`, `logo_image_id FK images.id NULL`, `active`.
+* **countries** : `id`, `name`, `code` (ISO2/3), `slug unique`.
+* **regions** : `id`, `country_id FK`, `name`, `slug unique`.
+* **grapes** (danh mục giống nho): `id`, `name`, `slug unique`.
+* **product_grapes** (pivot): `product_id FK`, `grape_id FK`, `order INT DEFAULT 1`,
+  * `PRIMARY KEY (product_id, grape_id)`,
+  * `INDEX (grape_id, product_id)`,
+  * **Quy ước “chính”** : product có thể đánh dấu giống nho “chính” bằng **order=0** trên pivot (mỗi product–grape tối đa 1 row, order=0 được QA kiểm tra ở mục quy tắc).
+* **product_regions** (pivot): `product_id FK`, `region_id FK`, `order INT DEFAULT 1`,
+  * `PRIMARY KEY (product_id, region_id)`, `INDEX (region_id, product_id)`.
+  * Tương tự, có thể đánh dấu “chính” bằng  **order=0** .
+
+### 2) Nội dung & cấu hình
+
+* **articles** : `id`, `title`, `slug unique`, `excerpt`, `content`, `author_id FK users.id`, `active`, SEO fields.
+* **images** (polymorphic gallery): `id`, `file_path`, `alt`, `width`, `height`, `mime`, `model_type VARCHAR`, `model_id BIGINT`, `order INT DEFAULT 1`, `active BOOL DEFAULT TRUE`,
+  * **Index** : `INDEX (model_type, model_id)`,  **unique cover** : `UNIQUE (model_type, model_id, order)` với ràng buộc `order=0` chỉ duy nhất  **1 ảnh cover** /model, enforced bằng **partial index** (Postgres) hoặc trigger (MySQL).
+* **settings** (singleton): cặp key→value hoặc cột tường minh; `logo_image_id FK images.id NULL`, `favicon_image_id FK images.id NULL`.
+* **social_links** : `id`, `platform`, `url`, `icon_image_id FK images.id NULL`, `active`.
+* **menus** ,  **menu_blocks** ,  **menu_block_items** : cấu hình mega menu linh hoạt (block = tiêu đề + list links).
+* **home_components** : `id`, `type ENUM`, `config JSON`, `order`, `active`.
+
+### 3) Tracking & analytics
+
+* **visitors** : `id`, `anon_id` (cookie), `first_seen_at`, `last_seen_at`, `user_agent`, `ip_hash`.
+* **visitor_sessions** : `id`, `visitor_id FK`, `started_at`, `ended_at NULL`.
+* **tracking_events** : `id`, `visitor_id FK`, `session_id FK`, `event_type ENUM('product_view','article_view','cta_contact')`,
+
+  `product_id NULL FK`, `article_id NULL FK`, `metadata JSON`, `created_at`.
+
+* **tracking_event_aggregates_daily** : `id`, `date`, `event_type`, `product_id NULL`, `article_id NULL`, `views INT`, `clicks INT`,
+* **Unique key** : `(date, event_type, product_id, article_id)`;
+* **Ghi chú** : `views` và `clicks` dùng theo ngữ cảnh (vd: `product_view` -> `views`; `cta_contact` -> `clicks`).
+
+### 4) Redirect & audit
+
+* **url_redirects**  *(tự sinh, không nhập tay)* :
+
+  `id`, `from_slug VARCHAR UNIQUE`, `to_slug VARCHAR`, `target_type ENUM('Product','Article')`, `target_id BIGINT`, `created_at`,
+
+  * **Ràng buộc** : `from_slug != to_slug`; **không** cho phép trùng với slug hiện hữu của resource.
+  * **Logic** : chỉ tạo khi slug đổi; không cho tạo thủ công trên Admin.
+* **users** : `id`, `name`, `email unique`, `role ENUM('admin','staff')`, `password_hash`, `active`.
+* **audit_logs** : `id`, `user_id FK`, `action`, `model_type`, `model_id`, `before JSON NULL`, `after JSON NULL`, `ip_hash`, `created_at`.
+* **Read-only** trong Admin.
+
+### 5) ERD (Mermaid)
 
 ```mermaid
 erDiagram
   USERS ||--o{ AUDIT_LOGS : performs
   USERS ||--o{ ARTICLES : writes
 
-  PRODUCTS ||--o{ IMAGES : has_many (gallery)
-  ARTICLES ||--o{ IMAGES : has_many (gallery)
-  BRANDS ||--o{ IMAGES : has_many
+  PRODUCTS ||--o{ IMAGES : has_gallery
+  ARTICLES ||--o{ IMAGES : has_gallery
+  BRANDS ||--o{ IMAGES : has_gallery
   SETTINGS ||--o{ IMAGES : uses_logo_favicon
   SOCIAL_LINKS ||--o{ IMAGES : uses_icon
 
-  PRODUCT_CATEGORIES ||--o{ PRODUCTS : groups
+  PRODUCT_CATEGORIES ||--o{ PRODUCTS : categories
   PRODUCT_TYPES ||--o{ PRODUCTS : types
   BRANDS ||--o{ PRODUCTS : owns
   COUNTRIES ||--o{ REGIONS : contains
@@ -109,78 +133,257 @@ erDiagram
   VISITOR_SESSIONS ||--o{ TRACKING_EVENTS : groups
   VISITORS ||--o{ TRACKING_EVENTS : triggers
   PRODUCTS ||--o{ TRACKING_EVENTS : viewed
+  ARTICLES ||--o{ TRACKING_EVENTS : viewed
 
   URL_REDIRECTS }o--|| PRODUCTS : to_product
   URL_REDIRECTS }o--|| ARTICLES : to_article
+
+  TRACKING_EVENTS ||--o{ TRACKING_EVENT_AGGREGATES_DAILY : rolls_up
 ```
 
 ---
 
-## D) API/Controller – chuẩn cuối
+## III) Luật chi tiết & Xử lý ngoại lệ
 
-* **GET /san-pham**
+### A. Slug & Redirect 301 (tự sinh,  **không nhập tay** )
 
-  Query: `brand[]`, `country[]`, `region[]`, `grape[]`, `type[]`, `price_min`, `price_max`, `alcohol_min`, `alcohol_max`.
+1. **Sinh slug** : từ tên → normalize (lowercase, NFC), thay khoảng trắng bằng `-`, bỏ ký tự không an toàn (whitelist `[a-z0-9-]`).
+2. **Đảm bảo unique** : nếu trùng slug đã tồn tại cho cùng `model_type`, thêm hậu tố `-1`, `-2`, `-3`, … cho tới khi unique.
 
-  Trả kết quả có `discount_percent`, `main_image_url`, `gallery[]`.
+* Ví dụ: `ruou-vang` trùng → `ruou-vang-1`, tiếp tục `ruou-vang-2`...
 
-  Sort mặc định: `created_at DESC`.
-* **GET /san-pham/{slug}**
+1. **Đổi slug** : khi cập nhật `name` hoặc sửa `slug` thủ công (nếu bật), hệ thống:
 
-  Trả: product + gallery + breadcrumbs + `discount_percent`.
-* **GET /bai-viet** , **GET /bai-viet/{slug}**
+* Tạo bản ghi `url_redirects(from_slug=old, to_slug=new, target_type, target_id)`.
+* **Không** cho phép tạo redirect nếu `from_slug` trùng slug **hiện hữu** (resource đang sống).
 
-  FE hiển thị thumbnail từ `images` (`model_type='Article'`).
-* **GET /home**
+1. **Middleware redirect** : 301 từ `from_slug` →  **đích cuối** :
 
-  Build từ `home_components` (bỏ qua inactive items).
-* **Redirect middleware**
+* Resolve chuỗi (A→B, B→C) và trả 301 **thẳng** tới C (flatten runtime).
+* **Max-hop=5** để chặn vòng lặp; nếu vượt, trả 404 và ghi log cảnh báo.
+* Bảo toàn query string và fragment (`?utm=...`, `#hash`).
 
-  Check `url_redirects.from_slug` → 301 → `to_slug`.
+1. **Xoá/khôi phục** :
+
+* Nếu slug đổi về  **slug cũ** : có thể **xoá** redirect tương ứng để tránh vòng.
+* Purge cache/CDN liên quan.
+
+1. **Canonical** : luôn trỏ slug hiện tại; **không** canonical về `from_slug`.
+
+### B. Ảnh (polymorphic) & FK trực tiếp (logo/icon)
+
+1. **Gallery** : dùng `images(model_type, model_id, order)`; `order=0` là **cover** (duy nhất).
+
+* **Enforce** : unique partial `order=0`/model; nếu 2 request đồng thời set `order=0`, request đến sau bị 409 (conflict).
+
+1. **Logo/Icon** (FK trực tiếp): `brands.logo_image_id`, `settings.logo_image_id/favicon_image_id`, `social_links.icon_image_id`.
+   * Có thể **không** có dòng `images` tương ứng (không bắt buộc tạo dòng polymorphic).
+2. **Xoá ảnh đang được dùng bởi FK** : **`NULLIFY` + cảnh báo** (log + toast Admin).
+
+* Không chặn xoá; sau xoá, UI hiển thị  **placeholder** .
+
+1. **Xoá model cha** (product/article/brand…):
+   * Chính sách gallery: **soft-delete ảnh** hoặc **orphan cho phép** → dọn định kỳ bằng job “media garbage collector”.
+2. **Placeholder** : nếu không có cover, FE dùng placeholder theo loại (product/article/brand/icon).
+
+### C. Giá & khuyến mãi
+
+1. **Quy tắc hiển thị** :
+
+* `price > 0`: hiển thị giá VND.
+* `price = 0`: hiển thị "Liên hệ".
+* `original_price > price > 0`: hiển thị giá gạch +  **% giảm** .
+
+1. **`discount_percent` (server-side)** :
+
+* Công thức: `(original_price - price)/original_price*100`.
+* **Làm tròn** : **0 chữ số** (round-half-up).
+* Trả **`null`** nếu không thoả `original_price > price > 0`.
+* Không âm, không chia 0; nếu input sai → 422.
+
+1. **Nguồn sự thật** : chỉ dùng giá trị do BE trả; FE **không** tự tính lại.
+
+### D. Lọc sản phẩm & hiệu năng
+
+1. **Tham số** : `brand[]`, `country[]`, `region[]`, `grape[]`, `type[]`, `price_min/max`, `alcohol_min/max`, `page`, `per_page`.
+2. **Hành vi** :
+
+* Nhiều giá trị ⇒ `WHERE IN`/join pivot; sau join phải **DISTINCT** theo `products.id`.
+* Giá trị mảng **không hợp lệ** → **bỏ qua** (vẫn 200).
+* `price_min > price_max` hoặc `alcohol_min > alcohol_max` → **400** (validation error).
+
+1. **Sort mặc định** : `created_at DESC`; có thể nhận `sort` hợp lệ (`price`, `-price`, `name`, `-created_at`...).
+2. **Hiệu năng** : P95 < 100ms với dữ liệu giả lập ~100k products, ~1M rows pivot; EXPLAIN đính kèm khi nghiệm thu.
+3. **Indexing** : giữ index đơn lẻ cho cột lọc + index nghịch ở pivot (`(grape_id, product_id)`, `(region_id, product_id)`).
+
+### E. Trạng thái `active`
+
+* `active=false` ⇒  **ẩn toàn hệ thống** : list, chi tiết, home, search, sitemap, RSS/SEO.
+* Truy cập chi tiết của resource inactive ⇒ **404** (không 301).
+* Toggle `active` ⇒ **purge cache** liên quan.
+
+### F. Analytics & dọn dữ liệu
+
+1. **Event** :
+
+* `product_view(product_id)`, `article_view(article_id)`, **`cta_contact`** (metadata: vị trí click, kênh).
+
+1. **Khoảng thời gian dashboard** : 7/30/90/all-time; CSV export trùng số liệu hiển thị (sai lệch ≤ 0.5%).
+2. **Dọn raw** : xoá `tracking_events` **>90 ngày** (rolling), **sau khi** đã đổ vào `tracking_event_aggregates_daily`.
+3. **Aggregates daily** : job hàng ngày (`00:30`): upsert theo `(date, event_type, product_id, article_id)`.
+4. **All-time** : tính từ bảng aggregate (SUM theo khoảng) + phần raw <90d nếu cần (đảm bảo không double-count).
+
+### G. SEO
+
+* **Auto meta** khi trống:
+  * `meta_title`: cắt ≤ 60 ký tự (không vỡ từ).
+  * `meta_description`: cắt ≤ 160 ký tự.
+  * `og:image`: ưu tiên product cover → brand logo → site default (tỷ lệ ~1.91:1; khuyến nghị 1200×630).
+* **Sitemap** : không liệt kê resource inactive.
+* **Canonical** : luôn là slug hiện tại.
+
+### H. Quyền hạn & Audit
+
+* Role `staff`: **không** sửa `settings`, `users`, `url_redirects`, `roles/permissions`.
+* Mọi truy cập trái phép: HTTP 403 + ghi `audit_logs` action `denied` (model/route, ip_hash).
+* `audit_logs` **read-only** trên Admin; filter theo user/action/time; CSV export.
+
+### I. Caching / CDN / Concurrency
+
+* Cache trang & API GET (60s–300s), purge khi: đổi slug, đổi `active`, đổi gallery cover, đổi SEO fields.
+* Concurrency: dùng **optimistic lock** hoặc unique constraint + retry cho `order=0` cover.
+* Redirect middleware cacheable: `Cache-Control: public, max-age=3600`.
+
+### J. Lỗi & Mã trả về
+
+* 200: thành công.
+* 400: tham số phạm vi sai (`price_min > price_max`, `alcohol_min > alcohol_max`).
+* 401/403: chưa đăng nhập/không đủ quyền Admin.
+* 404: slug không tồn tại, resource inactive, vượt max-hop redirect.
+* 409: xung đột cover `order=0`.
+* 422: dữ liệu không hợp lệ (giá âm/NaN).
+* 500: lỗi không xác định (ghi log + correlation id).
 
 ---
 
-## E) Index/Performance
+## IV) API Contract (rút gọn nhưng đủ test)
 
-* `INDEX (brand_id, country_id, region_id, type_id, product_category_id)`.
-* `INDEX (alcohol_percent)`, `INDEX (volume_ml)`, `INDEX (price)`.
-* Pivot: PK composite + index nghịch.
-* `tracking_events(product_id, created_at)`; `url_redirects.from_slug UNIQUE`.
+### 1) `GET /san-pham`
+
+ **Query** : `brand[]`, `country[]`, `region[]`, `grape[]`, `type[]`, `price_min`, `price_max`, `alcohol_min`, `alcohol_max`, `page`, `per_page`, `sort`
+
+**200**
+
+```json
+{
+  "data": [
+    {
+      "id": 123,
+      "name": "Rượu A",
+      "slug": "ruou-a",
+      "price": 1000000,
+      "original_price": 1500000,
+      "discount_percent": 33,
+      "main_image_url": "https://.../img1.jpg",
+      "gallery": [{"url": "https://.../img1.jpg", "order": 0}, {"url": "https://.../img2.jpg", "order": 1}],
+      "brand": {"id": 1, "name": "Brand X"},
+      "country": {"id": 2, "name": "Pháp"},
+      "alcohol_percent": 13.5,
+      "volume_ml": 750,
+      "badges": ["SALE", "HOT"]
+    }
+  ],
+  "meta": {"page": 1, "per_page": 24, "total": 1234, "sort": "created_at:desc"}
+}
+```
+
+ **400** : phạm vi sai.
+
+ **422** : dữ liệu không hợp lệ.
+
+### 2) `GET /san-pham/{slug}`
+
+```json
+{
+  "id": 123,
+  "name": "Rượu A",
+  "breadcrumbs": [{"label": "Rượu vang", "href": "/ruou-vang"}],
+  "gallery": [...],
+  "discount_percent": 33,
+  "active": true
+}
+```
+
+ **404** : không tồn tại/ inactive.
+
+### 3) `GET /bai-viet` & `GET /bai-viet/{slug}`
+
+* List có thumbnail từ `images(model_type='Article')` hoặc cover `order=0`.
+
+### 4) `GET /home`
+
+* Build từ `home_components` (`active=true`, `order ASC`). Bỏ qua tham chiếu đến sản phẩm/bài viết/ảnh  **đã inactive hoặc bị xoá** ; ghi log cảnh báo.
+
+### 5) Redirect middleware
+
+* Kiểm tra `url_redirects.from_slug` → 301 tới **đích cuối** `to_slug` của resource mục tiêu.
+* Bảo toàn query/fragment.
+* Vượt 5 hop hoặc loop → 404.
 
 ---
 
-## F) FE Convention
+## V) Hiệu năng & Chỉ số
 
-* `price>0` → hiển thị giá VND; `price=0` → “Liên hệ”.
-* `original_price>price` → hiển thị giá gạch + % giảm.
-* Ảnh: `order=0` = cover, placeholder khi rỗng.
-* Slug tự sinh, có redirect.
-* Home render `active=true` theo `order ASC`.
-
----
-
-## G) Filament Resources
-
-* Product, Category, Type, Brand, Country, Region, Grape, Product↔Grape, Product↔Region.
-* Article, Image (media), Menu, MenuBlock, MenuBlockItem.
-* HomeComponent, Settings (singleton), SocialLink.
-* Tracking (read-only), AuditLog (read-only).
+* **Mục tiêu** : P95 `GET /san-pham` < 100ms với dữ liệu lớn; P99 < 200ms.
+* **Index** : theo mục II; pivot có index nghịch; cân nhắc covering index cho đường hot-path.
+* **EXPLAIN** : mọi query filter/chi tiết đính kèm report nghiệm thu.
+* **SLO** : uptime 99.9%, lỗi 5xx < 0.1% request/tháng.
 
 ---
 
-## H) Checklist nghiệm thu
+## VI) Bảo mật & Tuân thủ
 
-* [X] Multi-filter hoạt động mượt (EXPLAIN OK).
-* [X] Redirect slug 301 hoạt động.
-* [X] Placeholder ảnh đúng loại.
-* [X] API trả `discount_percent`.
-* [X] Analytics 7/30/90/all-time ok.
-* [X] Staff bị hạn chế Settings/User.
-* [X] SEO meta auto + OG image.
+* **Role-based access** : `admin`/`staff`; chặn mọi chỉnh sửa nhạy cảm với `staff`.
+* **XSS** : sanitize nội dung nhập tay (menu link label, block config).
+* **CORS** : whitelist domain FE.
+* **Rate-limit** : API public 60 req/min/IP.
+* **PII** : chỉ lưu `ip_hash`, không lưu IP thô; tuân thủ dọn dữ liệu.
+* **Audit** : ghi đầy đủ before/after đối tượng quan trọng; immutable (không edit/delete qua Admin).
 
 ---
 
-### Phụ lục – Config `home_components`
+## VII) Migrations & Jobs đề nghị
+
+* **DB constraints** :
+* `products.slug` unique; normalize trước khi insert.
+* `price >= 0`, `original_price >= 0`, `0 <= alcohol_percent <= 100`.
+* Unique partial cover `(model_type, model_id, order=0)`.
+* **Jobs** :
+* Nightly: build `tracking_event_aggregates_daily`, purge raw >90d.
+* Nightly: **flatten redirect chains** (A→B, B→C ⇒ A→C), xoá link trung gian.
+* Weekly: media GC dọn ảnh orphan.
+* **Slug backfill** : script normalize toàn bộ slug cũ + tạo redirect tương ứng.
+
+---
+
+## VIII) Checklist nghiệm thu (QA)
+
+* [ ] Redirect chain ≤ 5 hop, không loop; giữ query & fragment.
+* [ ] Canonical/OG đúng sau đổi slug (không trỏ về `from_slug`).
+* [ ] DISTINCT sản phẩm khi filter nhiều pivot; không trùng.
+* [ ] Cover `order=0` duy nhất cho mỗi model; conflict trả 409.
+* [ ] `discount_percent` trả **null** khi không giảm; nếu có, làm tròn  **0 chữ số** .
+* [ ] Staff truy cập Settings/Users/Redirects → 403 + `audit_logs` action `denied`.
+* [ ] CSV analytics khớp dashboard ±0.5%.
+* [ ] Sitemap không chứa resource inactive.
+* [ ] Home bỏ qua tham chiếu tới resource inactive/đã xoá + log cảnh báo.
+* [ ] `GET /san-pham` P95 < 100ms (dataset seed lớn), EXPLAIN OK.
+
+---
+
+## IX) Phụ lục
+
+### A. Cấu hình `home_components` (tham khảo)
 
 * **HeroCarousel** : `{ "slides": [{"image_id":1,"alt":"..."}] }`
 * **DualBanner** : `{ "banners": [{"image_id":1,"alt":"...","href":"/abc"}] }`
@@ -189,3 +392,33 @@ erDiagram
 * **BrandShowcase** : `{ "brands": [{"brand_id":1,"href":"/..."}] }`
 * **CollectionShowcase** : `{ "title":"Rượu Vang","subtitle":"...","description":"...","ctaLabel":"Xem thêm","ctaHref":"/ruou-vang","tone":"wine|spirit","products":[{"product_id":1,"badge":"HOT"}] }`
 * **EditorialSpotlight** : `{ "title":"Cẩm nang rượu","articles":[{"article_id":1}] }`
+
+### B. Event taxonomy (mẫu metadata)
+
+* `product_view`: `{ "placement": "grid|detail|home", "component": "FavouriteProducts|..." }`
+* `article_view`: `{ "placement": "list|detail" }`
+* `cta_contact`: `{ "placement": "header|footer|product_detail|contact_page", "method": "tel|mailto|form|zalo" }`
+
+### C. Quy ước đặt tên & định dạng
+
+* Slug: lowercase, `-` nối, không dấu/space, ASCII-safe; hậu tố `-1`, `-2`… nếu trùng.
+* Ảnh cover: `order=0`; còn lại `order>=1`.
+* Badge enum chuẩn: `SALE|HOT|NEW|LIMITED`; custom lưu ở JSON kèm style FE.
+
+### D. Lưu ý triển khai FE
+
+* `price=0` hiển thị “Liên hệ”.
+* Fallback ảnh: placeholder theo loại.
+* Khi nhận `discount_percent=null` → ẩn nhãn giảm giá.
+
+### E. Test data seed gợi ý
+
+* 100k products; mỗi product 3–5 grapes (pivot ~350k), 1–2 regions (pivot ~150k).
+* 20 brands, 50 regions/10 countries, 40 grapes.
+* 30% sản phẩm có `original_price > price`.
+* 10% inactive.
+* Sự kiện: 30 ngày gần nhất ~ 3M `product_view`, 200k `cta_contact`.
+
+---
+
+ **Kết luận** : Tài liệu này phản ánh các quyết định **đã chốt** (v1.2), bao gồm cập nhật quan trọng:  **redirect auto** ,  **`discount_percent=null` & làm tròn 0** ,  **polymorphic images + FK nullify** ,  **thêm event CTA & aggregates daily** , cùng toàn bộ luật/ngoại lệ để QA nghiệm thu khắt khe vẫn rõ ràng và đo được.
