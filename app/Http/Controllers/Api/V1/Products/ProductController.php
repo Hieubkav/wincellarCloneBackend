@@ -57,6 +57,16 @@ class ProductController extends Controller
                 'alcohol_percent' => $product->alcohol_percent,
                 'volume_ml' => $product->volume_ml,
                 'badges' => $product->badges ?? [],
+                'category' => $product->productCategory ? [
+                    'id' => $product->productCategory->id,
+                    'name' => $product->productCategory->name,
+                    'slug' => $product->productCategory->slug,
+                ] : null,
+                'type' => $product->type ? [
+                    'id' => $product->type->id,
+                    'name' => $product->type->name,
+                    'slug' => $product->type->slug,
+                ] : null,
             ];
         });
 

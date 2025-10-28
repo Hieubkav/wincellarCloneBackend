@@ -21,6 +21,8 @@ class ProductIndexRequest extends FormRequest
             'terms.grape.*' => ['integer', 'min:1'],
             'type' => ['sometimes', 'array'],
             'type.*' => ['integer', 'min:1'],
+            'category' => ['sometimes', 'array'],
+            'category.*' => ['integer', 'min:1'],
             'price_min' => ['nullable', 'integer', 'min:0'],
             'price_max' => ['nullable', 'integer', 'min:0'],
             'alcohol_min' => ['nullable', 'numeric', 'min:0'],

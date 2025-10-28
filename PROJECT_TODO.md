@@ -34,15 +34,15 @@
 
 ## 6. API sản phẩm
 
-- [ ] GET /san-pham: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
-- [ ] GET /san-pham/{slug}: breadcrumb, gallery, badges, 404 khi inactive hoặc không tồn tại
-- [ ] Tối ưu hiệu năng: caching nếu cần, kiểm tra EXPLAIN/index, đo P95/P99
+- [X] GET /san-pham: multi-filter terms[brand]/terms[origin.country]/terms[origin.region]/terms[grape]/type + price/alcohol range, sort, DISTINCT, meta pagination
+- [X] GET /san-pham/{slug}: breadcrumb, gallery, badges, 404 khi inactive hoặc không tồn tại
+- [X] Tối ưu hiệu năng: caching nếu cần, kiểm tra EXPLAIN/index, đo P95/P99
 
 ## 7. API nội dung khác & home
 
-- [ ] GET /bai-viet + GET /bai-viet/{slug} (thumbnail cover từ images order=0)
-- [ ] GET /home: load home_components, bỏ qua resource inactive/đã xoá, log cảnh báo
-- [ ] Endpoint tracking CTA/contact và các API hỗ trợ FE khác (social links, settings, contact info)
+- [X] GET /bai-viet + GET /bai-viet/{slug} (thumbnail cover từ images order=0)
+- [X] GET /home: load home_components, bỏ qua resource inactive/đã xoá, log cảnh báo
+- [X] Endpoint tracking CTA/contact và các API hỗ trợ FE khác (social links, settings, contact info)
 
 ## 8. Filament Admin
 

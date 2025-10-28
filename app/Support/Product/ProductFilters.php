@@ -26,6 +26,7 @@ class ProductFilters
         $this->applyTermFilter('grape', Arr::get($terms, 'grape', []));
 
         $this->applyTypeFilter(Arr::get($filters, 'type', []));
+        $this->applyCategoryFilter(Arr::get($filters, 'category', []));
         $this->applyPriceRange($filters);
         $this->applyAlcoholRange($filters);
 
@@ -44,6 +45,17 @@ class ProductFilters
             $query->whereIn('catalog_terms.id', $ids)
                 ->whereHas('group', fn (Builder $groupQuery) => $groupQuery->where('code', $groupCode));
         });
+    }
+
+    private function applyCategoryFilter(array $categoryIds): void
+    {
+        $ids = $this->filterIds($categoryIds);
+
+        if (empty($ids)) {
+            return;
+        }
+
+        $this->query->whereIn('product_category_id', $ids);
     }
 
     private function applyOriginCountryFilter(array $termIds): void
