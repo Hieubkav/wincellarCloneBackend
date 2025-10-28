@@ -91,6 +91,7 @@ class Product extends Model
             'product_id',
             'term_id'
         )
+            ->using(\App\Models\Pivots\ProductTermPivot::class)
             ->withPivot(['is_primary', 'position', 'extra'])
             ->withTimestamps()
             ->orderByPivot('position');

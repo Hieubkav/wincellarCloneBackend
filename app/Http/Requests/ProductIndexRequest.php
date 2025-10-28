@@ -10,6 +10,7 @@ class ProductIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'q' => ['nullable', 'string', 'min:1', 'max:120'],
             'terms' => ['sometimes', 'array'],
             'terms.brand' => ['sometimes', 'array'],
             'terms.brand.*' => ['integer', 'min:1'],
@@ -30,6 +31,7 @@ class ProductIndexRequest extends FormRequest
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:60'],
             'sort' => ['nullable', 'string', 'max:25'],
+            'cursor' => ['nullable', 'integer', 'min:0'],
         ];
     }
 
@@ -40,13 +42,35 @@ class ProductIndexRequest extends FormRequest
             'price_max' => $this->normalizeNumber($this->input('price_max')),
             'alcohol_min' => $this->normalizeFloat($this->input('alcohol_min')),
             'alcohol_max' => $this->normalizeFloat($this->input('alcohol_max')),
+            'q' => $this->normalizeSearch($this->input('q')),
         ]);
     }
 
     protected function passedValidation(): void
     {
-        $this->request->set('sort', $this->input('sort', '-created_at'));
-        $this->request->set('per_page', $this->input('per_page', 24));
+        $perPage = (int) $this->input('per_page', 24);
+        $this->merge([
+            'per_page' => $perPage,
+            'sort' => $this->input('sort', '-created_at'),
+        ]);
+
+        $cursor = $this->input('cursor');
+        if ($cursor !== null) {
+            $page = (int) floor(((int) $cursor) / max($perPage, 1)) + 1;
+            $page = max($page, 1);
+
+            $this->merge([
+                'page' => $page,
+            ]);
+
+            $this->attributes->set('using_cursor', true);
+        } else {
+            $this->merge([
+                'page' => $this->input('page', 1),
+            ]);
+
+            $this->attributes->set('using_cursor', false);
+        }
     }
 
     public function after(): array
@@ -88,5 +112,16 @@ class ProductIndexRequest extends FormRequest
         }
 
         return (float) $value;
+    }
+
+    private function normalizeSearch(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 }
