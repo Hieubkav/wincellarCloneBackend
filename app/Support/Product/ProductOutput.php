@@ -13,6 +13,18 @@ class ProductOutput
      */
     public static function listItem(Product $product): array
     {
+        $coverImageUrl = $product->cover_image_url;
+        if ($coverImageUrl && !self::fileExists($coverImageUrl)) {
+            $coverImageUrl = '/placeholder/wine-bottle.svg';
+        }
+
+        $gallery = $product->gallery_for_output->map(function ($image) {
+            if ($image['url'] && !self::fileExists($image['url'])) {
+                $image['url'] = '/placeholder/wine-bottle.svg';
+            }
+            return $image;
+        })->all();
+
         return [
             'id' => $product->id,
             'name' => $product->name,
@@ -21,8 +33,8 @@ class ProductOutput
             'original_price' => $product->original_price,
             'discount_percent' => $product->discount_percent,
             'show_contact_cta' => $product->should_show_contact_cta,
-            'main_image_url' => $product->cover_image_url,
-            'gallery' => $product->gallery_for_output->all(),
+            'main_image_url' => $coverImageUrl,
+            'gallery' => $gallery,
             'brand_term' => self::transformTerm($product->primaryTerm('brand')),
             'country_term' => self::transformTerm($product->primaryTerm('origin')),
             'alcohol_percent' => $product->alcohol_percent,
@@ -46,6 +58,11 @@ class ProductOutput
      */
     public static function suggestion(Product $product): array
     {
+        $coverImageUrl = $product->cover_image_url;
+        if ($coverImageUrl && !self::fileExists($coverImageUrl)) {
+            $coverImageUrl = '/placeholder/wine-bottle.svg';
+        }
+
         return [
             'id' => $product->id,
             'name' => $product->name,
@@ -54,7 +71,7 @@ class ProductOutput
             'original_price' => $product->original_price,
             'discount_percent' => $product->discount_percent,
             'show_contact_cta' => $product->should_show_contact_cta,
-            'main_image_url' => $product->cover_image_url,
+            'main_image_url' => $coverImageUrl,
             'brand_term' => self::transformTerm($product->primaryTerm('brand')),
             'country_term' => self::transformTerm($product->primaryTerm('origin')),
             'category' => $product->productCategory ? [
@@ -78,6 +95,18 @@ class ProductOutput
         $grapeTerms = self::transformTerms($product->termsByGroup('grape'));
         $originTerms = self::transformTerms($product->termsByGroup('origin'));
 
+        $coverImageUrl = $product->cover_image_url;
+        if ($coverImageUrl && !self::fileExists($coverImageUrl)) {
+            $coverImageUrl = '/placeholder/wine-bottle.svg';
+        }
+
+        $gallery = $product->gallery_for_output->map(function ($image) {
+            if ($image['url'] && !self::fileExists($image['url'])) {
+                $image['url'] = '/placeholder/wine-bottle.svg';
+            }
+            return $image;
+        })->all();
+
         return [
             'id' => $product->id,
             'name' => $product->name,
@@ -87,8 +116,8 @@ class ProductOutput
             'original_price' => $product->original_price,
             'discount_percent' => $product->discount_percent,
             'show_contact_cta' => $product->should_show_contact_cta,
-            'cover_image_url' => $product->cover_image_url,
-            'gallery' => $product->gallery_for_output->all(),
+            'cover_image_url' => $coverImageUrl,
+            'gallery' => $gallery,
             'brand_term' => self::transformTerm($product->primaryTerm('brand')),
             'country_term' => self::transformTerm($product->primaryTerm('origin')),
             'grape_terms' => $grapeTerms,
@@ -141,33 +170,46 @@ class ProductOutput
     }
 
     /**
-     * @return array<int, array{label:string,href:string}>
-     */
+    * @return array<int, array{label:string,href:string}>
+    */
     private static function buildBreadcrumbs(Product $product): array
     {
-        $breadcrumbs = [];
+    $breadcrumbs = [];
 
-        if ($product->productCategory) {
-            $breadcrumbs[] = [
-                'label' => $product->productCategory->name,
-                'href' => '/san-pham/'.$product->productCategory->slug,
-            ];
+    if ($product->productCategory) {
+    $breadcrumbs[] = [
+    'label' => $product->productCategory->name,
+    'href' => '/san-pham/'.$product->productCategory->slug,
+    ];
+    }
+
+    if ($product->type) {
+    $breadcrumbs[] = [
+    'label' => $product->type->name,
+    'href' => '/san-pham?type='.$product->type->slug,
+    ];
+    }
+
+    if ($brand = $product->primaryTerm('brand')) {
+    $breadcrumbs[] = [
+    'label' => $brand->name,
+    'href' => '/san-pham?brand='.$brand->slug,
+    ];
+    }
+
+    return $breadcrumbs;
+    }
+
+    private static function fileExists(string $url): bool
+    {
+        // Remove domain if present, assume localhost:8000
+        $path = parse_url($url, PHP_URL_PATH);
+        if (!$path) {
+            return false;
         }
 
-        if ($product->type) {
-            $breadcrumbs[] = [
-                'label' => $product->type->name,
-                'href' => '/san-pham?type='.$product->type->slug,
-            ];
-        }
-
-        if ($brand = $product->primaryTerm('brand')) {
-            $breadcrumbs[] = [
-                'label' => $brand->name,
-                'href' => '/san-pham?brand='.$brand->slug,
-            ];
-        }
-
-        return $breadcrumbs;
+        // Assuming storage/app/public is symlinked to public/storage
+        $fullPath = public_path($path);
+        return file_exists($fullPath);
     }
 }

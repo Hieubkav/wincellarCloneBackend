@@ -14,19 +14,24 @@ class ProductSearchBuilder
      * @param string|null $keyword
      * @param array<int|string, mixed>|null $withRelations
      */
-    public static function build(array $filters, ?string $keyword, ?array $withRelations = null): Builder
+    public static function build(array $filters, ?string $keyword, ?array $withRelations = null, bool $isList = true): Builder
     {
         $query = Product::query()
             ->select('products.*')
             ->active();
 
-        $relations = $withRelations ?? [
+        $relations = $withRelations ?? ($isList ? [
+            'coverImage',
+            'terms.group',
+            'productCategory',
+            'type',
+        ] : [
             'coverImage',
             'images' => fn ($relation) => $relation->orderBy('order'),
             'terms.group',
             'productCategory',
             'type',
-        ];
+        ]);
 
         if (!empty($relations)) {
             $query->with($relations);
@@ -49,25 +54,16 @@ class ProductSearchBuilder
             return;
         }
 
-        $tokens = preg_split('/\s+/u', $keyword, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-        $tokens = array_map(static fn (string $token) => mb_strtolower($token, 'UTF-8'), $tokens);
-        $tokens = array_values(array_filter(array_unique($tokens)));
+        // Try full-text search first (if index exists)
+        $query->whereRaw("MATCH(products.name, products.description) AGAINST(? IN NATURAL LANGUAGE MODE)", [$keyword])
+            ->orWhere(function (Builder $searchQuery) use ($keyword): void {
+                // Fallback to LIKE search
+                $pattern = self::toLikePattern($keyword);
 
-        $query->where(function (Builder $searchQuery) use ($keyword, $tokens): void {
-            $pattern = self::toLikePattern($keyword);
-
-            $searchQuery->where('products.name', 'like', $pattern)
-                ->orWhere('products.slug', 'like', $pattern)
-                ->orWhere('products.description', 'like', $pattern);
-
-            foreach ($tokens as $token) {
-                $tokenPattern = self::toLikePattern($token);
-
-                $searchQuery->orWhere('products.name', 'like', $tokenPattern)
-                    ->orWhere('products.slug', 'like', $tokenPattern)
-                    ->orWhere('products.description', 'like', $tokenPattern);
-            }
-        });
+                $searchQuery->where('products.name', 'like', $pattern)
+                    ->orWhere('products.slug', 'like', $pattern)
+                    ->orWhere('products.description', 'like', $pattern);
+            });
     }
 
     private static function toLikePattern(string $value): string

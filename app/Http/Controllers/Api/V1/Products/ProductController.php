@@ -20,21 +20,27 @@ class ProductController extends Controller
         $cursorInput = $request->input('cursor');
         $usingCursor = $cursorInput !== null;
 
-        $query = ProductSearchBuilder::build($filters, $request->input('q'));
+        $query = ProductSearchBuilder::build($filters, $request->input('q'), null, true);
 
         ProductSorts::apply($query, $request->input('sort', '-created_at'));
 
         $perPage = (int) $request->input('per_page', 24);
         $requestedPage = (int) $request->input('page', 1);
 
-        $paginator = ProductPaginator::paginate(
-            $query,
-            $perPage,
-            $requestedPage,
-            ['products.*'],
-            'page',
-            !$usingCursor
-        );
+        // Cache for 5 minutes for non-search, 1 minute for search
+        $cacheKey = 'products_' . md5(serialize($filters) . $request->input('q') . $request->input('sort') . $perPage . $requestedPage);
+        $cacheTime = empty($request->input('q')) ? 300 : 60; // 5 min non-search, 1 min search
+
+        $paginator = cache()->remember($cacheKey, $cacheTime, function () use ($query, $perPage, $requestedPage, $usingCursor) {
+            return ProductPaginator::paginate(
+                $query,
+                $perPage,
+                $requestedPage,
+                ['products.*'],
+                'page',
+                !$usingCursor
+            );
+        });
 
         $collection = $paginator->getCollection();
         $mapped = $collection
