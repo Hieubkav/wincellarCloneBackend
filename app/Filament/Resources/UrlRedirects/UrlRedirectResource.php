@@ -34,15 +34,15 @@ class UrlRedirectResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'from_slug';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Settings';
+    protected static UnitEnum|string|null $navigationGroup = 'Cài đặt';
 
-    protected static ?string $navigationLabel = 'URL Redirects';
+    protected static ?string $navigationLabel = 'Chuyển hướng URL';
 
     protected static ?int $navigationSort = 40;
 
-    protected static ?string $modelLabel = 'URL Redirect';
+    protected static ?string $modelLabel = 'Chuyển hướng URL';
 
-    protected static ?string $pluralModelLabel = 'URL Redirects';
+    protected static ?string $pluralModelLabel = 'Các chuyển hướng URL';
 
     public static function form(Schema $schema): Schema
     {
@@ -51,19 +51,22 @@ class UrlRedirectResource extends Resource
                 SchemaGrid::make()
                     ->schema([
                         SchemaTextInput::make('from_slug')
+                            ->label('Slug cũ')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255)
                             ->rules(['alpha_dash'])
                             ->helperText('Slug cũ, không được trùng với slug hiện hữu của Product hoặc Article'),
                         SchemaTextInput::make('to_slug')
+                            ->label('Slug mới')
                             ->required()
                             ->maxLength(255)
                             ->rules(['alpha_dash']),
                         SchemaSelect::make('target_type')
+                            ->label('Loại mục tiêu')
                             ->options([
-                                UrlRedirect::TARGET_PRODUCT => 'Product',
-                                UrlRedirect::TARGET_ARTICLE => 'Article',
+                                UrlRedirect::TARGET_PRODUCT => 'Sản phẩm',
+                                UrlRedirect::TARGET_ARTICLE => 'Bài viết',
                             ])
                             ->required()
                             ->live()
@@ -71,7 +74,7 @@ class UrlRedirectResource extends Resource
                                 $set('target_id', null);
                             }),
                         SchemaSelect::make('target_id')
-                            ->label('Target')
+                            ->label('Mục tiêu')
                             ->options(function (callable $get) {
                                 $type = $get('target_type');
                                 if ($type === UrlRedirect::TARGET_PRODUCT) {
@@ -91,22 +94,27 @@ class UrlRedirectResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('from_slug')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('to_slug')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('target_type')
-                    ->badge(),
-                Tables\Columns\TextColumn::make('target.name')
-                    ->label('Target Name')
-                    ->getStateUsing(function (UrlRedirect $record) {
-                        return $record->target?->name ?? $record->target?->title ?? 'N/A';
-                    }),
-                Tables\Columns\TextColumn::make('hit_count')
-                    ->sortable(),
+        ->columns([
+        Tables\Columns\TextColumn::make('from_slug')
+        ->label('Slug cũ')
+        ->searchable()
+            ->sortable(),
+        Tables\Columns\TextColumn::make('to_slug')
+            ->label('Slug mới')
+        ->searchable(),
+        Tables\Columns\TextColumn::make('target_type')
+        ->label('Loại mục tiêu')
+        ->badge(),
+        Tables\Columns\TextColumn::make('target.name')
+        ->label('Tên mục tiêu')
+            ->getStateUsing(function (UrlRedirect $record) {
+            return $record->target?->name ?? $record->target?->title ?? 'Không có';
+            }),
+        Tables\Columns\TextColumn::make('hit_count')
+        ->label('Số lần truy cập')
+                ->sortable(),
                 Tables\Columns\TextColumn::make('last_triggered_at')
+                    ->label('Lần cuối kích hoạt')
                     ->dateTime()
                     ->sortable(),
             ])

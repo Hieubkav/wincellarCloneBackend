@@ -35,15 +35,15 @@ class SocialLinkResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'platform';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Content';
+    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
 
-    protected static ?string $navigationLabel = 'Social Links';
+    protected static ?string $navigationLabel = 'Liên kết mạng xã hội';
 
     protected static ?int $navigationSort = 30;
 
-    protected static ?string $modelLabel = 'Social Link';
+    protected static ?string $modelLabel = 'Liên kết mạng xã hội';
 
-    protected static ?string $pluralModelLabel = 'Social Links';
+    protected static ?string $pluralModelLabel = 'Các liên kết mạng xã hội';
 
     public static function form(Schema $schema): Schema
     {
@@ -52,20 +52,24 @@ class SocialLinkResource extends Resource
                 SchemaGrid::make()
                     ->schema([
                         SchemaTextInput::make('platform')
+                            ->label('Nền tảng')
                             ->required()
                             ->maxLength(255),
                         SchemaTextInput::make('url')
+                            ->label('URL')
                             ->required()
                             ->url()
                             ->maxLength(255),
                         SchemaSelect::make('icon_image_id')
-                            ->label('Icon Image')
+                            ->label('Hình ảnh biểu tượng')
                             ->options(Image::active()->pluck('file_path', 'id'))
                             ->searchable(),
                         SchemaTextInput::make('order')
+                            ->label('Thứ tự')
                             ->numeric()
                             ->default(0),
                         SchemaToggle::make('active')
+                            ->label('Hoạt động')
                             ->default(true),
                     ])
                     ->columns(2),
@@ -75,19 +79,23 @@ class SocialLinkResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('platform')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('url')
-                    ->searchable(),
-                Tables\Columns\ImageColumn::make('iconImage.file_path')
-                    ->label('Icon')
-                    ->disk('public')
-                    ->circular(),
-                Tables\Columns\TextColumn::make('order')
-                    ->sortable(),
+        ->columns([
+        Tables\Columns\TextColumn::make('platform')
+        ->label('Nền tảng')
+        ->searchable()
+            ->sortable(),
+        Tables\Columns\TextColumn::make('url')
+            ->label('URL')
+        ->searchable(),
+        Tables\Columns\ImageColumn::make('iconImage.file_path')
+        ->label('Biểu tượng')
+            ->disk('public')
+        ->circular(),
+        Tables\Columns\TextColumn::make('order')
+        ->label('Thứ tự')
+                ->sortable(),
                 Tables\Columns\IconColumn::make('active')
+                    ->label('Hoạt động')
                     ->boolean(),
             ])
             ->filters([

@@ -24,6 +24,14 @@ class MenuBlockItemResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'label';
 
+    protected static ?string $navigationLabel = 'Mục khối menu';
+
+    protected static ?int $navigationSort = 80;
+
+    protected static ?string $modelLabel = 'Mục khối menu';
+
+    protected static ?string $pluralModelLabel = 'Các mục khối menu';
+
     public static function form(Schema $schema): Schema
     {
         return MenuBlockItemForm::configure($schema);

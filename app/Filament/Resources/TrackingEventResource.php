@@ -17,9 +17,15 @@ class TrackingEventResource extends Resource
 {
     protected static ?string $model = TrackingEvent::class;
 
+    protected static ?string $modelLabel = 'Sự kiện theo dõi';
+
+    protected static ?string $pluralModelLabel = 'Các sự kiện theo dõi';
+
+    protected static ?string $navigationLabel = 'Sự kiện theo dõi';
+
     protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-eye';
 
-    protected static UnitEnum | string | null $navigationGroup = 'Analytics';
+    protected static UnitEnum | string | null $navigationGroup = 'Phân tích';
 
     protected static ?int $navigationSort = 1;
 
@@ -31,31 +37,34 @@ class TrackingEventResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                TextColumn::make('id')->sortable(),
-                TextColumn::make('event_type')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        TrackingEvent::TYPE_PRODUCT_VIEW => 'success',
-                        TrackingEvent::TYPE_ARTICLE_VIEW => 'info',
-                        TrackingEvent::TYPE_CTA_CONTACT => 'warning',
-                        default => 'gray',
-                    }),
-                TextColumn::make('visitor.anon_id')->label('Visitor'),
-                TextColumn::make('session.id')->label('Session'),
-                TextColumn::make('product.name')->label('Product')->placeholder('N/A'),
-                TextColumn::make('article.title')->label('Article')->placeholder('N/A'),
-                TextColumn::make('occurred_at')->dateTime()->sortable(),
-                Tables\Columns\ViewColumn::make('metadata')->view('filament.tables.columns.metadata'),
+        ->columns([
+        TextColumn::make('id')->sortable()->label('ID'),
+        TextColumn::make('event_type')
+        ->badge()
+        ->label('Loại sự kiện')
+        ->color(fn (string $state): string => match ($state) {
+        TrackingEvent::TYPE_PRODUCT_VIEW => 'success',
+        TrackingEvent::TYPE_ARTICLE_VIEW => 'info',
+        TrackingEvent::TYPE_CTA_CONTACT => 'warning',
+            default => 'gray',
+            }),
+        TextColumn::make('visitor.anon_id')->label('Khách truy cập'),
+        TextColumn::make('session.id')->label('Phiên'),
+        TextColumn::make('product.name')->label('Sản phẩm')->placeholder('Không có'),
+        TextColumn::make('article.title')->label('Bài viết')->placeholder('Không có'),
+        TextColumn::make('occurred_at')->dateTime()->sortable()->label('Thời gian xảy ra'),
+            Tables\Columns\ViewColumn::make('metadata')->view('filament.tables.columns.metadata')->label('Thông tin bổ sung'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('event_type')
-                    ->options([
-                        TrackingEvent::TYPE_PRODUCT_VIEW => 'Product View',
-                        TrackingEvent::TYPE_ARTICLE_VIEW => 'Article View',
-                        TrackingEvent::TYPE_CTA_CONTACT => 'CTA Contact',
-                    ]),
-                Tables\Filters\Filter::make('created_today')
+            Tables\Filters\SelectFilter::make('event_type')
+            ->label('Loại sự kiện')
+            ->options([
+            TrackingEvent::TYPE_PRODUCT_VIEW => 'Xem sản phẩm',
+            TrackingEvent::TYPE_ARTICLE_VIEW => 'Xem bài viết',
+                TrackingEvent::TYPE_CTA_CONTACT => 'Liên hệ qua CTA',
+                ]),
+            Tables\Filters\Filter::make('created_today')
+                    ->label('Hôm nay')
                     ->query(fn (Builder $query): Builder => $query->whereDate('occurred_at', today())),
             ])
             ->recordActions([

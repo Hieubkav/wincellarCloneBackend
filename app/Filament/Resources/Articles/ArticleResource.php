@@ -35,15 +35,15 @@ class ArticleResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Content';
+    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
 
-    protected static ?string $navigationLabel = 'Articles';
+    protected static ?string $navigationLabel = 'Bài viết';
 
     protected static ?int $navigationSort = 20;
 
-    protected static ?string $modelLabel = 'Article';
+    protected static ?string $modelLabel = 'Bài viết';
 
-    protected static ?string $pluralModelLabel = 'Articles';
+    protected static ?string $pluralModelLabel = 'Các bài viết';
 
     public static function form(Schema $schema): Schema
     {

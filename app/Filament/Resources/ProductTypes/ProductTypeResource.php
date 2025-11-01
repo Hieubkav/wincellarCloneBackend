@@ -25,15 +25,15 @@ class ProductTypeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Catalog';
+    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
 
-    protected static ?string $navigationLabel = 'Types';
+    protected static ?string $navigationLabel = 'Loại sản phẩm';
 
     protected static ?int $navigationSort = 30;
 
-    protected static ?string $modelLabel = 'Type';
+    protected static ?string $modelLabel = 'Loại sản phẩm';
 
-    protected static ?string $pluralModelLabel = 'Types';
+    protected static ?string $pluralModelLabel = 'Các loại sản phẩm';
 
     public static function form(Schema $schema): Schema
     {

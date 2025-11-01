@@ -27,15 +27,15 @@ class ImageResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'file_path';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Media';
+    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
 
-    protected static ?string $navigationLabel = 'Images';
+    protected static ?string $navigationLabel = 'Hình ảnh';
 
     protected static ?int $navigationSort = 50;
 
-    protected static ?string $modelLabel = 'Image';
+    protected static ?string $modelLabel = 'Hình ảnh';
 
-    protected static ?string $pluralModelLabel = 'Images';
+    protected static ?string $pluralModelLabel = 'Các hình ảnh';
 
     public static function form(Schema $schema): Schema
     {

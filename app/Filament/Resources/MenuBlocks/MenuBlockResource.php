@@ -12,6 +12,7 @@ use App\Filament\Resources\MenuBlocks\Tables\MenuBlocksTable;
 use App\Models\MenuBlock;
 use BackedEnum;
 use Filament\Resources\Resource;
+use UnitEnum;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
@@ -23,6 +24,16 @@ class MenuBlockResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'title';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Nội dung';
+
+    protected static ?string $navigationLabel = 'Khối menu';
+
+    protected static ?int $navigationSort = 70;
+
+    protected static ?string $modelLabel = 'Khối menu';
+
+    protected static ?string $pluralModelLabel = 'Các khối menu';
 
     public static function form(Schema $schema): Schema
     {

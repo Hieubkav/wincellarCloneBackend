@@ -18,9 +18,15 @@ class VisitorResource extends Resource
 {
     protected static ?string $model = Visitor::class;
 
+    protected static ?string $modelLabel = 'Khách truy cập';
+
+    protected static ?string $pluralModelLabel = 'Các khách truy cập';
+
+    protected static ?string $navigationLabel = 'Khách truy cập';
+
     protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-users';
 
-    protected static UnitEnum | string | null $navigationGroup = 'Analytics';
+    protected static UnitEnum | string | null $navigationGroup = 'Phân tích';
 
     protected static ?int $navigationSort = 3;
 
@@ -33,14 +39,14 @@ class VisitorResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable(),
-                TextColumn::make('anon_id')->searchable(),
-                TextColumn::make('ip_hash')->placeholder('N/A'),
-                TextColumn::make('user_agent')->limit(50)->tooltip(fn ($record) => $record->user_agent),
-                TextColumn::make('first_seen_at')->dateTime()->sortable(),
-                TextColumn::make('last_seen_at')->dateTime()->sortable(),
-                TextColumn::make('sessions_count')->counts('sessions'),
-                TextColumn::make('events_count')->counts('events'),
+                TextColumn::make('id')->sortable()->label('ID'),
+                TextColumn::make('anon_id')->searchable()->label('Mã ẩn danh'),
+                TextColumn::make('ip_hash')->placeholder('Không có')->label('Băm IP'),
+                TextColumn::make('user_agent')->limit(50)->tooltip(fn ($record) => $record->user_agent)->label('Trình duyệt'),
+                TextColumn::make('first_seen_at')->dateTime()->sortable()->label('Lần đầu thấy'),
+                TextColumn::make('last_seen_at')->dateTime()->sortable()->label('Lần cuối thấy'),
+                TextColumn::make('sessions_count')->counts('sessions')->label('Số phiên'),
+                TextColumn::make('events_count')->counts('events')->label('Số sự kiện'),
             ])
             ->filters([
                 //

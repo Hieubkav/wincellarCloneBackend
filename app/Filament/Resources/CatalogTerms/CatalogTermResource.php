@@ -26,15 +26,15 @@ class CatalogTermResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Catalog';
+    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
 
-    protected static ?string $navigationLabel = 'Attribute terms';
+    protected static ?string $navigationLabel = 'Thuật ngữ thuộc tính';
 
     protected static ?int $navigationSort = 30;
 
-    protected static ?string $modelLabel = 'Term';
+    protected static ?string $modelLabel = 'Thuật ngữ';
 
-    protected static ?string $pluralModelLabel = 'Terms';
+    protected static ?string $pluralModelLabel = 'Các thuật ngữ';
 
     public static function form(Schema $schema): Schema
     {

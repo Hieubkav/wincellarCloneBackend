@@ -36,15 +36,15 @@ class ProductResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Content';
+    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
 
-    protected static ?string $navigationLabel = 'Products';
+    protected static ?string $navigationLabel = 'Sản phẩm';
 
     protected static ?int $navigationSort = 10;
 
-    protected static ?string $modelLabel = 'Product';
+    protected static ?string $modelLabel = 'Sản phẩm';
 
-    protected static ?string $pluralModelLabel = 'Products';
+    protected static ?string $pluralModelLabel = 'Các sản phẩm';
 
     public static function form(Schema $schema): Schema
     {
@@ -108,25 +108,30 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('slug')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('productCategory.name')
-                    ->label('Category')
-                    ->badge(),
-                Tables\Columns\TextColumn::make('type.name')
-                    ->label('Type')
-                    ->badge(),
-                Tables\Columns\TextColumn::make('price')
-                    ->money('VND')
-                    ->sortable(),
-                Tables\Columns\IconColumn::make('active')
-                    ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
+        ->columns([
+        Tables\Columns\TextColumn::make('name')
+        ->label('Tên')
+        ->searchable()
+            ->sortable(),
+        Tables\Columns\TextColumn::make('slug')
+        ->label('Slug')
+            ->searchable()
+        ->sortable(),
+        Tables\Columns\TextColumn::make('productCategory.name')
+            ->label('Danh mục')
+        ->badge(),
+        Tables\Columns\TextColumn::make('type.name')
+            ->label('Loại')
+        ->badge(),
+        Tables\Columns\TextColumn::make('price')
+            ->label('Giá')
+        ->money('VND')
+            ->sortable(),
+        Tables\Columns\IconColumn::make('active')
+        ->label('Hoạt động')
+        ->boolean(),
+            Tables\Columns\TextColumn::make('created_at')
+                    ->label('Ngày tạo')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),

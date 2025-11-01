@@ -8,9 +8,9 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListUrlRedirects extends ListRecords
 {
-    protected static string $resource = UrlRedirectResource::class;
+protected static string $resource = UrlRedirectResource::class;
 
-    protected function getHeaderActions(): array
+protected function getHeaderActions(): array
     {
         return [
             Actions\CreateAction::make(),

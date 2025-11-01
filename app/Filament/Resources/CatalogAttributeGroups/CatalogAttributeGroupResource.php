@@ -25,15 +25,15 @@ class CatalogAttributeGroupResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Catalog';
+    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
 
-    protected static ?string $navigationLabel = 'Attribute Groups';
+    protected static ?string $navigationLabel = 'Nhóm thuộc tính';
 
     protected static ?int $navigationSort = 10;
 
-    protected static ?string $modelLabel = 'Attribute group';
+    protected static ?string $modelLabel = 'Nhóm thuộc tính';
 
-    protected static ?string $pluralModelLabel = 'Attribute groups';
+    protected static ?string $pluralModelLabel = 'Các nhóm thuộc tính';
 
     public static function form(Schema $schema): Schema
     {

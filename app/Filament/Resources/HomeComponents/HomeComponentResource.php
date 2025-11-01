@@ -25,15 +25,15 @@ class HomeComponentResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'type';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Content';
+    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
 
-    protected static ?string $navigationLabel = 'Home components';
+    protected static ?string $navigationLabel = 'Thành phần trang chủ';
 
     protected static ?int $navigationSort = 40;
 
-    protected static ?string $modelLabel = 'Home component';
+    protected static ?string $modelLabel = 'Thành phần trang chủ';
 
-    protected static ?string $pluralModelLabel = 'Home components';
+    protected static ?string $pluralModelLabel = 'Các thành phần trang chủ';
 
     public static function form(Schema $schema): Schema
     {
