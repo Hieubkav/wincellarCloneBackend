@@ -24,11 +24,11 @@ class MenuResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
-    protected static \UnitEnum|string|null $navigationGroup = 'Nội dung';
+    protected static \UnitEnum|string|null $navigationGroup = 'Điều hướng';
 
     protected static ?string $navigationLabel = 'Menu';
 
-    protected static ?int $navigationSort = 60;
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $modelLabel = 'Menu';
 

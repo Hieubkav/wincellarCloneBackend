@@ -22,11 +22,12 @@ class ProductTypeForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('Type details')
+                Section::make('Thông tin phân loại')
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')
-                            ->label('Name')
+                            ->label('Tên phân loại')
+                            ->helperText('Ví dụ: Vang đỏ, Vang trắng, Bia chai, Bia lon, Xúc xích...')
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
@@ -36,27 +37,29 @@ class ProductTypeForm
                                 }
                             }),
                         TextInput::make('slug')
-                            ->label('Slug')
+                            ->label('Đường dẫn')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->rule('alpha_dash')
-                            ->helperText('Used in URLs and filters. Characters: letters, numbers, dash, underscore.'),
+                            ->helperText('Đường dẫn URL. Chỉ dùng chữ thường, số, gạch ngang, gạch dưới'),
                         Textarea::make('description')
-                            ->label('Description')
+                            ->label('Mô tả')
                             ->rows(3)
                             ->columnSpanFull()
-                            ->helperText('Optional copy for menus or tooltips.'),
+                            ->helperText('Mô tả chi tiết loại sản phẩm'),
                         Grid::make()
                             ->schema([
                                 TextInput::make('order')
-                                    ->label('Display order')
+                                    ->label('Thứ tự hiển thị')
                                     ->numeric()
                                     ->default(0)
                                     ->minValue(0)
-                                    ->step(1),
+                                    ->step(1)
+                                    ->helperText('Số nhỏ sẽ hiển thị trước'),
                                 Toggle::make('active')
-                                    ->label('Active')
+                                    ->label('Đang hiển thị')
+                                    ->helperText('Bật để hiển thị loại này')
                                     ->default(true)
                                     ->inline(false),
                             ])

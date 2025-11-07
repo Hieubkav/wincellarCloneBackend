@@ -25,11 +25,11 @@ class CatalogAttributeGroupResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
+    protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
 
     protected static ?string $navigationLabel = 'Nhóm thuộc tính';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 50;
 
     protected static ?string $modelLabel = 'Nhóm thuộc tính';
 

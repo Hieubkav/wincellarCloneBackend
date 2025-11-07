@@ -22,11 +22,12 @@ class ProductCategoryForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('Category details')
+                Section::make('Thông tin nhóm sản phẩm')
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')
-                            ->label('Name')
+                            ->label('Tên nhóm')
+                            ->helperText('Ví dụ: Rượu vang, Bia, Thịt nguội, Bánh ngọt...')
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
@@ -36,28 +37,29 @@ class ProductCategoryForm
                                 }
                             }),
                         TextInput::make('slug')
-                            ->label('Slug')
+                            ->label('Đường dẫn')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true)
                             ->rule('alpha_dash')
-                            ->helperText('Used in URLs and redirects. Characters: letters, numbers, dash, underscore.'),
+                            ->helperText('Đường dẫn URL. Chỉ dùng chữ thường, số, gạch ngang, gạch dưới'),
                         Textarea::make('description')
-                            ->label('Description')
+                            ->label('Mô tả')
                             ->rows(3)
                             ->columnSpanFull()
-                            ->helperText('Optional copy for tooltips or SEO content on landing pages.'),
+                            ->helperText('Mô tả chi tiết nhóm sản phẩm, có thể dùng cho SEO'),
                         Grid::make()
                             ->schema([
                                 TextInput::make('order')
-                                    ->label('Display order')
+                                    ->label('Thứ tự hiển thị')
                                     ->numeric()
                                     ->default(0)
                                     ->minValue(0)
                                     ->step(1)
-                                    ->helperText('Lower numbers appear first in menus & filters.'),
+                                    ->helperText('Số nhỏ sẽ hiển thị trước trong menu và bộ lọc'),
                                 Toggle::make('active')
-                                    ->label('Active')
+                                    ->label('Đang hiển thị')
+                                    ->helperText('Bật để hiển thị nhóm này')
                                     ->default(true)
                                     ->inline(false),
                             ])

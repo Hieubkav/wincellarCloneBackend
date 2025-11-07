@@ -17,39 +17,42 @@ class HomeComponentForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('Component configuration')
+                Section::make('Cấu hình khối giao diện')
+                    ->description('Các khối này sẽ hiển thị trên trang chủ')
                     ->columns(2)
                     ->schema([
                         TextInput::make('type')
-                            ->label('Component type')
+                            ->label('Loại khối')
                             ->required()
                             ->maxLength(120)
                             ->datalist(self::typeSuggestions())
-                            ->helperText('Identifier used by the frontend renderer, e.g. hero_banner, featured_products.'),
+                            ->helperText('Mã khối dùng bởi frontend. Ví dụ: hero_banner, featured_products, article_list'),
                         Grid::make()
                             ->schema([
                                 TextInput::make('order')
-                                    ->label('Display order')
+                                    ->label('Thứ tự hiển thị')
+                                    ->helperText('Số nhỏ sẽ hiển thị trước trên trang chủ')
                                     ->numeric()
                                     ->default(0)
                                     ->minValue(0)
                                     ->step(1),
                                 Toggle::make('active')
-                                    ->label('Active')
+                                    ->label('Đang hiển thị')
+                                    ->helperText('Bật để hiển thị khối này')
                                     ->default(true)
                                     ->inline(false),
                             ])
                             ->columns(2)
                             ->columnSpanFull(),
                         KeyValue::make('config')
-                            ->label('Display configuration')
-                            ->keyLabel('Key')
-                            ->valueLabel('Value')
+                            ->label('Cấu hình hiển thị')
+                            ->keyLabel('Tên trường')
+                            ->valueLabel('Giá trị')
                             ->reorderable()
-                            ->addButtonLabel('Add config item')
+                            ->addButtonLabel('Thêm cấu hình')
                             ->nullable()
                             ->columnSpanFull()
-                            ->helperText('Optional key-value pairs consumed by the frontend (e.g. title, limit, theme).'),
+                            ->helperText('Dữ liệu bổ sung cho frontend. Ví dụ: title=Sản phẩm nổi bật, limit=8, theme=dark'),
                     ]),
             ]);
     }

@@ -20,61 +20,64 @@ class CatalogAttributeGroupForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('General')
+                Section::make('Thông tin chung')
                     ->columns(2)
                     ->schema([
                         TextInput::make('code')
-                            ->label('Code')
+                            ->label('Mã nhóm')
                             ->required()
                             ->maxLength(50)
                             ->unique(ignoreRecord: true)
-                            ->helperText('Unique identifier for integrations, e.g. brand, country.'),
+                            ->helperText('Mã định danh duy nhất. Ví dụ: brand, country, region, grape'),
                         TextInput::make('name')
-                            ->label('Display name')
+                            ->label('Tên hiển thị')
+                            ->helperText('Ví dụ: Thương hiệu, Quốc gia, Vùng miền, Giống nho')
                             ->required()
                             ->maxLength(255),
                         Select::make('filter_type')
-                            ->label('Filter type')
+                            ->label('Kiểu bộ lọc')
                             ->required()
                             ->default('multi')
                             ->options([
-                                'single' => 'Single',
-                                'multi' => 'Multi',
-                                'hierarchy' => 'Hierarchy',
-                                'range' => 'Range',
+                                'single' => 'Chọn đơn',
+                                'multi' => 'Chọn nhiều',
+                                'hierarchy' => 'Phân cấp',
+                                'range' => 'Khoảng',
                             ])
-                            ->helperText('Controls how filters are rendered and queried on the storefront.'),
+                            ->helperText('Quyết định cách hiển thị bộ lọc trên website'),
                         Grid::make()
                             ->schema([
                                 Toggle::make('is_filterable')
-                                    ->label('Filterable')
+                                    ->label('Cho phép lọc')
+                                    ->helperText('Bật để hiển thị trong bộ lọc')
                                     ->default(true)
                                     ->inline(false),
                                 Toggle::make('is_primary')
-                                    ->label('Primary group')
+                                    ->label('Nhóm chính')
                                     ->default(false)
                                     ->inline(false)
-                                    ->helperText('Primary groups power key navigation such as breadcrumbs.'),
+                                    ->helperText('Nhóm chính sẽ dùng cho breadcrumb và điều hướng quan trọng'),
                             ])
                             ->columns(2),
                         TextInput::make('position')
-                            ->label('Position')
+                            ->label('Thứ tự hiển thị')
                             ->numeric()
                             ->default(0)
                             ->minValue(0)
                             ->step(1)
-                            ->helperText('Lower numbers appear first in listings.'),
+                            ->helperText('Số nhỏ sẽ hiển thị trước'),
                     ]),
-                Section::make('Display configuration')
+                Section::make('Cấu hình hiển thị')
                     ->collapsed()
+                    ->description('Tùy chỉnh giao diện, không bắt buộc')
                     ->schema([
                         KeyValue::make('display_config')
-                            ->keyLabel('Config key')
-                            ->valueLabel('Value')
+                            ->keyLabel('Tên cấu hình')
+                            ->valueLabel('Giá trị')
                             ->reorderable()
-                            ->addButtonLabel('Add configuration')
+                            ->addButtonLabel('Thêm cấu hình')
                             ->nullable()
-                            ->helperText('Optional overrides for the frontend (icons, colors, templates, etc.).')
+                            ->helperText('Cấu hình cho frontend như icon, màu sắc, template...')
                             ->columnSpanFull(),
                     ]),
             ]);

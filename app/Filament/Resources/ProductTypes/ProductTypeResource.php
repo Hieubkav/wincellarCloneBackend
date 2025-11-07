@@ -25,7 +25,7 @@ class ProductTypeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
+    protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
 
     protected static ?string $navigationLabel = 'Loại sản phẩm';
 

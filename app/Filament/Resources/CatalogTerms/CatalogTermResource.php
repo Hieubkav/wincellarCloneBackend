@@ -26,11 +26,11 @@ class CatalogTermResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
+    protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
 
     protected static ?string $navigationLabel = 'Thuật ngữ thuộc tính';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 40;
 
     protected static ?string $modelLabel = 'Thuật ngữ';
 

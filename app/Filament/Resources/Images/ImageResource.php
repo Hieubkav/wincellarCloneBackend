@@ -31,7 +31,7 @@ class ImageResource extends Resource
 
     protected static ?string $navigationLabel = 'Hình ảnh';
 
-    protected static ?int $navigationSort = 50;
+    protected static ?int $navigationSort = 30;
 
     protected static ?string $modelLabel = 'Hình ảnh';
 

@@ -97,7 +97,9 @@ class ImagesTable
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->paginated([5, 10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(25);
     }
 
     protected static function modelTypeOptions(): array
@@ -132,4 +134,3 @@ class ImagesTable
         return $value ? class_basename($value) : null;
     }
 }
-

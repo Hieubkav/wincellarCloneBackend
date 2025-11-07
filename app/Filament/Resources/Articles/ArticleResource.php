@@ -39,7 +39,7 @@ class ArticleResource extends Resource
 
     protected static ?string $navigationLabel = 'Bài viết';
 
-    protected static ?int $navigationSort = 20;
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $modelLabel = 'Bài viết';
 
@@ -52,31 +52,48 @@ class ArticleResource extends Resource
                 Grid::make()
                     ->schema([
                         TextInput::make('title')
+                            ->label('Tiêu đề')
+                            ->helperText('Tiêu đề bài viết, nên rõ ràng và hấp dẫn')
                             ->required()
                             ->maxLength(255),
                         TextInput::make('slug')
+                            ->label('Đường dẫn')
+                            ->helperText('Đường dẫn hiển thị trên website. Ví dụ: cach-chon-ruou-vang-ngon')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255)
                             ->rules(['alpha_dash']),
                         Select::make('author_id')
-                            ->label('Author')
+                            ->label('Tác giả')
+                            ->helperText('Người viết bài')
                             ->options(User::pluck('name', 'id'))
                             ->searchable()
                             ->required(),
                         Textarea::make('excerpt')
-                            ->rows(3),
+                            ->label('Tóm tắt')
+                            ->helperText('Đoạn giới thiệu ngắn, hiển thị ở danh sách bài viết')
+                            ->rows(3)
+                            ->columnSpanFull(),
                         Toggle::make('active')
+                            ->label('Đang hiển thị')
+                            ->helperText('Bật để xuất bản bài viết')
                             ->default(true),
                     ])
                     ->columns(2),
                 RichEditor::make('content')
-                    ->required(),
+                    ->label('Nội dung')
+                    ->helperText('Nội dung chi tiết của bài viết')
+                    ->required()
+                    ->columnSpanFull(),
                 Grid::make()
                     ->schema([
                         TextInput::make('meta_title')
+                            ->label('Tiêu đề SEO')
+                            ->helperText('Tiêu đề hiển thị trên Google (tối đa 60 ký tự)')
                             ->maxLength(255),
                         Textarea::make('meta_description')
+                            ->label('Mô tả SEO')
+                            ->helperText('Mô tả ngắn cho Google (tối đa 160 ký tự)')
                             ->rows(2)
                             ->maxLength(255),
                     ])
@@ -89,24 +106,30 @@ class ArticleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
+                    ->label('Tiêu đề')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('slug')
+                    ->label('Đường dẫn')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('author.name')
-                    ->label('Author')
+                    ->label('Tác giả')
                     ->sortable(),
                 Tables\Columns\IconColumn::make('active')
+                    ->label('Hiển thị')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Ngày tạo')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
-            ]);
+            ])
+            ->paginated([5, 10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(25);
     }
 
     public static function getTableActions(): array

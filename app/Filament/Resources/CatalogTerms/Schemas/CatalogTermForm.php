@@ -26,11 +26,12 @@ class CatalogTermForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('Term details')
+                Section::make('Thông tin thuật ngữ')
                     ->columns(2)
                     ->schema([
                         Select::make('group_id')
-                            ->label('Attribute group')
+                            ->label('Nhóm thuộc tính')
+                            ->helperText('Chọn nhóm thuộc tính như Thương hiệu, Xuất xứ, Giống nho...')
                             ->required()
                             ->options(fn (): array => CatalogAttributeGroup::query()
                                 ->orderBy('position')
@@ -40,8 +41,9 @@ class CatalogTermForm
                             ->preload()
                             ->live(),
                         Select::make('parent_id')
-                            ->label('Parent term')
-                            ->placeholder('Top level')
+                            ->label('Thuật ngữ cha')
+                            ->placeholder('Cấp cao nhất')
+                            ->helperText('Để trống nếu đây là mục cấp cao nhất')
                             ->options(function (Get $get, ?CatalogTerm $record): array {
                                 $groupId = $get('group_id');
 
@@ -63,7 +65,8 @@ class CatalogTermForm
                             ->preload()
                             ->columnSpan(1),
                         TextInput::make('name')
-                            ->label('Name')
+                            ->label('Tên thuật ngữ')
+                            ->helperText('Ví dụ: Pháp, Ý, Bordeaux, Champagne...')
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
@@ -73,52 +76,56 @@ class CatalogTermForm
                                 }
                             }),
                         TextInput::make('slug')
-                            ->label('Slug')
+                            ->label('Đường dẫn')
                             ->required()
                             ->maxLength(255)
                             ->rule('alpha_dash')
                             ->unique(ignoreRecord: true)
-                            ->helperText('Used in URLs and integrations. Allowed: letters, numbers, dash, underscore.'),
+                            ->helperText('Đường dẫn URL. Chỉ dùng chữ thường, số, gạch ngang, gạch dưới'),
                         Textarea::make('description')
-                            ->label('Description')
+                            ->label('Mô tả')
                             ->rows(3)
                             ->columnSpanFull()
-                            ->helperText('Optional copy for tooltips or landing pages.'),
+                            ->helperText('Mô tả chi tiết, có thể hiển thị trên trang lọc sản phẩm'),
                         Grid::make()
                             ->schema([
                                 TextInput::make('icon_type')
-                                    ->label('Icon type')
+                                    ->label('Loại biểu tượng')
+                                    ->helperText('Ví dụ: image, emoji, icon...')
                                     ->maxLength(50),
                                 TextInput::make('icon_value')
-                                    ->label('Icon value')
+                                    ->label('Giá trị biểu tượng')
+                                    ->helperText('Đường dẫn ảnh hoặc mã biểu tượng')
                                     ->maxLength(255),
                             ])
                             ->columns(2),
                         Grid::make()
                             ->schema([
                                 Toggle::make('is_active')
-                                    ->label('Active')
+                                    ->label('Đang hiển thị')
+                                    ->helperText('Bật để hiển thị trên website')
                                     ->default(true)
                                     ->inline(false),
                                 TextInput::make('position')
-                                    ->label('Display order')
+                                    ->label('Thứ tự hiển thị')
                                     ->numeric()
                                     ->default(0)
                                     ->minValue(0)
                                     ->step(1)
-                                    ->helperText('Lower numbers appear first within the group.'),
+                                    ->helperText('Số nhỏ sẽ hiển thị trước trong cùng nhóm'),
                             ])
                             ->columns(2),
                     ]),
-                Section::make('Metadata')
+                Section::make('Dữ liệu bổ sung')
                     ->collapsed()
+                    ->description('Thông tin mở rộng, không bắt buộc')
                     ->schema([
                         KeyValue::make('metadata')
-                            ->label('Metadata')
-                            ->keyLabel('Key')
-                            ->valueLabel('Value')
+                            ->label('Dữ liệu tùy chỉnh')
+                            ->keyLabel('Tên trường')
+                            ->valueLabel('Giá trị')
                             ->reorderable()
-                            ->addButtonLabel('Add metadata')
+                            ->addButtonLabel('Thêm thông tin')
                             ->nullable()
                             ->columnSpanFull(),
                     ]),

@@ -39,7 +39,7 @@ class SocialLinkResource extends Resource
 
     protected static ?string $navigationLabel = 'Liên kết mạng xã hội';
 
-    protected static ?int $navigationSort = 30;
+    protected static ?int $navigationSort = 40;
 
     protected static ?string $modelLabel = 'Liên kết mạng xã hội';
 
@@ -52,24 +52,29 @@ class SocialLinkResource extends Resource
                 SchemaGrid::make()
                     ->schema([
                         SchemaTextInput::make('platform')
-                            ->label('Nền tảng')
+                            ->label('Tên mạng xã hội')
+                            ->helperText('Ví dụ: Facebook, Instagram, YouTube...')
                             ->required()
                             ->maxLength(255),
                         SchemaTextInput::make('url')
-                            ->label('URL')
+                            ->label('Đường dẫn')
+                            ->helperText('Link trang mạng xã hội của bạn')
                             ->required()
                             ->url()
                             ->maxLength(255),
                         SchemaSelect::make('icon_image_id')
-                            ->label('Hình ảnh biểu tượng')
+                            ->label('Biểu tượng')
+                            ->helperText('Chọn icon từ thư viện ảnh')
                             ->options(Image::active()->pluck('file_path', 'id'))
                             ->searchable(),
                         SchemaTextInput::make('order')
-                            ->label('Thứ tự')
+                            ->label('Thứ tự hiển thị')
+                            ->helperText('Số nhỏ sẽ hiển thị trước')
                             ->numeric()
                             ->default(0),
                         SchemaToggle::make('active')
-                            ->label('Hoạt động')
+                            ->label('Đang hiển thị')
+                            ->helperText('Bật để hiển thị link này')
                             ->default(true),
                     ])
                     ->columns(2),
@@ -101,7 +106,9 @@ class SocialLinkResource extends Resource
             ->filters([
             //
             ])
-            ->defaultSort('order');
+            ->defaultSort('order')
+            ->paginated([5, 10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(25);
     }
 
     public static function getTableActions(): array

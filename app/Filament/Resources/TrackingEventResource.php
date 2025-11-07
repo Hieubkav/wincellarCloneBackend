@@ -27,7 +27,7 @@ class TrackingEventResource extends Resource
 
     protected static UnitEnum | string | null $navigationGroup = 'Phân tích';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 10;
 
     public static function schema(Schema $schema): Schema
     {
@@ -73,7 +73,9 @@ class TrackingEventResource extends Resource
             ->toolbarActions([
                 // No bulk actions
             ])
-            ->defaultSort('occurred_at', 'desc');
+            ->defaultSort('occurred_at', 'desc')
+            ->paginated([5, 10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(25);
     }
 
     public static function getRelations(): array

@@ -25,11 +25,11 @@ class MenuBlockResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Nội dung';
+    protected static string|UnitEnum|null $navigationGroup = 'Điều hướng';
 
     protected static ?string $navigationLabel = 'Khối menu';
 
-    protected static ?int $navigationSort = 70;
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $modelLabel = 'Khối menu';
 

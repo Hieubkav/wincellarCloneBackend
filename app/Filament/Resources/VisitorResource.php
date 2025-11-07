@@ -28,7 +28,7 @@ class VisitorResource extends Resource
 
     protected static UnitEnum | string | null $navigationGroup = 'Phân tích';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 20;
 
     public static function schema(Schema $schema): Schema
     {
@@ -57,7 +57,9 @@ class VisitorResource extends Resource
             ->toolbarActions([
             //
             ])
-            ->defaultSort('last_seen_at', 'desc');
+            ->defaultSort('last_seen_at', 'desc')
+            ->paginated([5, 10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(25);
     }
 
     public static function getRelations(): array

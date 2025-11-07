@@ -26,17 +26,17 @@ class ImageForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('File')
+                Section::make('Tệp hình ảnh')
                     ->columns(2)
                     ->schema([
                         Select::make('disk')
-                            ->label('Storage disk')
+                            ->label('Nơi lưu trữ')
                             ->required()
                             ->options(self::diskOptions())
                             ->default(config('filesystems.default'))
-                            ->helperText('Choose where the file will be stored.'),
+                            ->helperText('Chọn nơi lưu file (thường là public)'),
                         FileUpload::make('file_path')
-                            ->label('File')
+                            ->label('Tải lên hình ảnh')
                             ->required(fn (string $operation): bool => $operation === 'create')
                             ->image()
                             ->visibility('public')
@@ -47,74 +47,78 @@ class ImageForm
                             ->getUploadedFileNameForStorageUsing(function (TemporaryUploadedFile $file): string {
                                 return 'img-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
                             })
-                            ->helperText('Upload JPG/PNG/WebP up to 10MB. A new upload will replace the existing file.'),
+                            ->helperText('Tải lên JPG/PNG/WebP tối đa 10MB. File mới sẽ thay thế file cũ'),
                     ]),
-                Section::make('Meta')
+                Section::make('Thông tin')
                     ->columns(2)
                     ->schema([
                         TextInput::make('alt')
-                            ->label('Alt text')
+                            ->label('Mô tả ảnh (Alt text)')
                             ->maxLength(255)
-                            ->helperText('Short description used for accessibility and SEO.'),
+                            ->helperText('Mô tả ngắn cho SEO và người khiếm thị'),
                         TextInput::make('order')
-                            ->label('Display order')
+                            ->label('Thứ tự hiển thị')
                             ->numeric()
                             ->default(1)
                             ->minValue(0)
                             ->step(1)
-                            ->helperText('0 marks the cover image for a gallery.'),
+                            ->helperText('Số 0 đánh dấu ảnh đại diện chính. Số khác theo thứ tự bộ sưu tập'),
                         Toggle::make('active')
-                            ->label('Active')
+                            ->label('Đang hiển thị')
+                            ->helperText('Bật để hiển thị ảnh này')
                             ->default(true)
                             ->inline(false),
                     ]),
-                Section::make('Attached to')
+                Section::make('Gắn với')
                     ->schema([
                         MorphToSelect::make('model')
-                            ->label('Owner')
+                            ->label('Thuộc về')
+                            ->helperText('Chọn sản phẩm hoặc bài viết mà ảnh này thuộc về')
                             ->types([
                                 Type::make(Product::class)
-                                    ->label('Product')
+                                    ->label('Sản phẩm')
                                     ->titleAttribute('name'),
                                 Type::make(Article::class)
-                                    ->label('Article')
+                                    ->label('Bài viết')
                                     ->titleAttribute('title'),
                             ])
                             ->required()
                             ->preload()
-                            ->searchable()
-                            ->helperText('Link the image to the record it belongs to.'),
+                            ->searchable(),
                     ]),
-                Section::make('Derived data')
+                Section::make('Chi tiết kỹ thuật')
+                    ->description('Hệ thống tự động nhận diện')
+                    ->collapsed()
                     ->columns(3)
                     ->schema([
                         TextInput::make('width')
-                            ->label('Width (px)')
+                            ->label('Chiều rộng (px)')
                             ->numeric()
                             ->dehydrated(false)
                             ->disabled(),
                         TextInput::make('height')
-                            ->label('Height (px)')
+                            ->label('Chiều cao (px)')
                             ->numeric()
                             ->dehydrated(false)
                             ->disabled(),
                         TextInput::make('mime')
-                            ->label('MIME type')
+                            ->label('Định dạng')
                             ->maxLength(191)
                             ->dehydrated(false)
                             ->disabled(),
                     ]),
-                Section::make('Extra attributes')
+                Section::make('Thuộc tính bổ sung')
                     ->collapsed()
+                    ->description('Thông tin mở rộng, không bắt buộc')
                     ->schema([
                         KeyValue::make('extra_attributes')
-                            ->keyLabel('Key')
-                            ->valueLabel('Value')
+                            ->keyLabel('Tên trường')
+                            ->valueLabel('Giá trị')
                             ->nullable()
                             ->reorderable()
-                            ->addButtonLabel('Add attribute')
+                            ->addButtonLabel('Thêm thuộc tính')
                             ->columnSpanFull()
-                            ->helperText('Optional metadata (caption, focal point, etc.).'),
+                            ->helperText('Dữ liệu tùy chỉnh như chú thích, điểm tập trung...'),
                     ]),
             ]);
     }

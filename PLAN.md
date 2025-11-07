@@ -29,11 +29,11 @@
 ### 3. Phạm vi chức năng (BE/API/Admin)
 
 * API sản phẩm/bài viết/home, filter & sort mặc định.
-* Slug thay đổi trả 404 nếu không cập nhật liên kết; dự án không triển khai redirect tự động.
+* Slug thay đổi trả **404**. Không hỗ trợ redirect.
 * Ảnh dùng  **bảng polymorphic `images`** ; một số bảng (settings, social_links, catalog_terms icon (term dùng icon type image)) dùng  **FK trực tiếp** .
 * Tính **`discount_percent`** ở BE (làm tròn  **0 chữ số** ).
 * **Analytics** theo khoảng 7/30/90/all-time;  **event CTA “Liên hệ”** ; dọn raw >90 ngày;  **bảng aggregate daily** .
-* Phân quyền: `admin`, `staff` (staff không chỉnh settings/user/redirects/roles).
+* Phân quyền: `admin`, `staff` (staff không chỉnh settings/user/roles).
 * SEO: tự sinh meta/OG khi trống; canonical theo slug hiện tại.
 * Tracking: visitor/session/event (view, cta_contact).
 * Audit log read-only: tra cứu theo user/action/time, export CSV.
@@ -83,14 +83,8 @@
 * **Unique key** : `(date, event_type, product_id, article_id)`;
 * **Ghi chú** : `views` và `clicks` dùng theo ngữ cảnh (vd: `product_view` -> `views`; `cta_contact` -> `clicks`).
 
-### 4) Redirect & audit
+### 4) Users & audit
 
-* **url_redirects** *(tùy chọn, nhập tay khi cần)* :
-
-  `id`, `from_slug VARCHAR UNIQUE`, `to_slug VARCHAR`, `target_type ENUM('Product','Article')`, `target_id BIGINT`, `created_at`,
-
-  * **Ràng buộc** : `from_slug != to_slug`; **không** cho phép trùng với slug hiện hữu của resource.
-  * **Ghi chú** : không có cơ chế tự sinh; Admin chỉ tạo/thay đổi khi thật sự cần chuyển hướng.
 * **users** : `id`, `name`, `email unique`, `role ENUM('admin','staff')`, `password_hash`, `active`.
 * **audit_logs** : `id`, `user_id FK`, `action`, `model_type`, `model_id`, `before JSON NULL`, `after JSON NULL`, `ip_hash`, `created_at`.
 * **Read-only** trong Admin.
@@ -131,9 +125,6 @@ erDiagram
   PRODUCTS ||--o{ TRACKING_EVENTS : viewed
   ARTICLES ||--o{ TRACKING_EVENTS : viewed
 
-  URL_REDIRECTS }o--|| PRODUCTS : to_product
-  URL_REDIRECTS }o--|| ARTICLES : to_article
-
   TRACKING_EVENTS ||--o{ TRACKING_EVENT_AGGREGATES_DAILY : rolls_up
 ```
 
@@ -145,7 +136,7 @@ erDiagram
 
 1. **Chuẩn slug**: khuyến nghị normalize (lowercase, thay khoảng trắng bằng ``-``, bỏ ký tự không an toàn) khi seed hoặc nhập tay để nhất quán SEO.
 2. **Unique**: dựa trên ràng buộc DB; nếu trùng trả về 422 để người nhập điều chỉnh (không tự gắn hậu tố).
-3. **Đổi slug**: đường dẫn cũ sẽ trả 404 nếu không cập nhật liên kết; chỉ tạo ``url_redirects`` thủ công khi business thật sự cần giữ đường dẫn cũ.
+3. **Đổi slug**: đường dẫn cũ sẽ trả **404**. Không hỗ trợ redirect tự động hay thủ công.
 4. **Canonical**: luôn dùng slug hiện tại.
 ### B. Ảnh (polymorphic) & FK trực tiếp (logo/icon)
 
@@ -221,7 +212,7 @@ erDiagram
 
 ### H. Quyền hạn & Audit
 
-* Role `staff`: **không** sửa `settings`, `users`, `url_redirects`, `roles/permissions`.
+* Role `staff`: **không** sửa `settings`, `users`, `roles/permissions`.
 * Mọi truy cập trái phép: HTTP 403 + ghi `audit_logs` action `denied` (model/route, ip_hash).
 * `audit_logs` **read-only** trên Admin; filter theo user/action/time; CSV export.
 
@@ -335,11 +326,11 @@ erDiagram
 
 ## VIII) Checklist nghiệm thu (QA)
 
-* [ ] Canonical/OG đúng sau đổi slug (không trỏ về `from_slug`).
+* [ ] Canonical/OG đúng sau đổi slug.
 * [ ] DISTINCT sản phẩm khi filter nhiều pivot; không trùng.
 * [ ] Cover `order=0` duy nhất cho mỗi model; conflict trả 409.
 * [ ] `discount_percent` trả **null** khi không giảm; nếu có, làm tròn  **0 chữ số** .
-* [ ] Staff truy cập Settings/Users/Redirects → 403 + `audit_logs` action `denied`.
+* [ ] Staff truy cập Settings/Users → 403 + `audit_logs` action `denied`.
 * [ ] CSV analytics khớp dashboard ±0.5%.
 * [ ] Sitemap không chứa resource inactive.
 * [ ] Home bỏ qua tham chiếu tới resource inactive/đã xoá + log cảnh báo.

@@ -36,7 +36,7 @@ class ProductResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Nội dung';
+    protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
 
     protected static ?string $navigationLabel = 'Sản phẩm';
 
@@ -53,50 +53,77 @@ class ProductResource extends Resource
                 Grid::make()
                     ->schema([
                         TextInput::make('name')
+                            ->label('Tên sản phẩm')
+                            ->helperText('Ví dụ: Rượu vang đỏ Bordeaux 2019')
                             ->required()
                             ->maxLength(255),
                         TextInput::make('slug')
+                            ->label('Đường dẫn')
+                            ->helperText('Đường dẫn trên website. Ví dụ: ruou-vang-do-bordeaux-2019')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255)
                             ->rules(['alpha_dash']),
                         Select::make('product_category_id')
-                            ->label('Category')
+                            ->label('Nhóm sản phẩm')
+                            ->helperText('Chọn nhóm chính như Rượu vang, Bia, Thịt nguội...')
                             ->options(ProductCategory::active()->pluck('name', 'id'))
                             ->searchable()
                             ->required(),
                         Select::make('type_id')
-                            ->label('Type')
+                            ->label('Phân loại')
+                            ->helperText('Loại cụ thể hơn như Vang đỏ, Bia chai, Xúc xích...')
                             ->options(ProductType::active()->pluck('name', 'id'))
                             ->searchable()
                             ->required(),
                         TextInput::make('price')
+                            ->label('Giá bán')
+                            ->helperText('Giá hiện tại (VNĐ)')
                             ->numeric()
                             ->minValue(0)
-                            ->default(0),
+                            ->default(0)
+                            ->prefix('₫'),
                         TextInput::make('original_price')
+                            ->label('Giá gốc')
+                            ->helperText('Giá trước khuyến mãi (để hiển thị giá gạch ngang)')
                             ->numeric()
                             ->minValue(0)
-                            ->default(0),
+                            ->default(0)
+                            ->prefix('₫'),
                         TextInput::make('alcohol_percent')
+                            ->label('Nồng độ cồn')
+                            ->helperText('Phần trăm cồn (%). Ví dụ: 13.5')
                             ->numeric()
                             ->minValue(0)
                             ->maxValue(100)
-                            ->step(0.1),
+                            ->step(0.1)
+                            ->suffix('%'),
                         TextInput::make('volume_ml')
+                            ->label('Dung tích')
+                            ->helperText('Thể tích sản phẩm (ml). Ví dụ: 750')
                             ->numeric()
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->suffix('ml'),
                         Textarea::make('description')
-                            ->rows(3),
+                            ->label('Mô tả')
+                            ->helperText('Thông tin chi tiết về sản phẩm')
+                            ->rows(3)
+                            ->columnSpanFull(),
                         Toggle::make('active')
+                            ->label('Đang hiển thị')
+                            ->helperText('Bật để hiển thị sản phẩm trên website')
                             ->default(true),
                     ])
                     ->columns(2),
                 Grid::make()
                     ->schema([
                         TextInput::make('meta_title')
+                            ->label('Tiêu đề SEO')
+                            ->helperText('Tiêu đề hiển thị trên Google (tối đa 60 ký tự)')
                             ->maxLength(255),
                         Textarea::make('meta_description')
+                            ->label('Mô tả SEO')
+                            ->helperText('Mô tả ngắn cho Google (tối đa 160 ký tự)')
                             ->rows(2)
                             ->maxLength(255),
                     ])
@@ -118,10 +145,10 @@ class ProductResource extends Resource
             ->searchable()
         ->sortable(),
         Tables\Columns\TextColumn::make('productCategory.name')
-            ->label('Danh mục')
+            ->label('Nhóm sản phẩm')
         ->badge(),
         Tables\Columns\TextColumn::make('type.name')
-            ->label('Loại')
+            ->label('Phân loại')
         ->badge(),
         Tables\Columns\TextColumn::make('price')
             ->label('Giá')
@@ -138,7 +165,9 @@ class ProductResource extends Resource
             ])
             ->filters([
                 //
-            ]);
+            ])
+            ->paginated([5, 10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption(25);
     }
 
     public static function getTableActions(): array

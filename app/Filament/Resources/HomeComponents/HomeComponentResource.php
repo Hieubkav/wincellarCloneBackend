@@ -29,7 +29,7 @@ class HomeComponentResource extends Resource
 
     protected static ?string $navigationLabel = 'Thành phần trang chủ';
 
-    protected static ?int $navigationSort = 40;
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $modelLabel = 'Thành phần trang chủ';
 

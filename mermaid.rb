@@ -291,19 +291,5 @@ ActiveRecord::Schema[7.0].define do
   add_foreign_key "tracking_event_aggregates_daily", "products", column: "product_id"
   add_foreign_key "tracking_event_aggregates_daily", "articles", column: "article_id"
 
-  # == URL REDIRECTS ==
-  create_table "url_redirects", force: :cascade do |t|
-    t.string   "from_slug",       null: false
-    t.string   "to_slug",         null: false
-    t.string   "target_type",     null: false
-    t.bigint   "target_id",       null: false
-    t.boolean  "auto_generated",  null: false, default: true
-    t.integer  "hit_count",       null: false, default: 0
-    t.datetime "last_triggered_at"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
-  end
-  add_index "url_redirects", ["from_slug"], name: "index_url_redirects_on_from_slug", unique: true
-  add_index "url_redirects", ["target_type", "target_id"], name: "index_url_redirects_on_target"
 end
 

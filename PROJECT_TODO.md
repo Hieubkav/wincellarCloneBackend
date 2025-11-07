@@ -2,7 +2,7 @@
 
 ## 1. Chuẩn hoá yêu cầu & kiến trúc
 
-- [X] Đọc kỹ PLAN.md và thống nhất mục tiêu CTA, slug/404 (không redirect auto), phân quyền
+- [X] Đọc kỹ PLAN.md và thống nhất mục tiêu CTA, slug/404, phân quyền
 - [X] Ghi lại scope API/FE/Admin và các nguyên tắc bắt buộc để cả team nắm được
 - [X] Xác nhận với stakeholders về ưu tiên release, ràng buộc SEO/hiệu năng và quy tắc Filament
 
@@ -10,12 +10,12 @@
 
 - [X] Hoàn thiện .env, kết nối DB/queue/cache, cấu hình log channel
 - [X] Cấu hình CORS whitelist, rate limit 60 req/min, bảo mật PII (hash IP)
-- [X] Tạo đủ bảng danh mục, products, taxonomy (catalog_attribute_groups/terms/pivot), polymorphic images, home_components, tracking, redirects
+- [X] Tạo đủ bảng danh mục, products, taxonomy (catalog_attribute_groups/terms/pivot), polymorphic images, home_components, tracking
 - [X] Thêm index/constraint (slug unique, is_primary unique theo pivot, FK on delete, partial cover) theo tài liệu
 
 ## 3. Thiết kế migrations + seed dữ liệu
 
-- [X] Tạo model + relation cho Product, Article, CatalogAttributeGroup/CatalogTerm/ProductTermAssignment, Tracking*, UrlRedirect, HomeComponent, Setting...
+- [X] Tạo model + relation cho Product, Article, CatalogAttributeGroup/CatalogTerm/ProductTermAssignment, Tracking*, HomeComponent, Setting...
 - [X] Thêm index/constraint (slug unique, order=0 unique, FK on delete, partial cover) theo tài liệu
 - [X] Viết seeder mẫu + seed hiệu năng (dataset lớn) để QA benchmark và FE test
 
@@ -47,7 +47,7 @@
 ## 8. Filament Admin
 
 - [ ] Tạo resource CRUD cho tất cả bảng, tách form/table component để dễ bảo trì
-- [ ] Áp dụng policy + RBAC (`admin` vs `staff`), chặn staff truy cập settings/users/redirects
+- [ ] Áp dụng policy + RBAC (`admin` vs `staff`), chặn staff truy cập settings/users
 - [ ] Tích hợp audit log read-only + export CSV, toast cảnh báo khi hành động nhạy cảm
 
 ## 9. Tracking & batch jobs

@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class MenuBlockItemResource extends Resource
 {
@@ -26,7 +27,9 @@ class MenuBlockItemResource extends Resource
 
     protected static ?string $navigationLabel = 'Mục khối menu';
 
-    protected static ?int $navigationSort = 80;
+    protected static UnitEnum|string|null $navigationGroup = 'Điều hướng';
+
+    protected static ?int $navigationSort = 30;
 
     protected static ?string $modelLabel = 'Mục khối menu';
 
