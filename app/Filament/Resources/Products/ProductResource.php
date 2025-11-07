@@ -140,10 +140,6 @@ class ProductResource extends Resource
         ->label('Tên')
         ->searchable()
             ->sortable(),
-        Tables\Columns\TextColumn::make('slug')
-        ->label('Slug')
-            ->searchable()
-        ->sortable(),
         Tables\Columns\TextColumn::make('productCategory.name')
             ->label('Nhóm sản phẩm')
         ->badge(),
@@ -154,11 +150,31 @@ class ProductResource extends Resource
             ->label('Giá')
         ->money('VND')
             ->sortable(),
+        Tables\Columns\TextColumn::make('original_price')
+            ->label('Giá gốc')
+        ->money('VND')
+            ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\TextColumn::make('alcohol_percent')
+                    ->label('Nồng độ cồn')
+                    ->suffix('%')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\TextColumn::make('volume_ml')
+                    ->label('Dung tích')
+                    ->suffix(' ml')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
         Tables\Columns\IconColumn::make('active')
         ->label('Hoạt động')
         ->boolean(),
             Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Ngày cập nhật')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
