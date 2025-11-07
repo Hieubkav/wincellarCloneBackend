@@ -41,7 +41,7 @@ class CatalogAttributeGroupsTable
                     ->label('Primary')
                     ->boolean(),
                 TextColumn::make('terms_count')
-                    ->label('Terms')
+                    ->label('Số thuộc tính')
                     ->counts('terms')
                     ->badge()
                     ->color('gray')

@@ -16,18 +16,18 @@ class CatalogTermInfolist
         return $schema
             ->columns(1)
             ->components([
-                Section::make('Term details')
+                Section::make('Chi tiết thuộc tính')
                     ->schema([
                         Grid::make(2)
                             ->schema([
                                 TextEntry::make('group.name')
-                                    ->label('Attribute group')
+                                    ->label('Nhóm thuộc tính')
                                     ->badge(),
                                 TextEntry::make('parent.name')
-                                    ->label('Parent term')
-                                    ->placeholder('Top level'),
+                                    ->label('Thuộc tính cha')
+                                    ->placeholder('Cấp cao nhất'),
                                 TextEntry::make('name')
-                                    ->label('Name')
+                                    ->label('Tên')
                                     ->weight('medium'),
                                 TextEntry::make('slug')
                                     ->label('Slug')
@@ -45,7 +45,7 @@ class CatalogTermInfolist
                                     ->label('Display order')
                                     ->numeric(),
                                 TextEntry::make('products_count')
-                                    ->label('Attached products')
+                                    ->label('Số sản phẩm')
                                     ->state(fn ($record) => $record->products()->count())
                                     ->badge(),
                             ]),

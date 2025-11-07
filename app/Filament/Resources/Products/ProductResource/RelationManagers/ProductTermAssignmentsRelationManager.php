@@ -20,16 +20,23 @@ use Filament\Tables\Columns\BooleanColumn;
 class ProductTermAssignmentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'termAssignments';
+    
+    protected static ?string $title = 'Thuộc tính sản phẩm';
+    
+    protected static ?string $modelLabel = 'thuộc tính';
 
     public function schema(Schema $schema): Schema
     {
         return $schema
             ->schema([
                 Select::make('term_id')
+                    ->label('Thuộc tính')
                     ->relationship('term', 'name')
                     ->required(),
-                Toggle::make('is_primary'),
+                Toggle::make('is_primary')
+                    ->label('Là chính'),
                 TextInput::make('position')
+                    ->label('Thứ tự')
                     ->numeric()
                     ->default(0),
             ]);
@@ -40,9 +47,12 @@ class ProductTermAssignmentsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('id')
             ->columns([
-                TextColumn::make('term.name'),
-                BooleanColumn::make('is_primary'),
-                TextColumn::make('position'),
+                TextColumn::make('term.name')
+                    ->label('Tên thuộc tính'),
+                BooleanColumn::make('is_primary')
+                    ->label('Là chính'),
+                TextColumn::make('position')
+                    ->label('Thứ tự'),
             ])
             ->filters([
             //

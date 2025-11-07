@@ -28,13 +28,13 @@ class CatalogTermResource extends Resource
 
     protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
 
-    protected static ?string $navigationLabel = 'Thuật ngữ thuộc tính';
+    protected static ?string $navigationLabel = 'Thuộc tính sản phẩm';
 
     protected static ?int $navigationSort = 40;
 
-    protected static ?string $modelLabel = 'Thuật ngữ';
+    protected static ?string $modelLabel = 'Thuộc tính';
 
-    protected static ?string $pluralModelLabel = 'Các thuật ngữ';
+    protected static ?string $pluralModelLabel = 'Các thuộc tính';
 
     public static function form(Schema $schema): Schema
     {

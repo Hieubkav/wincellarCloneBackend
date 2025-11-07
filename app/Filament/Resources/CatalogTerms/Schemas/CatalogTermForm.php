@@ -26,12 +26,12 @@ class CatalogTermForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('Thông tin thuật ngữ')
+                Section::make('Thông tin thuộc tính')
                     ->columns(2)
                     ->schema([
                         Select::make('group_id')
                             ->label('Nhóm thuộc tính')
-                            ->helperText('Chọn nhóm thuộc tính như Thương hiệu, Xuất xứ, Giống nho...')
+                            ->helperText('Chọn nhóm như Thương hiệu, Xuất xứ, Giống nho...')
                             ->required()
                             ->options(fn (): array => CatalogAttributeGroup::query()
                                 ->orderBy('position')
@@ -41,7 +41,7 @@ class CatalogTermForm
                             ->preload()
                             ->live(),
                         Select::make('parent_id')
-                            ->label('Thuật ngữ cha')
+                            ->label('Thuộc tính cha')
                             ->placeholder('Cấp cao nhất')
                             ->helperText('Để trống nếu đây là mục cấp cao nhất')
                             ->options(function (Get $get, ?CatalogTerm $record): array {
@@ -65,7 +65,7 @@ class CatalogTermForm
                             ->preload()
                             ->columnSpan(1),
                         TextInput::make('name')
-                            ->label('Tên thuật ngữ')
+                            ->label('Tên thuộc tính')
                             ->helperText('Ví dụ: Pháp, Ý, Bordeaux, Champagne...')
                             ->required()
                             ->maxLength(255)

@@ -23,7 +23,7 @@ class ProductsRelationManager extends RelationManager
 {
     protected static string $relationship = 'products';
 
-    protected static ?string $title = 'Products';
+    protected static ?string $title = 'Sản phẩm';
 
     public function form(Schema $schema): Schema
     {
@@ -32,10 +32,10 @@ class ProductsRelationManager extends RelationManager
                 Grid::make()
                     ->schema([
                         Toggle::make('pivot.is_primary')
-                            ->label('Primary term')
+                            ->label('Là thuộc tính chính')
                             ->inline(false),
                         TextInput::make('pivot.position')
-                            ->label('Order')
+                            ->label('Thứ tự')
                             ->numeric()
                             ->default(0)
                             ->minValue(0)
@@ -43,7 +43,7 @@ class ProductsRelationManager extends RelationManager
                     ])
                     ->columns(2),
                 KeyValue::make('pivot.extra')
-                    ->label('Extra metadata')
+                    ->label('Dữ liệu bổ sung')
                     ->keyLabel('Key')
                     ->valueLabel('Value')
                     ->nullable()
@@ -56,18 +56,18 @@ class ProductsRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('name')
-                    ->label('Product')
+                    ->label('Sản phẩm')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('productCategory.name')
-                    ->label('Category')
+                    ->label('Danh mục')
                     ->badge()
                     ->toggleable(),
                 IconColumn::make('pivot.is_primary')
-                    ->label('Primary')
+                    ->label('Là chính')
                     ->boolean(),
                 TextColumn::make('pivot.position')
-                    ->label('Order')
+                    ->label('Thứ tự')
                     ->numeric()
                     ->sortable(),
             ]);
@@ -77,7 +77,7 @@ class ProductsRelationManager extends RelationManager
     {
         return [
             AttachAction::make()
-                ->label('Attach product')
+                ->label('Gán sản phẩm')
                 ->preloadRecordSelect()
                 ->recordSelectSearchColumns(['name', 'slug'])
                 ->recordSelectOptionsQuery(fn (Builder $query) => $query->orderBy('name')),
