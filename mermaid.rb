@@ -33,6 +33,18 @@ ActiveRecord::Schema[7.0].define do
   end
   add_index "images", ["model_type", "model_id"], name: "index_images_on_model"
 
+  # == RICH EDITOR MEDIA ==
+  create_table "rich_editor_media", force: :cascade do |t|
+    t.string   "model_type", null: false
+    t.bigint   "model_id",   null: false
+    t.string   "field_name", null: false
+    t.string   "file_path",  null: false
+    t.string   "disk",       null: false, default: "public"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+  add_index "rich_editor_media", ["model_type", "model_id"], name: "index_rich_editor_media_on_model"
+
   # == SETTINGS ==
   create_table "settings", force: :cascade do |t|
     t.bigint   "logo_image_id"
@@ -127,7 +139,7 @@ ActiveRecord::Schema[7.0].define do
     t.string   "name",        null: false
     t.string   "slug",        null: false
     t.bigint   "type_id",     null: false
-    t.text     "description"
+    t.text     "description", limit: 4294967295  # LONGTEXT for rich content with images
     t.bigint   "price",       null: false, default: 0
     t.bigint   "original_price", null: false, default: 0
     t.decimal  "alcohol_percent", precision: 5, scale: 2

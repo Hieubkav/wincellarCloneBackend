@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "47f61e50665422e3d4a906bb08cd5200",
+    "content-hash": "e5cd899a77d812ba46b25ea7d490a825",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -3431,6 +3431,72 @@
                 }
             ],
             "time": "2025-07-17T05:12:15+00:00"
+        },
+        {
+            "name": "malzariey/filament-lexical-editor",
+            "version": "2.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/malzariey/filament-lexical-editor.git",
+                "reference": "23f86f44b3b3e812909697574b9e073823073daa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/malzariey/filament-lexical-editor/zipball/23f86f44b3b3e812909697574b9e073823073daa",
+                "reference": "23f86f44b3b3e812909697574b9e073823073daa",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0",
+                "php": "^8.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Malzariey\\FilamentLexicalEditor\\FilamentLexicalEditorServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Malzariey\\FilamentLexicalEditor\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Majid Al Zariey",
+                    "email": "malzariey@hajarco.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Implementation of meta's lexical editor in FilamentPHP, a modern, extensible text editor framework.",
+            "homepage": "https://github.com/malzariey/filament-lexical-editor",
+            "keywords": [
+                "Malzariey",
+                "editor",
+                "filaemntPHP",
+                "filament-lexical-editor",
+                "laravel",
+                "lexical",
+                "rich-text",
+                "text-editor"
+            ],
+            "support": {
+                "issues": "https://github.com/malzariey/filament-lexical-editor/issues",
+                "source": "https://github.com/malzariey/filament-lexical-editor"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/malzariey",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-07-09T14:06:48+00:00"
         },
         {
             "name": "masterminds/html5",
