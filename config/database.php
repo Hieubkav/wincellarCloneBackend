@@ -61,6 +61,9 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'dump' => [
+                'dump_binary_path' => 'C:/xampp/mysql/bin', // Path to mysqldump for backup
+            ],
         ],
 
         'mariadb' => [
@@ -81,6 +84,11 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'dump' => [
+                'dump_binary_path' => 'C:/xampp/mysql/bin', // Path to mysqldump
+                'use_single_transaction' => true, // Use single transaction for InnoDB
+                'timeout' => 60 * 5, // 5 minutes timeout
+            ],
         ],
 
         'pgsql' => [

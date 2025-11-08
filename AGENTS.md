@@ -39,3 +39,28 @@ Trả lời bằng tiếng việt
 - **Luôn sync `mermaid.rb`** khi tạo/sửa migration
 - Phản ánh chính xác: tables, columns, types, constraints, indexes, FKs
 - Format giống Rails schema.rb
+
+## 💾 Database Backup Rules
+**⚠️ QUAN TRỌNG**: Trước mỗi migration, LUÔN backup database!
+- **📖 File rule chính**: `docs/spatie_backup.md` - Chi tiết đầy đủ về:
+  - Workflow bắt buộc: Backup → Migration → Restore (nếu lỗi)
+  - Commands: `php artisan backup:run --only-db`
+  - Quy tắc đặt tên backup (với mô tả migration)
+  - Cấu hình: Giữ tối đa 10 bản gần nhất
+  - Troubleshooting: mysqldump, restore, v.v.
+
+### Quick Summary:
+- ✅ **Backup trước migration**: `php artisan backup:run --only-db`
+- ✅ **Giữ tối đa 10 bản**: Tự động xóa backup cũ
+- ✅ **Lưu tại**: `database/backups/Laravel/`
+- ✅ **Đặt tên**: `YYYY-MM-DD-HH-MM-SS_migration-description.zip`
+- ✅ **Restore**: Giải nén .zip → Import .sql vào MySQL
+
+### 🔄 Cập nhật Rules khi cần:
+**Nếu gặp lỗi/best practice mới về backup**:
+1. Research đúng solution
+2. **CẬP NHẬT** `docs/spatie_backup.md` với fix + example
+3. Thêm vào section "Troubleshooting"
+4. Commit: `docs(backup): fix rule về [vấn đề]`
+
+→ File rules là **LIVING DOCUMENT**, luôn cải thiện!
