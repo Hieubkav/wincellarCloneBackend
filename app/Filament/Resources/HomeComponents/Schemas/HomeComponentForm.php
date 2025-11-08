@@ -25,25 +25,11 @@ class HomeComponentForm
                             ->label('Loại khối')
                             ->required()
                             ->maxLength(120)
-                            ->datalist(self::typeSuggestions())
-                            ->helperText('Mã khối dùng bởi frontend. Ví dụ: hero_banner, featured_products, article_list'),
-                        Grid::make()
-                            ->schema([
-                                TextInput::make('order')
-                                    ->label('Thứ tự hiển thị')
-                                    ->helperText('Số nhỏ sẽ hiển thị trước trên trang chủ')
-                                    ->numeric()
-                                    ->default(0)
-                                    ->minValue(0)
-                                    ->step(1),
-                                Toggle::make('active')
-                                    ->label('Đang hiển thị')
-                                    ->helperText('Bật để hiển thị khối này')
-                                    ->default(true)
-                                    ->inline(false),
-                            ])
-                            ->columns(2)
-                            ->columnSpanFull(),
+                            ->datalist(self::typeSuggestions()),
+                        Toggle::make('active')
+                            ->label('Đang hiển thị')
+                            ->default(true)
+                            ->inline(false),
                         KeyValue::make('config')
                             ->label('Cấu hình hiển thị')
                             ->keyLabel('Tên trường')
@@ -51,8 +37,7 @@ class HomeComponentForm
                             ->reorderable()
                             ->addButtonLabel('Thêm cấu hình')
                             ->nullable()
-                            ->columnSpanFull()
-                            ->helperText('Dữ liệu bổ sung cho frontend. Ví dụ: title=Sản phẩm nổi bật, limit=8, theme=dark'),
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

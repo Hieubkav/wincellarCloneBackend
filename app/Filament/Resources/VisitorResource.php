@@ -8,6 +8,9 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn;
@@ -29,6 +32,17 @@ class VisitorResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::query()->count();
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'info';
+    }
+
     public static function schema(Schema $schema): Schema
     {
         return $schema;
@@ -37,23 +51,59 @@ class VisitorResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => 
+                $query->withCount(['sessions', 'events'])
+            )
             ->columns([
-                TextColumn::make('id')->sortable()->label('ID'),
-                TextColumn::make('anon_id')->searchable()->label('Mã ẩn danh'),
-                TextColumn::make('ip_hash')->placeholder('Không có')->label('Băm IP'),
-                TextColumn::make('user_agent')->limit(50)->tooltip(fn ($record) => $record->user_agent)->label('Trình duyệt'),
-                TextColumn::make('first_seen_at')->dateTime()->sortable()->label('Lần đầu thấy'),
-                TextColumn::make('last_seen_at')->dateTime()->sortable()->label('Lần cuối thấy'),
-                TextColumn::make('sessions_count')->counts('sessions')->label('Số phiên'),
-                TextColumn::make('events_count')->counts('events')->label('Số sự kiện'),
+                TextColumn::make('id')
+                    ->label('ID')
+                    ->sortable(),
+                TextColumn::make('anon_id')
+                    ->label('Mã ẩn danh')
+                    ->searchable()
+                    ->sortable()
+                    ->copyable(),
+                TextColumn::make('ip_hash')
+                    ->label('Băm IP')
+                    ->placeholder('—')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('user_agent')
+                    ->label('Trình duyệt')
+                    ->limit(50)
+                    ->tooltip(fn ($record) => $record->user_agent)
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('first_seen_at')
+                    ->label('Lần đầu thấy')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('last_seen_at')
+                    ->label('Lần cuối thấy')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable(),
+                TextColumn::make('sessions_count')
+                    ->label('Số phiên')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('events_count')
+                    ->label('Số sự kiện')
+                    ->numeric()
+                    ->sortable(),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
+                // ❌ KHÔNG có EditAction: Visitor data là analytics data, không nên sửa để giữ tính chính xác
+                // ✅ Chỉ cho phép Delete để xóa test data hoặc data sai
+                DeleteAction::make()->iconButton(),
             ])
-            ->toolbarActions([
-            //
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
             ])
             ->defaultSort('last_seen_at', 'desc')
             ->paginated([5, 10, 25, 50, 100, 'all'])

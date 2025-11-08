@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\MenuBlockItems\Schemas;
 
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
@@ -13,47 +14,57 @@ class MenuBlockItemForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->components([
-                Select::make('menu_block_id')
-                    ->label('Khối menu')
-                    ->helperText('Chọn khối menu chứa mục này')
-                    ->relationship('menuBlock', 'title')
-                    ->searchable()
-                    ->required(),
-                Select::make('term_id')
-                    ->label('Thuật ngữ')
-                    ->helperText('Chọn thuật ngữ để tự động lấy tên và link')
-                    ->relationship('term', 'name')
-                    ->searchable()
-                    ->default(null),
-                TextInput::make('label')
-                    ->label('Nhãn hiển thị')
-                    ->helperText('Tên hiển thị. Để trống nếu dùng từ thuật ngữ')
-                    ->default(null),
-                TextInput::make('href')
-                    ->label('Đường dẫn')
-                    ->helperText('Link tùy chỉnh (nếu không dùng thuật ngữ)')
-                    ->default(null),
-                TextInput::make('badge')
-                    ->label('Nhãn đặc biệt')
-                    ->helperText('Hiển thị nhãn như "Mới", "Hot". Để trống nếu không cần')
-                    ->default(null),
-                Textarea::make('meta')
-                    ->label('Dữ liệu bổ sung')
-                    ->helperText('Thông tin thêm dạng JSON (dành cho dev)')
-                    ->default(null)
-                    ->columnSpanFull(),
-                TextInput::make('order')
-                    ->label('Thứ tự hiển thị')
-                    ->helperText('Số nhỏ sẽ hiển thị trước')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Toggle::make('active')
-                    ->label('Đang hiển thị')
-                    ->helperText('Bật để hiển thị mục này')
-                    ->required()
-                    ->default(true),
+                Section::make('Thông tin cơ bản')
+                    ->columns(2)
+                    ->schema([
+                        Select::make('menu_block_id')
+                            ->label('Khối menu')
+                            ->relationship('block', 'title')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                        Select::make('term_id')
+                            ->label('Thuật ngữ')
+                            ->relationship('term', 'name')
+                            ->searchable()
+                            ->preload(),
+                        TextInput::make('label')
+                            ->label('Nhãn hiển thị')
+                            ->maxLength(255),
+                        TextInput::make('href')
+                            ->label('Đường dẫn')
+                            ->maxLength(2048),
+                        TextInput::make('badge')
+                            ->label('Nhãn đặc biệt')
+                            ->maxLength(50)
+                            ->placeholder('VD: Mới, Hot, Sale'),
+                        TextInput::make('order')
+                            ->label('Thứ tự hiển thị')
+                            ->required()
+                            ->numeric()
+                            ->default(0)
+                            ->minValue(0),
+                        Toggle::make('active')
+                            ->label('Đang hiển thị')
+                            ->required()
+                            ->default(true)
+                            ->inline(false)
+                            ->columnSpanFull(),
+                    ]),
+                Section::make('Dữ liệu bổ sung')
+                    ->collapsed()
+                    ->schema([
+                        KeyValue::make('meta')
+                            ->label('Metadata')
+                            ->keyLabel('Tên trường')
+                            ->valueLabel('Giá trị')
+                            ->nullable()
+                            ->reorderable()
+                            ->addButtonLabel('Thêm metadata')
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 }

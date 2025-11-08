@@ -15,27 +15,52 @@ class MenusTable
     public static function configure(Table $table): Table
     {
         return $table
+            // Eager loading để tránh N+1 query
+            ->modifyQueryUsing(fn ($query) => $query->with('term'))
+            ->defaultSort('order', 'asc')
+            ->reorderable('order')
             ->columns([
                 TextColumn::make('title')
-                    ->searchable(),
+                    ->label('Tiêu đề')
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('(Từ thuật ngữ)'),
                 TextColumn::make('term.name')
-                    ->numeric()
+                    ->label('Thuật ngữ')
+                    ->badge()
                     ->sortable(),
                 TextColumn::make('type')
-                    ->searchable(),
-                TextColumn::make('href')
-                    ->searchable(),
-                TextColumn::make('order')
-                    ->numeric()
+                    ->label('Kiểu')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => match($state) {
+                        'standard' => 'Thường',
+                        'mega' => 'Mega',
+                        default => $state
+                    })
+                    ->color(fn ($state) => match($state) {
+                        'standard' => 'gray',
+                        'mega' => 'info',
+                        default => 'gray'
+                    })
                     ->sortable(),
+                TextColumn::make('href')
+                    ->label('Đường dẫn')
+                    ->limit(50)
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 IconColumn::make('active')
-                    ->boolean(),
+                    ->label('Hiển thị')
+                    ->boolean()
+                    ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Tạo lúc')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Cập nhật')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

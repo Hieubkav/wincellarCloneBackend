@@ -10,14 +10,10 @@ class ImageObserver
 {
     /**
      * Handle the Image "creating" event.
-     * Tự động set order và alt text cho ảnh mới
+     * Tự động set alt text cho ảnh mới (order được Model tự handle)
      */
     public function creating(Image $image): void
     {
-        if ($image->order === null) {
-            $image->order = $this->getNextOrder($image);
-        }
-
         if (empty($image->alt)) {
             $image->alt = $this->generateAltText($image);
         }
@@ -25,10 +21,12 @@ class ImageObserver
 
     /**
      * Handle the Image "updating" event.
-     * Xóa file ảnh cũ khi upload file mới
+     * - Xóa file ảnh cũ khi upload file mới
+     * - Update alt text khi order thay đổi
      */
     public function updating(Image $image): void
     {
+        // Xóa file cũ khi upload mới
         if ($image->isDirty('file_path')) {
             $oldFilePath = $image->getOriginal('file_path');
             $oldDisk = $image->getOriginal('disk') ?? 'public';
@@ -38,6 +36,7 @@ class ImageObserver
             }
         }
 
+        // Update alt text khi order thay đổi
         if ($image->isDirty('order') && empty($image->alt)) {
             $image->alt = $this->generateAltText($image);
         }
@@ -81,24 +80,7 @@ class ImageObserver
     }
 
     /**
-     * Tính order tiếp theo cho ảnh mới
-     */
-    private function getNextOrder(Image $image): int
-    {
-        if (!$image->model_type || !$image->model_id) {
-            return 1;
-        }
-
-        $maxOrder = Image::query()
-            ->where('model_type', $image->model_type)
-            ->where('model_id', $image->model_id)
-            ->max('order');
-
-        return $maxOrder !== null ? $maxOrder + 1 : 0;
-    }
-
-    /**
-     * Tự động generate alt text từ product name + order
+     * Tự động generate alt text từ model name + order
      */
     private function generateAltText(Image $image): string
     {
@@ -113,6 +95,7 @@ class ImageObserver
                 return 'Hình ảnh';
             }
 
+            // Special handling cho Product
             if ($model instanceof Product) {
                 $order = $image->order ?? 0;
                 if ($order === 0) {
@@ -121,8 +104,15 @@ class ImageObserver
                 return "{$model->name} hình {$order}";
             }
 
+            // Generic handling cho model khác
             $nameField = $this->getModelNameField($model);
-            return $model->$nameField ?? 'Hình ảnh';
+            $name = $model->$nameField ?? 'Hình ảnh';
+            $order = $image->order ?? 0;
+            
+            if ($order === 0) {
+                return $name;
+            }
+            return "{$name} hình {$order}";
         } catch (\Throwable $e) {
             \Log::warning('Failed to generate alt text', [
                 'image_id' => $image->id,

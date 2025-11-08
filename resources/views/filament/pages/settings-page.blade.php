@@ -1,5 +1,13 @@
 <x-filament-panels::page>
 
-{{ $this->form }}
+<form wire:submit="save">
+    {{ $this->form }}
+
+    <div class="mt-6">
+        <x-filament::button type="submit" size="lg">
+            Lưu cài đặt
+        </x-filament::button>
+    </div>
+</form>
 
 </x-filament-panels::page>

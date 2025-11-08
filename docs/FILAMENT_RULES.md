@@ -201,6 +201,14 @@ class ImageObserver
 
 ### 1. List Page (ListRecords)
 
+#### Required Imports:
+```php
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+```
+
 #### Required Components:
 ```php
 public static function table(Table $table): Table
@@ -379,7 +387,121 @@ class EditResource extends EditRecord
 
 ---
 
-### 4. Form Schema
+### 4. Settings Page (Custom Page with Form)
+
+#### ⚠️ QUAN TRỌNG: Dự án này dùng Schema thay vì Form
+Dự án này đã customize Filament 4.x để dùng **`Filament\Schemas\Schema`** thay vì `Filament\Forms\Form`.
+
+**Lỗi thường gặp:**
+```
+TypeError: Argument #1 ($form) must be of type Filament\Forms\Form, Filament\Schemas\Schema given
+```
+
+**Nguyên nhân**: Dùng nhầm `Form` thay vì `Schema` trong method signature.
+
+#### ⚠️ QUAN TRỌNG: Không dùng HasFormActions trait
+Filament 4.x **KHÔNG CÓ** trait `HasFormActions` cho Page. Nếu dùng sẽ bị lỗi:
+```
+Trait "Filament\Pages\Concerns\HasFormActions" not found
+```
+
+#### Required Setup:
+```php
+<?php
+
+namespace App\Filament\Pages;
+
+use App\Models\Setting;
+use Filament\Schemas\Components\Grid;  // ✅ Grid từ Schemas\Components
+use Filament\Forms\Components\TextInput;  // ✅ Form fields từ Forms\Components
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Schemas\Schema;  // ✅ QUAN TRỌNG: Dùng Schema, KHÔNG dùng Form
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+
+class SettingsPage extends Page implements HasForms
+{
+    use InteractsWithForms;  // ✅ Chỉ cần trait này
+
+    protected static string $view = 'filament.pages.settings-page';
+    protected static ?string $navigationLabel = 'Cài đặt chung';
+    protected static ?string $title = 'Cài đặt chung';
+
+    public ?array $data = [];
+
+    public function mount(): void
+    {
+        $setting = Setting::first();
+        if (!$setting) {
+            $setting = Setting::create([]);
+        }
+        $this->form->fill($setting->toArray());
+    }
+
+    public function form(Schema $schema): Schema  // ✅ QUAN TRỌNG: Schema, không phải Form
+    {
+        return $schema  // ✅ return $schema, không phải $form
+            ->schema([
+                Grid::make()
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('site_name')
+                            ->label('Tên website')
+                            ->maxLength(255),
+                        // ... các field khác
+                    ]),
+            ])
+            ->statePath('data');  // ✅ Quan trọng: bind data
+    }
+
+    public function save(): void
+    {
+        $setting = Setting::first();
+        if (!$setting) {
+            $setting = Setting::create($this->form->getState());
+        } else {
+            $setting->update($this->form->getState());
+        }
+
+        Notification::make()
+            ->title('Đã lưu cài đặt thành công!')
+            ->success()
+            ->send();
+    }
+}
+```
+
+#### View Blade (resources/views/filament/pages/settings-page.blade.php):
+```blade
+<x-filament-panels::page>
+
+<form wire:submit="save">
+    {{ $this->form }}
+
+    <div class="mt-6">
+        <x-filament::button type="submit" size="lg">
+            Lưu cài đặt
+        </x-filament::button>
+    </div>
+</form>
+
+</x-filament-panels::page>
+```
+
+#### Best Practices:
+- ✅ **QUAN TRỌNG**: Dùng `Schema` thay vì `Form` trong method signature
+- ✅ Chỉ dùng `InteractsWithForms` trait
+- ✅ Form cần `->statePath('data')` để bind với property `$data`
+- ✅ Button submit đơn giản trong view blade
+- ✅ Method `save()` xử lý logic lưu dữ liệu
+- ❌ KHÔNG dùng `Form` type hint - phải dùng `Schema`
+- ❌ KHÔNG dùng `HasFormActions` trait (không tồn tại)
+- ❌ KHÔNG dùng `getFormActions()` method
+
+---
+
+### 5. Form Schema
 
 #### Structure:
 ```php
@@ -447,6 +569,15 @@ public static function form(Schema $schema): Schema
 ---
 
 ## 🔗 RelationManager
+
+### Required Imports:
+```php
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+```
 
 ### Standard Structure:
 ```php
@@ -724,6 +855,133 @@ protected static function booted()
     });
 }
 ```
+
+---
+
+### ❌ Mistake: Dùng nhầm namespace cho Grid component
+```php
+// BAD - Class "Filament\Forms\Components\Grid" not found
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Select;
+
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Grid::make()->columns(2)->schema([
+            Select::make('name'),
+        ]),
+    ]);
+}
+```
+
+### ✅ Solution: Grid phải dùng Schemas\Components, form fields dùng Forms\Components
+```php
+// GOOD - Trong dự án này
+use Filament\Schemas\Components\Grid;  // ✅ Grid từ Schemas
+use Filament\Forms\Components\Select;  // ✅ Form fields từ Forms
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Grid::make()->columns(2)->schema([
+            Select::make('name'),
+        ]),
+    ]);
+}
+```
+
+⚠️ **LƯU Ý**: Trong dự án này, phân biệt 2 loại components:
+- **Layout components** (Grid, Section): `Filament\Schemas\Components\*`
+- **Form field components** (TextInput, Select, Textarea, Toggle, FileUpload...): `Filament\Forms\Components\*`
+
+---
+
+### ❌ Mistake: Dùng HasFormActions trait trong Page
+```php
+// BAD - Trait này không tồn tại trong Filament 4.x
+use Filament\Pages\Concerns\HasFormActions;
+
+class SettingsPage extends Page implements HasForms
+{
+    use InteractsWithForms;
+    use HasFormActions;  // ❌ Lỗi: Trait not found
+    
+    protected function getFormActions(): array
+    {
+        return [Action::make('save')->submit('save')];
+    }
+}
+```
+
+### ✅ Solution: Dùng button đơn giản trong view blade
+```php
+// GOOD - Class Page
+class SettingsPage extends Page implements HasForms
+{
+    use InteractsWithForms;  // ✅ Chỉ cần trait này
+
+    public ?array $data = [];
+
+    public function form(Form $form): Form
+    {
+        return $form
+            ->schema([/* ... */])
+            ->statePath('data');  // ✅ Bind data
+    }
+
+    public function save(): void
+    {
+        // Xử lý lưu
+    }
+}
+```
+
+```blade
+<!-- GOOD - View blade -->
+<x-filament-panels::page>
+<form wire:submit="save">
+    {{ $this->form }}
+    
+    <div class="mt-6">
+        <x-filament::button type="submit" size="lg">
+            Lưu cài đặt
+        </x-filament::button>
+    </div>
+</form>
+</x-filament-panels::page>
+```
+
+⚠️ **LƯU Ý**: `HasFormActions` chỉ có trong Resource Pages (CreateRecord, EditRecord), KHÔNG có trong custom Page. Với custom Page, dùng button trong view blade.
+
+---
+
+### ❌ Mistake: Sai namespace cho Table Actions
+```php
+// BAD - Trong dự án này ĐỪNG dùng Filament\Tables\Actions\
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteBulkAction;
+```
+
+### ✅ Solution: Dùng Filament\Actions\ cho tất cả actions
+```php
+// GOOD - Trong dự án này dùng Filament\Actions\
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+
+// Áp dụng cho cả:
+// - Table recordActions
+// - Table bulkActions  
+// - RelationManager actions
+// - Page headerActions
+```
+
+⚠️ **LƯU Ý**: Dự án này đã custom để dùng `Filament\Actions\*` cho TẤT CẢ loại actions (table, page, relation). ĐỪNG mix với `Filament\Tables\Actions\*` vì sẽ bị lỗi `Class not found`.
 
 ---
 

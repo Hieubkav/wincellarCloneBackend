@@ -17,6 +17,9 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ImageForm
@@ -33,39 +36,41 @@ class ImageForm
                             ->label('Nơi lưu trữ')
                             ->required()
                             ->options(self::diskOptions())
-                            ->default(config('filesystems.default'))
-                            ->helperText('Chọn nơi lưu file (thường là public)'),
+                            ->default(config('filesystems.default')),
                         FileUpload::make('file_path')
                             ->label('Tải lên hình ảnh')
                             ->required(fn (string $operation): bool => $operation === 'create')
                             ->image()
-                            ->visibility('public')
+                            ->imageEditor()
                             ->maxFiles(1)
                             ->maxSize(10240)
                             ->disk(fn (Get $get): string => $get('disk') ?? config('filesystems.default'))
                             ->directory('media/images')
-                            ->getUploadedFileNameForStorageUsing(function (TemporaryUploadedFile $file): string {
-                                return 'img-' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-                            })
-                            ->helperText('Tải lên JPG/PNG/WebP tối đa 10MB. File mới sẽ thay thế file cũ'),
+                            ->saveUploadedFileUsing(function (TemporaryUploadedFile $file, Get $get) {
+                                $filename = 'img-' . Str::uuid() . '.webp';
+                                $disk = $get('disk') ?? config('filesystems.default');
+                                $path = 'media/images/' . $filename;
+
+                                // Convert to WebP with 85% quality
+                                $manager = new ImageManager(new Driver());
+                                $image = $manager->read($file->getRealPath());
+
+                                // Resize if too large
+                                if ($image->width() > 1920) {
+                                    $image->scale(width: 1920);
+                                }
+
+                                $webp = $image->toWebp(quality: 85);
+                                Storage::disk($disk)->put($path, $webp);
+
+                                return $path;
+                            }),
                     ]),
                 Section::make('Thông tin')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('alt')
-                            ->label('Mô tả ảnh (Alt text)')
-                            ->maxLength(255)
-                            ->helperText('Mô tả ngắn cho SEO và người khiếm thị'),
-                        TextInput::make('order')
-                            ->label('Thứ tự hiển thị')
-                            ->numeric()
-                            ->default(1)
-                            ->minValue(0)
-                            ->step(1)
-                            ->helperText('Số 0 đánh dấu ảnh đại diện chính. Số khác theo thứ tự bộ sưu tập'),
                         Toggle::make('active')
                             ->label('Đang hiển thị')
-                            ->helperText('Bật để hiển thị ảnh này')
                             ->default(true)
                             ->inline(false),
                     ]),
@@ -73,7 +78,6 @@ class ImageForm
                     ->schema([
                         MorphToSelect::make('model')
                             ->label('Thuộc về')
-                            ->helperText('Chọn sản phẩm hoặc bài viết mà ảnh này thuộc về')
                             ->types([
                                 Type::make(Product::class)
                                     ->label('Sản phẩm')
@@ -106,6 +110,17 @@ class ImageForm
                             ->maxLength(191)
                             ->dehydrated(false)
                             ->disabled(),
+                        TextInput::make('alt')
+                            ->label('Mô tả ảnh (Alt text)')
+                            ->maxLength(255)
+                            ->dehydrated(false)
+                            ->disabled()
+                            ->columnSpanFull(),
+                        TextInput::make('order')
+                            ->label('Thứ tự hiển thị')
+                            ->numeric()
+                            ->dehydrated(false)
+                            ->disabled(),
                     ]),
                 Section::make('Thuộc tính bổ sung')
                     ->collapsed()
@@ -117,8 +132,7 @@ class ImageForm
                             ->nullable()
                             ->reorderable()
                             ->addButtonLabel('Thêm thuộc tính')
-                            ->columnSpanFull()
-                            ->helperText('Dữ liệu tùy chỉnh như chú thích, điểm tập trung...'),
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

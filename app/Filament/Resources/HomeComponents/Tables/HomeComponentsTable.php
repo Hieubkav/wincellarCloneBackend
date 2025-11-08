@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\HomeComponents\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -16,48 +17,48 @@ class HomeComponentsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('order')
+            ->defaultSort('order', 'asc')
+            ->reorderable('order')
             ->columns([
                 TextColumn::make('type')
-                    ->label('Component')
+                    ->label('Loại khối')
                     ->searchable()
+                    ->sortable()
                     ->weight('medium')
                     ->badge(),
                 TextColumn::make('config')
-                    ->label('Config keys')
+                    ->label('Cấu hình')
                     ->state(fn ($record) => collect($record->config ?? [])->keys()->implode(', '))
                     ->placeholder('—')
-                    ->tooltip('Comma separated list of configured keys')
+                    ->sortable()
                     ->toggleable(),
-                TextColumn::make('order')
-                    ->label('Order')
-                    ->numeric()
-                    ->sortable(),
                 IconColumn::make('active')
-                    ->label('Active')
-                    ->boolean(),
+                    ->label('Hiển thị')
+                    ->boolean()
+                    ->sortable(),
                 TextColumn::make('updated_at')
-                    ->label('Updated')
-                    ->dateTime()
-                    ->since()
+                    ->label('Cập nhật')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
-                    ->label('Created')
-                    ->dateTime()
+                    ->label('Tạo lúc')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('type')
-                    ->label('Type')
+                    ->label('Loại')
                     ->options(fn () => HomeComponentsTable::typeOptions()),
                 TernaryFilter::make('active')
-                    ->label('Active'),
+                    ->label('Hiển thị'),
             ])
             ->recordActions([
                 EditAction::make()->iconButton(),
+                DeleteAction::make()->iconButton(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

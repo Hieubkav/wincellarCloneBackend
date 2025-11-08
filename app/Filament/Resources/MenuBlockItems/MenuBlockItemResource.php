@@ -5,7 +5,6 @@ namespace App\Filament\Resources\MenuBlockItems;
 use App\Filament\Resources\MenuBlockItems\Pages\CreateMenuBlockItem;
 use App\Filament\Resources\MenuBlockItems\Pages\EditMenuBlockItem;
 use App\Filament\Resources\MenuBlockItems\Pages\ListMenuBlockItems;
-use App\Filament\Resources\MenuBlockItems\Pages\ViewMenuBlockItem;
 use App\Filament\Resources\MenuBlockItems\Schemas\MenuBlockItemForm;
 use App\Filament\Resources\MenuBlockItems\Schemas\MenuBlockItemInfolist;
 use App\Filament\Resources\MenuBlockItems\Tables\MenuBlockItemsTable;
@@ -50,6 +49,20 @@ class MenuBlockItemResource extends Resource
         return MenuBlockItemsTable::configure($table);
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $activeCount = static::getModel()::query()
+            ->where('active', true)
+            ->count();
+
+        return $activeCount > 0 ? (string) $activeCount : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'success';
+    }
+
     public static function getRelations(): array
     {
         return [
@@ -62,7 +75,6 @@ class MenuBlockItemResource extends Resource
         return [
             'index' => ListMenuBlockItems::route('/'),
             'create' => CreateMenuBlockItem::route('/create'),
-            'view' => ViewMenuBlockItem::route('/{record}'),
             'edit' => EditMenuBlockItem::route('/{record}/edit'),
         ];
     }

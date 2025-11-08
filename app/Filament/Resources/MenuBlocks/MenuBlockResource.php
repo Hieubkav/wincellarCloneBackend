@@ -5,7 +5,6 @@ namespace App\Filament\Resources\MenuBlocks;
 use App\Filament\Resources\MenuBlocks\Pages\CreateMenuBlock;
 use App\Filament\Resources\MenuBlocks\Pages\EditMenuBlock;
 use App\Filament\Resources\MenuBlocks\Pages\ListMenuBlocks;
-use App\Filament\Resources\MenuBlocks\Pages\ViewMenuBlock;
 use App\Filament\Resources\MenuBlocks\Schemas\MenuBlockForm;
 use App\Filament\Resources\MenuBlocks\Schemas\MenuBlockInfolist;
 use App\Filament\Resources\MenuBlocks\Tables\MenuBlocksTable;
@@ -35,6 +34,20 @@ class MenuBlockResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Các khối menu';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $activeCount = static::getModel()::query()
+            ->where('active', true)
+            ->count();
+
+        return $activeCount > 0 ? (string) $activeCount : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'success';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return MenuBlockForm::configure($schema);
@@ -62,7 +75,6 @@ class MenuBlockResource extends Resource
         return [
             'index' => ListMenuBlocks::route('/'),
             'create' => CreateMenuBlock::route('/create'),
-            'view' => ViewMenuBlock::route('/{record}'),
             'edit' => EditMenuBlock::route('/{record}/edit'),
         ];
     }

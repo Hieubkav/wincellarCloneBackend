@@ -23,73 +23,74 @@ class ImagesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('created_at', 'desc')
+            // Eager loading để tránh N+1 query
+            ->modifyQueryUsing(fn ($query) => $query->with('model'))
+            ->defaultSort('order', 'asc')
+            ->reorderable('order')
             ->columns([
                 ImageColumn::make('url')
-                    ->label('Preview')
+                    ->label('Xem trước')
                     ->state(fn (Image $record): ?string => $record->url)
                     ->square()
                     ->toggleable(),
                 TextColumn::make('file_path')
-                    ->label('File path')
+                    ->label('Đường dẫn')
                     ->limit(40)
                     ->tooltip(fn (?string $state): ?string => $state)
                     ->copyable()
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('disk')
-                    ->label('Disk')
+                    ->label('Nơi lưu')
                     ->badge()
                     ->sortable(),
                 TextColumn::make('model_type')
-                    ->label('Owner type')
+                    ->label('Loại chủ sở hữu')
                     ->formatStateUsing(fn (?string $state): ?string => self::formatModelType($state))
                     ->badge()
                     ->sortable(),
                 TextColumn::make('model_id')
-                    ->label('Owner ID')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('order')
-                    ->label('Order')
+                    ->label('ID chủ sở hữu')
                     ->numeric()
                     ->sortable(),
                 IconColumn::make('active')
-                    ->label('Active')
-                    ->boolean(),
+                    ->label('Hiển thị')
+                    ->boolean()
+                    ->sortable(),
                 TextColumn::make('created_at')
-                    ->label('Created')
-                    ->dateTime()
-                    ->since()
+                    ->label('Tạo lúc')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->label('Updated')
-                    ->dateTime()
-                    ->since()
+                    ->label('Cập nhật')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('deleted_at')
-                    ->label('Deleted')
-                    ->dateTime()
+                    ->label('Xóa lúc')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('model_type')
-                    ->label('Owner type')
+                    ->label('Loại chủ sở hữu')
                     ->options(self::modelTypeOptions())
                     ->searchable(),
                 SelectFilter::make('disk')
-                    ->label('Disk')
+                    ->label('Nơi lưu')
                     ->options(self::diskOptions())
                     ->searchable(),
                 TernaryFilter::make('active')
-                    ->label('Active'),
+                    ->label('Hiển thị'),
                 TrashedFilter::make(),
             ])
             ->recordActions([
                 EditAction::make()->iconButton(),
+                \Filament\Actions\DeleteAction::make()->iconButton(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
