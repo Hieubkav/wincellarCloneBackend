@@ -129,9 +129,9 @@ trait HasRichEditorMedia
                 
                 Storage::disk('public')->put($path, $imageData);
                 
-                $url = Storage::disk('public')->url($path);
+                $relativePath = '/storage/' . $path;
                 
-                return 'src="' . $url . '"';
+                return 'src="' . $relativePath . '"';
             } catch (\Exception $e) {
                 \Log::error('Failed to convert base64 image: ' . $e->getMessage());
                 return $matches[0];
