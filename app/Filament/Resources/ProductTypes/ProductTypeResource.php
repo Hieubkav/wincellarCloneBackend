@@ -5,9 +5,7 @@ namespace App\Filament\Resources\ProductTypes;
 use App\Filament\Resources\ProductTypes\Pages\CreateProductType;
 use App\Filament\Resources\ProductTypes\Pages\EditProductType;
 use App\Filament\Resources\ProductTypes\Pages\ListProductTypes;
-use App\Filament\Resources\ProductTypes\Pages\ViewProductType;
 use App\Filament\Resources\ProductTypes\Schemas\ProductTypeForm;
-use App\Filament\Resources\ProductTypes\Schemas\ProductTypeInfolist;
 use App\Filament\Resources\ProductTypes\Tables\ProductTypesTable;
 use App\Models\ProductType;
 use BackedEnum;
@@ -38,11 +36,6 @@ class ProductTypeResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return ProductTypeForm::configure($schema);
-    }
-
-    public static function infolist(Schema $schema): Schema
-    {
-        return ProductTypeInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -76,7 +69,6 @@ class ProductTypeResource extends Resource
         return [
             'index' => ListProductTypes::route('/'),
             'create' => CreateProductType::route('/create'),
-            'view' => ViewProductType::route('/{record}'),
             'edit' => EditProductType::route('/{record}/edit'),
         ];
     }

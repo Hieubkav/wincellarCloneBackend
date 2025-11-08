@@ -3,14 +3,10 @@
 namespace App\Filament\Resources\ProductTypes\Schemas;
 
 use Filament\Forms\Components\Textarea;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Str;
 
 class ProductTypeForm
 {
@@ -27,43 +23,16 @@ class ProductTypeForm
                     ->schema([
                         TextInput::make('name')
                             ->label('Tên phân loại')
-                            ->helperText('Ví dụ: Vang đỏ, Vang trắng, Bia chai, Bia lon, Xúc xích...')
                             ->required()
-                            ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function (Set $set, ?string $state, Get $get): void {
-                                if (blank($get('slug')) && filled($state)) {
-                                    $set('slug', Str::slug($state));
-                                }
-                            }),
-                        TextInput::make('slug')
-                            ->label('Đường dẫn')
-                            ->required()
-                            ->maxLength(255)
-                            ->unique(ignoreRecord: true)
-                            ->rule('alpha_dash')
-                            ->helperText('Đường dẫn URL. Chỉ dùng chữ thường, số, gạch ngang, gạch dưới'),
+                            ->maxLength(255),
                         Textarea::make('description')
                             ->label('Mô tả')
                             ->rows(3)
-                            ->columnSpanFull()
-                            ->helperText('Mô tả chi tiết loại sản phẩm'),
-                        Grid::make()
-                            ->schema([
-                                TextInput::make('order')
-                                    ->label('Thứ tự hiển thị')
-                                    ->numeric()
-                                    ->default(0)
-                                    ->minValue(0)
-                                    ->step(1)
-                                    ->helperText('Số nhỏ sẽ hiển thị trước'),
-                                Toggle::make('active')
-                                    ->label('Đang hiển thị')
-                                    ->helperText('Bật để hiển thị loại này')
-                                    ->default(true)
-                                    ->inline(false),
-                            ])
-                            ->columns(2),
+                            ->columnSpanFull(),
+                        Toggle::make('active')
+                            ->label('Đang hiển thị')
+                            ->default(true)
+                            ->inline(false),
                     ]),
             ]);
     }

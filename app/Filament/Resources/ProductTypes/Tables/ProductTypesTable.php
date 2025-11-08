@@ -10,51 +10,52 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductTypesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('order')
+            ->modifyQueryUsing(fn (Builder $query) => $query->withCount('products'))
+            ->defaultSort('order', 'asc')
+            ->reorderable('order')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Tên loại')
                     ->searchable()
+                    ->sortable()
                     ->weight('medium'),
                 TextColumn::make('slug')
-                    ->label('Slug')
+                    ->label('Đường dẫn')
                     ->searchable()
+                    ->sortable()
                     ->badge()
                     ->copyable()
-                    ->tooltip('Click to copy the slug'),
+                    ->tooltip('Click để copy'),
                 TextColumn::make('products_count')
-                    ->label('Products')
-                    ->counts('products')
+                    ->label('Số sản phẩm')
                     ->badge()
                     ->color('gray')
                     ->sortable(),
-                TextColumn::make('order')
-                    ->label('Order')
-                    ->numeric()
-                    ->sortable(),
                 IconColumn::make('active')
-                    ->label('Active')
-                    ->boolean(),
+                    ->label('Hiển thị')
+                    ->boolean()
+                    ->sortable(),
                 TextColumn::make('updated_at')
-                    ->label('Updated')
-                    ->dateTime()
-                    ->since()
+                    ->label('Cập nhật')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
-                    ->label('Created')
-                    ->dateTime()
+                    ->label('Tạo lúc')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TernaryFilter::make('active')
-                    ->label('Active'),
+                    ->label('Trạng thái hiển thị'),
             ])
             ->recordActions([
                 EditAction::make()->iconButton(),

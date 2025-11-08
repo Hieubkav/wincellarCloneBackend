@@ -6,11 +6,13 @@ use App\Models\CatalogAttributeGroup;
 use App\Models\Image;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductType;
 use App\Models\RichEditorMedia;
 use App\Observers\CatalogAttributeGroupObserver;
 use App\Observers\ImageObserver;
 use App\Observers\ProductCategoryObserver;
 use App\Observers\ProductObserver;
+use App\Observers\ProductTypeObserver;
 use App\Observers\RichEditorMediaObserver;
 use App\Support\Security\IpHasher;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -40,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
         Image::observe(ImageObserver::class);
         Product::observe(ProductObserver::class);
         ProductCategory::observe(ProductCategoryObserver::class);
+        ProductType::observe(ProductTypeObserver::class);
         RichEditorMedia::observe(RichEditorMediaObserver::class);
 
         $this->normalizeLoopbackAppUrl();
