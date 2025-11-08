@@ -66,7 +66,7 @@ class MenuBlockResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\MenuBlockItemsRelationManager::class,
         ];
     }
 

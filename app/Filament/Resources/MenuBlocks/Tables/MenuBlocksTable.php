@@ -18,32 +18,52 @@ class MenuBlocksTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['menu', 'attributeGroup']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['menu', 'attributeGroup'])->withCount('items'))
             ->defaultSort('order', 'asc')
             ->reorderable('order')
             ->columns([
                 TextColumn::make('menu.title')
                     ->label('Menu cha')
+                    ->badge()
+                    ->color('primary')
+                    ->icon('heroicon-o-bars-3')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('title')
                     ->label('Tiêu đề khối')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight('bold')
+                    ->icon('heroicon-o-rectangle-group')
+                    ->color('info'),
                 TextColumn::make('attributeGroup.name')
                     ->label('Nhóm thuộc tính')
+                    ->badge()
+                    ->color('purple')
                     ->searchable()
                     ->sortable()
-                    ->placeholder('—'),
+                    ->placeholder('—')
+                    ->toggleable(),
                 TextColumn::make('max_terms')
                     ->label('Giới hạn')
                     ->numeric()
                     ->sortable()
-                    ->placeholder('Không giới hạn'),
+                    ->placeholder('∞')
+                    ->alignCenter()
+                    ->toggleable(),
+                TextColumn::make('items_count')
+                    ->label('Số mục')
+                    ->counts('items')
+                    ->badge()
+                    ->color('success')
+                    ->sortable()
+                    ->alignCenter()
+                    ->icon('heroicon-o-list-bullet'),
                 IconColumn::make('active')
                     ->label('Hiển thị')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('created_at')
                     ->label('Tạo lúc')
                     ->dateTime('d/m/Y H:i')
@@ -57,12 +77,22 @@ class MenuBlocksTable
             ])
             ->filters([
                 SelectFilter::make('menu_id')
-                    ->label('Menu cha')
+                    ->label('Lọc theo Menu')
                     ->relationship('menu', 'title')
                     ->searchable()
-                    ->preload(),
+                    ->preload()
+                    ->multiple(),
+                SelectFilter::make('attribute_group_id')
+                    ->label('Lọc theo Nhóm thuộc tính')
+                    ->relationship('attributeGroup', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->multiple(),
                 TernaryFilter::make('active')
-                    ->label('Hiển thị'),
+                    ->label('Trạng thái hiển thị')
+                    ->placeholder('Tất cả')
+                    ->trueLabel('Đang hiển thị')
+                    ->falseLabel('Đã ẩn'),
             ])
             ->recordActions([
                 EditAction::make()->iconButton(),

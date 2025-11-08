@@ -16,26 +16,37 @@ class MenusTable
     {
         return $table
             // Eager loading để tránh N+1 query
-            ->modifyQueryUsing(fn ($query) => $query->with('term'))
+            ->modifyQueryUsing(fn ($query) => $query->with('term')->withCount('blocks'))
             ->defaultSort('order', 'asc')
             ->reorderable('order')
             ->columns([
                 TextColumn::make('title')
-                    ->label('Tiêu đề')
+                    ->label('Tiêu đề menu')
                     ->searchable()
                     ->sortable()
-                    ->placeholder('(Từ thuật ngữ)'),
+                    ->weight('bold')
+                    ->icon('heroicon-o-bars-3')
+                    ->color('primary')
+                    ->placeholder('(Từ thuật ngữ)')
+                    ->description(fn ($record) => $record->href ? "→ {$record->href}" : null),
                 TextColumn::make('term.name')
                     ->label('Thuật ngữ')
                     ->badge()
-                    ->sortable(),
+                    ->color('purple')
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('type')
-                    ->label('Kiểu')
+                    ->label('Kiểu menu')
                     ->badge()
                     ->formatStateUsing(fn ($state) => match($state) {
                         'standard' => 'Thường',
-                        'mega' => 'Mega',
+                        'mega' => 'Mega Menu',
                         default => $state
+                    })
+                    ->icon(fn ($state) => match($state) {
+                        'standard' => 'heroicon-o-bars-3',
+                        'mega' => 'heroicon-o-squares-2x2',
+                        default => 'heroicon-o-bars-3'
                     })
                     ->color(fn ($state) => match($state) {
                         'standard' => 'gray',
@@ -43,16 +54,19 @@ class MenusTable
                         default => 'gray'
                     })
                     ->sortable(),
-                TextColumn::make('href')
-                    ->label('Đường dẫn')
-                    ->limit(50)
-                    ->searchable()
+                TextColumn::make('blocks_count')
+                    ->label('Số khối')
+                    ->counts('blocks')
+                    ->badge()
+                    ->color('success')
                     ->sortable()
-                    ->toggleable(),
+                    ->alignCenter()
+                    ->icon('heroicon-o-rectangle-group'),
                 IconColumn::make('active')
                     ->label('Hiển thị')
                     ->boolean()
-                    ->sortable(),
+                    ->sortable()
+                    ->alignCenter(),
                 TextColumn::make('created_at')
                     ->label('Tạo lúc')
                     ->dateTime('d/m/Y H:i')

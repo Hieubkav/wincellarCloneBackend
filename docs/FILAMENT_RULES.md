@@ -585,6 +585,8 @@ class ImagesRelationManager extends RelationManager
 {
     protected static string $relationship = 'images';
     protected static ?string $title = 'Hình ảnh';
+    protected static ?string $icon = 'heroicon-o-photo';  // ✅ Icon cho tab
+    protected static ?string $recordTitleAttribute = 'file_path';
     
     public function form(Schema $schema): Schema
     {
@@ -607,6 +609,9 @@ class ImagesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            // ✅ EAGER LOADING - BẮT BUỘC cho relationships
+            ->modifyQueryUsing(fn ($query) => $query->with(['relation']))
+            
             ->columns([
                 ImageColumn::make('file_path')
                     ->disk('public')
@@ -623,28 +628,123 @@ class ImagesRelationManager extends RelationManager
             ->reorderable('order')  // Kéo thả để sắp xếp
             
             ->headerActions([
-                CreateAction::make()->label('Tạo'),
+                CreateAction::make()
+                    ->label('Tạo')
+                    ->icon('heroicon-o-plus')
+                    ->color('success')
+                    ->modalHeading('Tạo mới')
+                    ->modalWidth('2xl'),  // sm, md, lg, xl, 2xl, 3xl, 4xl, 5xl, 6xl, 7xl
             ])
             
             ->recordActions([
-                EditAction::make()->iconButton(),
-                DeleteAction::make()->iconButton(),
+                EditAction::make()
+                    ->iconButton()
+                    ->color('warning'),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->color('danger'),
             ])
             
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
+            ])
+            
+            // ✅ Empty state
+            ->emptyStateHeading('Chưa có bản ghi nào')
+            ->emptyStateDescription('Tạo bản ghi đầu tiên để bắt đầu')
+            ->emptyStateIcon('heroicon-o-photo');
+    }
+}
+```
+
+### Nested RelationManagers (3-Level Hierarchy)
+**Use Case**: Menu → MenuBlocks → MenuBlockItems
+
+#### Level 1: Menu → Blocks (MenuBlocksRelationManager)
+```php
+class MenuBlocksRelationManager extends RelationManager
+{
+    protected static string $relationship = 'blocks';
+    protected static ?string $title = 'Các khối menu';
+    protected static ?string $icon = 'heroicon-o-rectangle-group';
+    
+    public function table(Table $table): Table
+    {
+        return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['attributeGroup']))
+            ->defaultSort('order', 'asc')
+            ->reorderable('order')
+            ->columns([
+                TextColumn::make('order')
+                    ->label('#')
+                    ->width(60)
+                    ->alignCenter()
+                    ->color('gray'),
+                
+                TextColumn::make('title')
+                    ->label('Tiêu đề khối')
+                    ->weight('bold')
+                    ->icon('heroicon-o-rectangle-group')
+                    ->color('info'),
+                
+                TextColumn::make('items_count')
+                    ->label('Số mục')
+                    ->counts('items')  // ✅ Count nested items
+                    ->badge()
+                    ->color('success')
+                    ->icon('heroicon-o-list-bullet'),
+            ]);
+    }
+}
+```
+
+#### Level 2: Block → Items (MenuBlockItemsRelationManager)
+```php
+class MenuBlockItemsRelationManager extends RelationManager
+{
+    protected static string $relationship = 'items';
+    protected static ?string $title = 'Các mục menu';
+    protected static ?string $icon = 'heroicon-o-list-bullet';
+    
+    public function table(Table $table): Table
+    {
+        return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['term']))
+            ->defaultSort('order', 'asc')
+            ->reorderable('order')
+            ->columns([
+                ImageColumn::make('icon_image')
+                    ->label('Icon')
+                    ->circular()
+                    ->width(40)
+                    ->height(40),
+                
+                TextColumn::make('label')
+                    ->label('Nhãn')
+                    ->icon('heroicon-o-tag')
+                    ->color('primary')
+                    ->description(fn ($record) => $record->href ?: '(Auto từ term)'),
+                
+                TextColumn::make('badge')
+                    ->badge()
+                    ->color('success'),
             ]);
     }
 }
 ```
 
 ### Best Practices:
-- ✅ Form phải đơn giản, không quá nhiều field
-- ✅ Luôn có bulkActions
-- ✅ Nếu có `order` column → dùng `->reorderable('order')`
-- ✅ Actions chỉ dùng iconButton
+- ✅ **Form**: Phải đơn giản, không quá nhiều field → Dùng Sections để group
+- ✅ **Eager Loading**: LUÔN dùng `->modifyQueryUsing()` cho relationships
+- ✅ **Reorderable**: Nếu có `order` column → BẮT BUỘC `->reorderable('order')`
+- ✅ **Visual Hierarchy**: Dùng icons, colors, badges để phân biệt cấp độ
+- ✅ **Counts**: Hiển thị số lượng nested items với `->counts('relation')`
+- ✅ **Modal Width**: Tùy chỉnh theo độ phức tạp form (2xl cho đơn giản, 3xl cho nhiều fields)
+- ✅ **Empty State**: Luôn có heading, description, icon
+- ✅ **Actions**: iconButton + colors (warning=edit, danger=delete, success=create)
+- ✅ **BulkActions**: LUÔN có DeleteBulkAction
 
 ---
 
