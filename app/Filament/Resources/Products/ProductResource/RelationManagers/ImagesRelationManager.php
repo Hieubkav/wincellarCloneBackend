@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Products\ProductResource\RelationManagers;
 
 use App\Models\Image;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
@@ -121,6 +123,11 @@ class ImagesRelationManager extends RelationManager
             ->recordActions([
                 EditAction::make()->iconButton(),
                 DeleteAction::make()->iconButton(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
             ])
             ->paginated([10, 25, 50]);
     }

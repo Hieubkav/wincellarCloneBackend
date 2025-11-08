@@ -165,8 +165,19 @@ class ProductResource extends BaseResource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['terms.group']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['terms.group', 'images']))
             ->columns([
+                Tables\Columns\ImageColumn::make('product_image')
+                    ->label('Ảnh')
+                    ->disk('public')
+                    ->width(60)
+                    ->height(60)
+                    ->getStateUsing(function ($record) {
+                        // Lấy ảnh đầu tiên (order nhỏ nhất) hoặc cover image (order = 0)
+                        $image = $record->images->sortBy('order')->first();
+                        return $image ? $image->file_path : null;
+                    })
+                    ->defaultImageUrl('/images/placeholder.png'),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên')
                     ->searchable()
@@ -177,12 +188,14 @@ class ProductResource extends BaseResource
                     ->label('Danh mục')
                     ->badge()
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('type.name')
                     ->label('Loại sản phẩm')
                     ->badge()
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('attributes')
                     ->label('Thuộc tính')
                     ->searchable(query: function (Builder $query, string $search): Builder {
@@ -208,7 +221,8 @@ class ProductResource extends BaseResource
 
                         return $result;
                     })
-                    ->wrap(),
+                    ->wrap()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Giá')
                     ->money('VND')
