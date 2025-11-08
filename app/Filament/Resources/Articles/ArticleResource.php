@@ -9,21 +9,22 @@ use App\Filament\Resources\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Articles\Pages\EditArticle;
 use App\Filament\Resources\Articles\Pages\ListArticles;
 use App\Models\Article;
-use App\Models\User;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\RichEditor;
-use Filament\Schemas\Components\Select;
-use Filament\Schemas\Components\Textarea;
-use Filament\Schemas\Components\TextInput;
-use Filament\Schemas\Components\Toggle;
+use Filament\Schemas\Components\Tabs;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Malzariey\FilamentLexicalEditor\LexicalEditor;
 use Filament\Schemas\Schema;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ArticleResource extends Resource
 {
@@ -43,113 +44,125 @@ class ArticleResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Các bài viết';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getModel()::where('active', true)->count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'success';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->schema([
-                Grid::make()
-                    ->schema([
-                        TextInput::make('title')
-                            ->label('Tiêu đề')
-                            ->helperText('Tiêu đề bài viết, nên rõ ràng và hấp dẫn')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('slug')
-                            ->label('Đường dẫn')
-                            ->helperText('Đường dẫn hiển thị trên website. Ví dụ: cach-chon-ruou-vang-ngon')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(255)
-                            ->rules(['alpha_dash']),
-                        Select::make('author_id')
-                            ->label('Tác giả')
-                            ->helperText('Người viết bài')
-                            ->options(User::pluck('name', 'id'))
-                            ->searchable()
-                            ->required(),
-                        Textarea::make('excerpt')
-                            ->label('Tóm tắt')
-                            ->helperText('Đoạn giới thiệu ngắn, hiển thị ở danh sách bài viết')
-                            ->rows(3)
-                            ->columnSpanFull(),
-                        Toggle::make('active')
-                            ->label('Đang hiển thị')
-                            ->helperText('Bật để xuất bản bài viết')
-                            ->default(true),
+                Tabs::make()
+                    ->tabs([
+                        Tabs\Tab::make('Thông tin chính')
+                            ->schema([
+                                TextInput::make('title')
+                                    ->label('Tiêu đề')
+                                    ->required()
+                                    ->maxLength(255),
+                                
+                                Select::make('author_id')
+                                    ->label('Tác giả')
+                                    ->relationship('author', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(),
+                                
+                                Textarea::make('excerpt')
+                                    ->label('Tóm tắt')
+                                    ->rows(3)
+                                    ->columnSpanFull(),
+                                
+                                Toggle::make('active')
+                                    ->label('Đang hiển thị')
+                                    ->default(true),
+                            ])
+                            ->columns(2),
+                        
+                        Tabs\Tab::make('Nội dung')
+                            ->schema([
+                                LexicalEditor::make('content')
+                                    ->label('Nội dung')
+                                    ->required()
+                                    ->columnSpanFull(),
+                            ]),
                     ])
-                    ->columns(2),
-                RichEditor::make('content')
-                    ->label('Nội dung')
-                    ->helperText('Nội dung chi tiết của bài viết')
-                    ->required()
                     ->columnSpanFull(),
-                Grid::make()
-                    ->schema([
-                        TextInput::make('meta_title')
-                            ->label('Tiêu đề SEO')
-                            ->helperText('Tiêu đề hiển thị trên Google (tối đa 60 ký tự)')
-                            ->maxLength(255),
-                        Textarea::make('meta_description')
-                            ->label('Mô tả SEO')
-                            ->helperText('Mô tả ngắn cho Google (tối đa 160 ký tự)')
-                            ->rows(2)
-                            ->maxLength(255),
-                    ])
-                    ->columns(2),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['author', 'coverImage']))
             ->columns([
+                Tables\Columns\ImageColumn::make('coverImage.file_path')
+                    ->label('Ảnh bìa')
+                    ->disk('public')
+                    ->width(60)
+                    ->height(60)
+                    ->defaultImageUrl('/images/placeholder.png'),
+                
                 Tables\Columns\TextColumn::make('title')
                     ->label('Tiêu đề')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->limit(50),
+                
                 Tables\Columns\TextColumn::make('slug')
                     ->label('Đường dẫn')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                
                 Tables\Columns\TextColumn::make('author.name')
                     ->label('Tác giả')
+                    ->searchable()
                     ->sortable(),
+                
                 Tables\Columns\IconColumn::make('active')
                     ->label('Hiển thị')
-                    ->boolean(),
+                    ->boolean()
+                    ->sortable(),
+                
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Ngày tạo')
-                    ->dateTime()
+                    ->label('Tạo lúc')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Cập nhật')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
             ])
+            ->recordActions([
+                EditAction::make()->iconButton(),
+                DeleteAction::make()->iconButton(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ])
             ->paginated([5, 10, 25, 50, 100, 'all'])
             ->defaultPaginationPageOption(25);
-    }
-
-    public static function getTableActions(): array
-    {
-        return [
-            EditAction::make()->iconButton(),
-        ];
-    }
-
-    public static function getTableBulkActions(): array
-    {
-        return [
-            BulkActionGroup::make([
-                DeleteBulkAction::make(),
-            ]),
-        ];
     }
 
     public static function getRelations(): array
     {
         return [
-            //
+            ArticleResource\RelationManagers\ImagesRelationManager::class,
         ];
     }
 

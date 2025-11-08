@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Article;
 use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
 use App\Models\Image;
@@ -9,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
 use App\Models\RichEditorMedia;
+use App\Observers\ArticleObserver;
 use App\Observers\CatalogAttributeGroupObserver;
 use App\Observers\CatalogTermObserver;
 use App\Observers\ImageObserver;
@@ -40,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Đăng ký Observer
+        Article::observe(ArticleObserver::class);
         CatalogAttributeGroup::observe(CatalogAttributeGroupObserver::class);
         CatalogTerm::observe(CatalogTermObserver::class);
         Image::observe(ImageObserver::class);

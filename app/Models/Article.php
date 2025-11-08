@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasMediaGallery;
+use App\Models\Concerns\HasRichEditorMedia;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,9 @@ class Article extends Model
 {
     use HasFactory;
     use HasMediaGallery;
+    use HasRichEditorMedia;
+
+    protected array $richEditorFields = ['content'];
 
     /**
      * @var list<string>
