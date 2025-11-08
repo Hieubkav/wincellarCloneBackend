@@ -165,6 +165,7 @@ class ProductResource extends BaseResource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['terms.group']))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên')
@@ -182,14 +183,32 @@ class ProductResource extends BaseResource
                     ->badge()
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('terms_count')
+                Tables\Columns\TextColumn::make('attributes')
                     ->label('Thuộc tính')
-                    ->counts('terms')
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->whereHas('terms', function (Builder $query) use ($search) {
+                            $query->where('name', 'like', "%{$search}%");
+                        });
+                    })
                     ->badge()
-                    ->color('info')
-                    ->formatStateUsing(fn($state) => $state . ' thuộc tính')
-                    ->sortable()
-                    ->tooltip('Số lượng thuộc tính (Brand, Origin, Grape...)'),
+                    ->getStateUsing(function ($record) {
+                        if (!$record->relationLoaded('terms') || $record->terms->isEmpty()) {
+                            return [];
+                        }
+
+                        $grouped = $record->terms->groupBy(function($term) {
+                            return $term->group ? $term->group->name : 'Khác';
+                        });
+
+                        $result = [];
+                        foreach ($grouped as $groupName => $terms) {
+                            $termNames = $terms->pluck('name')->join(', ');
+                            $result[] = "{$groupName}: {$termNames}";
+                        }
+
+                        return $result;
+                    })
+                    ->wrap(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Giá')
                     ->money('VND')
