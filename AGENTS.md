@@ -65,6 +65,46 @@ public function updating(Model $model): void {
 }
 ```
 
+## Rich Text Editor (Lexical Editor)
+- **Khi nào dùng**: Tất cả các trường mô tả (description, content...) phải dùng Rich Editor
+- **Package**: Sử dụng `malzariey/filament-lexical-editor`
+- **Component**: `LexicalEditor::make('field_name')`
+- **Storage Symlink**: BẮT BUỘC chạy `php artisan storage:link` sau khi setup project để ảnh hiển thị được
+- **Tracking ảnh tự động**:
+  - BẮT BUỘC: Model có Rich Editor phải dùng trait `HasRichEditorMedia`
+  - Khai báo property `protected array $richEditorFields = ['description', 'content'];`
+  - Trait tự động:
+    - Convert base64 images thành files trong `storage/app/public/rich-editor-images/`
+    - Lưu relative paths (`/storage/...`) thay vì absolute URLs để hoạt động trên mọi môi trường
+    - Track ảnh trong bảng `rich_editor_media` với polymorphic relationship
+    - Xóa ảnh khi nội dung thay đổi hoặc record bị xóa
+  - Command hỗ trợ: `php artisan rich-editor:fix-absolute-urls` để convert absolute URLs sang relative paths
+
+**Ví dụ implementation**:
+```php
+// Model
+use App\Models\Concerns\HasRichEditorMedia;
+
+class Product extends Model 
+{
+    use HasRichEditorMedia;
+    
+    protected array $richEditorFields = ['description'];
+}
+
+// Resource Form
+use Malzariey\FilamentLexicalEditor\LexicalEditor;
+
+LexicalEditor::make('description')
+    ->label('Mô tả')
+    ->columnSpanFull();
+```
+
+**Lưu ý khi deploy**:
+- Chạy `php artisan storage:link` trên server production
+- Đảm bảo thư mục `storage/app/public` có quyền write
+- Ảnh sẽ được lưu tại `storage/app/public/rich-editor-images/`
+
 ## Database Schema Management
 - **Luôn đồng bộ mermaid.rb**: Khi tạo/sửa migration, PHẢI cập nhật file `mermaid.rb` ngay lập tức
 - mermaid.rb phải phản ánh chính xác cấu trúc database hiện tại
