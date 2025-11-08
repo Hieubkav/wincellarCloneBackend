@@ -3,17 +3,23 @@
 namespace App\Filament\Resources\Products\Pages;
 
 use App\Filament\Resources\Products\ProductResource;
+use App\Models\Image;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateProduct extends CreateRecord
 {
     protected static string $resource = ProductResource::class;
 
+    private array $productImages = [];
+
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Lọc bỏ các attributes fields khỏi data chính
+        // Lưu product_images trước khi loại bỏ khỏi data
+        $this->productImages = $data['product_images'] ?? [];
+        
+        // Lọc bỏ các attributes fields và product_images khỏi data chính
         foreach ($data as $key => $value) {
-            if (str_starts_with($key, 'attributes_')) {
+            if (str_starts_with($key, 'attributes_') || $key === 'product_images') {
                 unset($data[$key]);
             }
         }
@@ -24,8 +30,9 @@ class CreateProduct extends CreateRecord
     protected function afterCreate(): void
     {
         $product = $this->record;
-        $data = $this->data; // Dùng $this->data thay vì $this->form->getState()
+        $data = $this->data;
         
+        // Lưu term assignments
         $position = 0;
         foreach ($data as $key => $value) {
             if (!str_starts_with($key, 'attributes_')) {
@@ -43,6 +50,22 @@ class CreateProduct extends CreateRecord
                     'term_id' => $termId,
                     'position' => $position++,
                 ]);
+            }
+        }
+
+        // Lưu images
+        if (!empty($this->productImages)) {
+            $order = 0;
+            foreach ($this->productImages as $filePath) {
+                Image::create([
+                    'file_path' => $filePath,
+                    'disk' => 'public',
+                    'model_type' => get_class($product),
+                    'model_id' => $product->id,
+                    'order' => $order,
+                    'active' => true,
+                ]);
+                $order++;
             }
         }
     }

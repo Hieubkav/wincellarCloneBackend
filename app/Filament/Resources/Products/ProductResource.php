@@ -18,6 +18,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
@@ -131,6 +132,38 @@ class ProductResource extends BaseResource
 
                         Tabs\Tab::make('Thuộc tính')
                             ->schema(static::getAttributeFields()),
+
+                        Tabs\Tab::make('Hình ảnh')
+                            ->schema([
+                                FileUpload::make('product_images')
+                                    ->label('Hình ảnh sản phẩm')
+                                    ->image()
+                                    ->multiple()
+                                    ->disk('public')
+                                    ->directory('products')
+                                    ->imageEditor()
+                                    ->reorderable()
+                                    ->maxFiles(10)
+                                    ->maxSize(10240)
+                                    ->helperText('Tải lên tối đa 10 ảnh. Ảnh đầu tiên sẽ là ảnh chính. Có thể kéo thả để sắp xếp.')
+                                    ->saveUploadedFileUsing(function ($file) {
+                                        $filename = uniqid('product_') . '.webp';
+                                        $path = 'products/' . $filename;
+
+                                        $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
+                                        $image = $manager->read($file->getRealPath());
+
+                                        if ($image->width() > 1200) {
+                                            $image->scale(width: 1200);
+                                        }
+
+                                        $webp = $image->toWebp(quality: 85);
+                                        \Storage::disk('public')->put($path, $webp);
+
+                                        return $path;
+                                    })
+                                    ->columnSpanFull(),
+                            ]),
                     ])
                     ->columnSpanFull(),
             ]);
