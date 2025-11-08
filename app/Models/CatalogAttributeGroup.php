@@ -18,9 +18,9 @@ class CatalogAttributeGroup extends Model
         'name',
         'filter_type',
         'is_filterable',
-        'is_primary',
         'position',
         'display_config',
+        'icon_path',
     ];
 
     /**
@@ -30,7 +30,6 @@ class CatalogAttributeGroup extends Model
     {
         return [
             'is_filterable' => 'bool',
-            'is_primary' => 'bool',
             'position' => 'int',
             'display_config' => 'array',
         ];

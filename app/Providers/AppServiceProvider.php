@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\CatalogAttributeGroup;
+use App\Observers\CatalogAttributeGroupObserver;
 use App\Support\Security\IpHasher;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request as HttpRequest;
@@ -25,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Đăng ký Observer
+        CatalogAttributeGroup::observe(CatalogAttributeGroupObserver::class);
+
         $this->normalizeLoopbackAppUrl();
 
         HttpRequest::macro('ipHash', function (?string $ip = null): ?string {

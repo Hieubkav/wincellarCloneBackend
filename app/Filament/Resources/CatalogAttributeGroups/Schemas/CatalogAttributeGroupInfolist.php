@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\CatalogAttributeGroups\Schemas;
 
-use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\KeyValueEntry;
-use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class CatalogAttributeGroupInfolist
@@ -36,9 +36,6 @@ class CatalogAttributeGroupInfolist
                                     ->state(fn ($record) => $record->terms()->count()),
                                 IconEntry::make('is_filterable')
                                     ->label('Filterable')
-                                    ->boolean(),
-                                IconEntry::make('is_primary')
-                                    ->label('Primary')
                                     ->boolean(),
                                 TextEntry::make('position')
                                     ->label('Order')

@@ -135,8 +135,8 @@ class ArticleResource extends Resource
     public static function getTableActions(): array
     {
         return [
-            ViewAction::make(),
-            EditAction::make(),
+            ViewAction::make()->iconButton(),
+            EditAction::make()->iconButton(),
         ];
     }
 

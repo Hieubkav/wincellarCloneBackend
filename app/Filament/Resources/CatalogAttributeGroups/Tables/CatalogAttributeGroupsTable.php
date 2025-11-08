@@ -3,9 +3,9 @@
 namespace App\Filament\Resources\CatalogAttributeGroups\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -30,15 +30,16 @@ class CatalogAttributeGroupsTable
                     ->searchable()
                     ->weight('medium'),
                 TextColumn::make('filter_type')
-                    ->label('Filter type')
+                    ->label('Kiểu lọc')
                     ->sortable()
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): ?string => $state ? ucfirst($state) : null),
+                    ->formatStateUsing(fn (?string $state): ?string => match($state) {
+                        'chon_don' => 'Chọn đơn',
+                        'chon_nhieu' => 'Chọn nhiều',
+                        default => $state,
+                    }),
                 IconColumn::make('is_filterable')
-                    ->label('Filterable')
-                    ->boolean(),
-                IconColumn::make('is_primary')
-                    ->label('Primary')
+                    ->label('Cho phép lọc')
                     ->boolean(),
                 TextColumn::make('terms_count')
                     ->label('Số thuộc tính')
@@ -62,21 +63,17 @@ class CatalogAttributeGroupsTable
             ])
             ->filters([
                 SelectFilter::make('filter_type')
-                    ->label('Filter type')
+                    ->label('Kiểu lọc')
                     ->options([
-                        'single' => 'Single',
-                        'multi' => 'Multi',
-                        'hierarchy' => 'Hierarchy',
-                        'range' => 'Range',
+                        'chon_don' => 'Chọn đơn',
+                        'chon_nhieu' => 'Chọn nhiều',
                     ]),
                 TernaryFilter::make('is_filterable')
-                    ->label('Filterable'),
-                TernaryFilter::make('is_primary')
-                    ->label('Primary'),
+                    ->label('Cho phép lọc'),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()->iconButton(),
+                DeleteAction::make()->iconButton(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

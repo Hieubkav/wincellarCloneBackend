@@ -29,7 +29,7 @@ class SessionsRelationManager extends RelationManager
                 //
             ])
             ->recordActions([
-                ViewAction::make(),
+                ViewAction::make()->iconButton(),
             ])
             ->toolbarActions([
             //

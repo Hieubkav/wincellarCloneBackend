@@ -52,7 +52,7 @@ class VisitorResource extends Resource
                 //
             ])
             ->recordActions([
-                ViewAction::make(),
+                ViewAction::make()->iconButton(),
             ])
             ->toolbarActions([
             //

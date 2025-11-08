@@ -30,7 +30,6 @@ class Product extends Model
     protected $fillable = [
         'name',
         'slug',
-        'product_category_id',
         'type_id',
         'description',
         'price',
@@ -58,9 +57,10 @@ class Product extends Model
         ];
     }
 
-    public function productCategory(): BelongsTo
+    public function categories(): BelongsToMany
     {
-        return $this->belongsTo(ProductCategory::class);
+        return $this->belongsToMany(ProductCategory::class, 'product_category_product')
+            ->withTimestamps();
     }
 
     public function type(): BelongsTo

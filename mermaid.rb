@@ -92,11 +92,11 @@ ActiveRecord::Schema[7.0].define do
   create_table "catalog_attribute_groups", force: :cascade do |t|
     t.string   "code",          null: false
     t.string   "name",          null: false
-    t.string   "filter_type",   null: false, default: "multi"
+    t.string   "filter_type",   null: false, default: "chon_nhieu"
     t.boolean  "is_filterable", null: false, default: true
-    t.boolean  "is_primary",    null: false, default: false
     t.integer  "position",      null: false, default: 0
     t.jsonb    "display_config"
+    t.string   "icon_path"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
   end
@@ -126,8 +126,7 @@ ActiveRecord::Schema[7.0].define do
   create_table "products", force: :cascade do |t|
     t.string   "name",        null: false
     t.string   "slug",        null: false
-    t.bigint   "product_category_id", null: false
-    t.bigint   "type_id",            null: false
+    t.bigint   "type_id",     null: false
     t.text     "description"
     t.bigint   "price",       null: false, default: 0
     t.bigint   "original_price", null: false, default: 0
@@ -141,9 +140,19 @@ ActiveRecord::Schema[7.0].define do
     t.datetime "updated_at", null: false
   end
   add_index "products", ["slug"], name: "index_products_on_slug", unique: true
-  add_index "products", ["type_id", "product_category_id"], name: "index_products_type_category"
-  add_foreign_key "products", "product_categories"
   add_foreign_key "products", "product_types", column: "type_id"
+
+  # == PRODUCT CATEGORY PRODUCT (PIVOT) ==
+  create_table "product_category_product", force: :cascade do |t|
+    t.bigint   "product_id",          null: false
+    t.bigint   "product_category_id", null: false
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+  end
+  add_index "product_category_product", ["product_id", "product_category_id"], name: "product_category_unique", unique: true
+  add_index "product_category_product", ["product_category_id"], name: "index_product_category_product_on_category_id"
+  add_foreign_key "product_category_product", "products", on_delete: :cascade
+  add_foreign_key "product_category_product", "product_categories", on_delete: :cascade
 
   # == PRODUCT TERM ASSIGNMENTS ==
   create_table "product_term_assignments", force: :cascade do |t|

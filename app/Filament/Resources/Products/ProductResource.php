@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Products;
 use BackedEnum;
 use UnitEnum;
 
+use App\Filament\Resources\BaseResource;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
@@ -22,13 +23,12 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class ProductResource extends Resource
+class ProductResource extends BaseResource
 {
     protected static ?string $model = Product::class;
 
@@ -71,12 +71,15 @@ class ProductResource extends Resource
                             ->rules(['alpha_dash'])
                             ->columnSpanFull(),
 
-                        Select::make('product_category_id')
+                        Select::make('categories')
                             ->label('Danh mục sản phẩm')
                             ->placeholder('Chọn danh mục')
                             ->hint('Vang, Bia, Thịt nguội...')
+                            ->relationship('categories', 'name')
                             ->options(ProductCategory::active()->pluck('name', 'id'))
                             ->searchable()
+                            ->multiple()
+                            ->preload()
                             ->required(),
 
                         Select::make('type_id')
@@ -184,57 +187,60 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-        ->columns([
-        Tables\Columns\TextColumn::make('name')
-        ->label('Tên')
-        ->searchable()
-            ->sortable(),
-        Tables\Columns\TextColumn::make('productCategory.name')
-            ->label('Danh mục')
-            ->badge()
-            ->searchable()
-            ->sortable(),
-        Tables\Columns\TextColumn::make('type.name')
-            ->label('Loại sản phẩm')
-            ->badge()
-            ->searchable()
-            ->sortable(),
-        Tables\Columns\TextColumn::make('terms_count')
-            ->label('Thuộc tính')
-            ->counts('terms')
-            ->badge()
-            ->color('info')
-            ->formatStateUsing(fn ($state) => $state . ' thuộc tính')
-            ->sortable()
-            ->tooltip('Số lượng thuộc tính (Brand, Origin, Grape...)'),
-        Tables\Columns\TextColumn::make('price')
-            ->label('Giá')
-        ->money('VND')
-            ->sortable(),
-        Tables\Columns\TextColumn::make('original_price')
-            ->label('Giá gốc')
-        ->money('VND')
-            ->sortable()
+            ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->label('Tên')
+                    ->searchable()
+                    ->sortable()
+                    ->limit(40)
+                    ->tooltip(fn($record) => $record->name),
+                Tables\Columns\TextColumn::make('categories.name')
+                    ->label('Danh mục')
+                    ->badge()
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('type.name')
+                    ->label('Loại sản phẩm')
+                    ->badge()
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('terms_count')
+                    ->label('Thuộc tính')
+                    ->counts('terms')
+                    ->badge()
+                    ->color('info')
+                    ->formatStateUsing(fn($state) => $state . ' thuộc tính')
+                    ->sortable()
+                    ->tooltip('Số lượng thuộc tính (Brand, Origin, Grape...)'),
+                Tables\Columns\TextColumn::make('price')
+                    ->label('Giá')
+                    ->money('VND')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('original_price')
+                    ->label('Giá gốc')
+                    ->money('VND')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            Tables\Columns\TextColumn::make('alcohol_percent')
+                Tables\Columns\TextColumn::make('alcohol_percent')
                     ->label('Nồng độ cồn')
                     ->suffix('%')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            Tables\Columns\TextColumn::make('volume_ml')
+                Tables\Columns\TextColumn::make('volume_ml')
                     ->label('Dung tích')
                     ->suffix(' ml')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-        Tables\Columns\IconColumn::make('active')
-        ->label('Hoạt động')
-        ->boolean(),
-            Tables\Columns\TextColumn::make('created_at')
+                Tables\Columns\IconColumn::make('active')
+                    ->label('Hoạt động')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            Tables\Columns\TextColumn::make('updated_at')
+                Tables\Columns\TextColumn::make('updated_at')
                     ->label('Ngày cập nhật')
                     ->dateTime()
                     ->sortable()
@@ -244,8 +250,8 @@ class ProductResource extends Resource
                 //
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->iconButton(),
+                DeleteAction::make()->iconButton(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -254,6 +260,20 @@ class ProductResource extends Resource
             ])
             ->paginated([5, 10, 25, 50, 100, 'all'])
             ->defaultPaginationPageOption(25);
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $activeCount = static::getModel()::query()
+            ->where('active', true)
+            ->count();
+
+        return $activeCount > 0 ? (string) $activeCount : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'success';
     }
 
     public static function getRelations(): array

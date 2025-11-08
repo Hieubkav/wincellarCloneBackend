@@ -30,7 +30,7 @@ class EventsRelationManager extends RelationManager
                 //
             ])
             ->recordActions([
-                ViewAction::make(),
+                ViewAction::make()->iconButton(),
             ])
             ->toolbarActions([
             //
