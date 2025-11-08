@@ -236,7 +236,6 @@ ActiveRecord::Schema[7.0].define do
     t.string   "label"
     t.string   "href"
     t.string   "badge"
-    t.jsonb    "meta"
     t.integer  "order",        null: false, default: 0
     t.boolean  "active",       null: false, default: true
     t.datetime "created_at",   null: false
@@ -246,6 +245,7 @@ ActiveRecord::Schema[7.0].define do
   add_index "menu_block_items", ["term_id", "menu_block_id"], name: "index_menu_block_items_on_term"
   add_foreign_key "menu_block_items", "menu_blocks"
   add_foreign_key "menu_block_items", "catalog_terms", column: "term_id"
+  # Note: Icon images stored via morphMany images relationship
 
   # == HOME COMPONENTS ==
   create_table "home_components", force: :cascade do |t|

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasMediaGallery;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class MenuBlockItem extends Model
 {
     use HasFactory;
+    use HasMediaGallery;
 
     /**
      * @var list<string>
@@ -19,7 +21,6 @@ class MenuBlockItem extends Model
         'label',
         'href',
         'badge',
-        'meta',
         'order',
         'active',
     ];
@@ -30,7 +31,6 @@ class MenuBlockItem extends Model
     protected function casts(): array
     {
         return [
-            'meta' => 'array',
             'order' => 'int',
             'active' => 'bool',
         ];
@@ -51,6 +51,9 @@ class MenuBlockItem extends Model
         return $query->where('active', true);
     }
 
+    /**
+     * Lấy label hiển thị - ưu tiên label thủ công, fallback về term->name
+     */
     public function displayLabel(): string
     {
         if ($this->label) {
@@ -60,9 +63,30 @@ class MenuBlockItem extends Model
         return (string) optional($this->term)->name;
     }
 
+    /**
+     * Lấy href hiển thị - ưu tiên href thủ công, fallback về href từ term
+     */
     public function displayHref(): ?string
     {
-        return $this->href;
+        // Mode 1: Href thủ công (tel:, mailto:, external link...)
+        if ($this->href) {
+            return $this->href;
+        }
+
+        // Mode 2: Auto href từ term (taxonomy filter)
+        if ($this->term) {
+            $group = $this->term->group;
+            if ($group) {
+                // Build href dạng: /san-pham?filter[group_code]=term-slug
+                return '/san-pham?' . http_build_query([
+                    'filter' => [
+                        $group->code => $this->term->slug,
+                    ],
+                ]);
+            }
+        }
+
+        return null;
     }
 }
 
