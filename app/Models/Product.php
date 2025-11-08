@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasMediaGallery;
+use App\Models\Concerns\HasRichEditorMedia;
 use App\Support\Product\ProductPricing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,6 +17,9 @@ class Product extends Model
 {
     use HasFactory;
     use HasMediaGallery;
+    use HasRichEditorMedia;
+
+    protected array $richEditorFields = ['description'];
 
     protected static function booted(): void
     {

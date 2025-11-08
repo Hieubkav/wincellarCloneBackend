@@ -20,9 +20,9 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Malzariey\FilamentLexicalEditor\LexicalEditor;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
@@ -75,9 +75,8 @@ class ProductResource extends BaseResource
                                     ->searchable()
                                     ->required(),
 
-                                Textarea::make('description')
+                                LexicalEditor::make('description')
                                     ->label('Mô tả')
-                                    ->rows(4)
                                     ->columnSpanFull(),
                             ])
                             ->columns(2),
