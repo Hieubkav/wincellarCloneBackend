@@ -8,7 +8,6 @@ use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
-use Filament\Actions\ViewAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Columns\TextColumn;
@@ -52,7 +51,6 @@ class VisitorResource extends Resource
                 //
             ])
             ->recordActions([
-                ViewAction::make()->iconButton(),
             ])
             ->toolbarActions([
             //
@@ -74,7 +72,6 @@ class VisitorResource extends Resource
     {
         return [
             'index' => Pages\ListVisitors::route('/'),
-            'view' => Pages\ViewVisitor::route('/{record}'),
         ];
     }
 }

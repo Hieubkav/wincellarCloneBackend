@@ -16,7 +16,6 @@ class ProductTermAssignment extends Model
     protected $fillable = [
         'product_id',
         'term_id',
-        'is_primary',
         'position',
         'extra',
     ];
@@ -27,7 +26,6 @@ class ProductTermAssignment extends Model
     protected function casts(): array
     {
         return [
-            'is_primary' => 'bool',
             'position' => 'int',
             'extra' => 'array',
         ];

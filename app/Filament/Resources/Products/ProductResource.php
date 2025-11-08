@@ -128,9 +128,38 @@ class ProductResource extends BaseResource
                                     ])
                                     ->columns(3),
                             ]),
+
+                        Tabs\Tab::make('Thuộc tính')
+                            ->schema(static::getAttributeFields()),
                     ])
                     ->columnSpanFull(),
             ]);
+    }
+
+    protected static function getAttributeFields(): array
+    {
+        $groups = \App\Models\CatalogAttributeGroup::with(['terms' => function ($query) {
+            $query->where('is_active', true)->orderBy('position');
+        }])->orderBy('position')->get();
+
+        $fields = [];
+        foreach ($groups as $group) {
+            $isMultiple = $group->filter_type === 'chon_nhieu';
+            
+            $field = Select::make("attributes_{$group->id}")
+                ->label($group->name)
+                ->options($group->terms->pluck('name', 'id'))
+                ->searchable()
+                ->preload();
+            
+            if ($isMultiple) {
+                $field->multiple();
+            }
+            
+            $fields[] = $field;
+        }
+
+        return $fields;
     }
 
     public static function table(Table $table): Table
@@ -228,7 +257,7 @@ class ProductResource extends BaseResource
     public static function getRelations(): array
     {
         return [
-            ProductResource\RelationManagers\ProductTermAssignmentsRelationManager::class,
+            // ProductResource\RelationManagers\ProductTermAssignmentsRelationManager::class,
         ];
     }
 

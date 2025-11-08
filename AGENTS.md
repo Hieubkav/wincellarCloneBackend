@@ -7,11 +7,10 @@ Hiểu rõ filament 4x ở trong vendor\filament
 Hãy tham khảo E:\Laravel\Laravel12\wincellarClone\wincellarcloneBackend\PLAN.md để hiểu dự án này làm gì chức năng gì nha
 
 ## Filament Actions UI
-- Tất cả các action (Edit, Delete, View...) trong table chỉ hiển thị icon, không hiển thị text
-- Sử dụng `->iconButton()` cho tất cả recordActions hoặc getTableActions
-- Ví dụ: `EditAction::make()->iconButton()`, `DeleteAction::make()->iconButton()`, `ViewAction::make()->iconButton()`
-- **Nút tạo mới**: Tất cả CreateAction phải dùng `->label('Tạo')` để chỉ hiển thị "Tạo" thay vì "Tạo mới [Tên]"
-  - Ví dụ trong ListRecords page: `Actions\CreateAction::make()->label('Tạo')`
+- **KHÔNG dùng ViewAction**: Chỉ dùng Edit/Delete, không có nút Xem (edit = xem)
+- Actions trong table chỉ hiển thị icon: `EditAction::make()->iconButton()`, `DeleteAction::make()->iconButton()`
+- **Nút tạo mới**: Dùng `->label('Tạo')` thay vì "Tạo mới [Tên]"
+  - Ví dụ: `Actions\CreateAction::make()->label('Tạo')`
 
 ## Storage & File Management
 - **Nguyên tắc**: Ảnh/file lưu trong storage, database chỉ lưu đường dẫn (relative path)

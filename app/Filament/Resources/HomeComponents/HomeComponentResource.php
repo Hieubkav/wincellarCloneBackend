@@ -5,7 +5,6 @@ namespace App\Filament\Resources\HomeComponents;
 use App\Filament\Resources\HomeComponents\Pages\CreateHomeComponent;
 use App\Filament\Resources\HomeComponents\Pages\EditHomeComponent;
 use App\Filament\Resources\HomeComponents\Pages\ListHomeComponents;
-use App\Filament\Resources\HomeComponents\Pages\ViewHomeComponent;
 use App\Filament\Resources\HomeComponents\Schemas\HomeComponentForm;
 use App\Filament\Resources\HomeComponents\Schemas\HomeComponentInfolist;
 use App\Filament\Resources\HomeComponents\Tables\HomeComponentsTable;
@@ -76,7 +75,6 @@ class HomeComponentResource extends Resource
         return [
             'index' => ListHomeComponents::route('/'),
             'create' => CreateHomeComponent::route('/create'),
-            'view' => ViewHomeComponent::route('/{record}'),
             'edit' => EditHomeComponent::route('/{record}/edit'),
         ];
     }

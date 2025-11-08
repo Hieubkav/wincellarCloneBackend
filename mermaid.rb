@@ -170,7 +170,6 @@ ActiveRecord::Schema[7.0].define do
   create_table "product_term_assignments", force: :cascade do |t|
     t.bigint   "product_id",  null: false
     t.bigint   "term_id",     null: false
-    t.boolean  "is_primary",  null: false, default: false
     t.integer  "position",    null: false, default: 0
     t.jsonb    "extra"
     t.datetime "created_at",  null: false

@@ -64,7 +64,7 @@ class CatalogTerm extends Model
             'term_id',
             'product_id'
         )
-            ->withPivot(['is_primary', 'position', 'extra'])
+            ->withPivot(['position', 'extra'])
             ->withTimestamps()
             ->orderByPivot('position');
     }

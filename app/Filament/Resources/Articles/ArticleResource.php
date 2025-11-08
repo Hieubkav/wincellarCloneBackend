@@ -8,7 +8,6 @@ use UnitEnum;
 use App\Filament\Resources\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Articles\Pages\EditArticle;
 use App\Filament\Resources\Articles\Pages\ListArticles;
-use App\Filament\Resources\Articles\Pages\ViewArticle;
 use App\Models\Article;
 use App\Models\User;
 use Filament\Resources\Resource;
@@ -22,7 +21,6 @@ use Filament\Schemas\Schema;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -135,7 +133,6 @@ class ArticleResource extends Resource
     public static function getTableActions(): array
     {
         return [
-            ViewAction::make()->iconButton(),
             EditAction::make()->iconButton(),
         ];
     }
@@ -161,7 +158,6 @@ class ArticleResource extends Resource
         return [
             'index' => ListArticles::route('/'),
             'create' => CreateArticle::route('/create'),
-            'view' => ViewArticle::route('/{record}'),
             'edit' => EditArticle::route('/{record}/edit'),
         ];
     }

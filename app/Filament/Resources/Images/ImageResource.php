@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Images;
 use App\Filament\Resources\Images\Pages\CreateImage;
 use App\Filament\Resources\Images\Pages\EditImage;
 use App\Filament\Resources\Images\Pages\ListImages;
-use App\Filament\Resources\Images\Pages\ViewImage;
 use App\Filament\Resources\Images\Schemas\ImageForm;
 use App\Filament\Resources\Images\Schemas\ImageInfolist;
 use App\Filament\Resources\Images\Tables\ImagesTable;
@@ -78,7 +77,6 @@ class ImageResource extends Resource
         return [
             'index' => ListImages::route('/'),
             'create' => CreateImage::route('/create'),
-            'view' => ViewImage::route('/{record}'),
             'edit' => EditImage::route('/{record}/edit'),
         ];
     }

@@ -5,7 +5,6 @@ namespace App\Filament\Resources\VisitorResource\RelationManagers;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 
 class EventsRelationManager extends RelationManager
@@ -30,7 +29,6 @@ class EventsRelationManager extends RelationManager
                 //
             ])
             ->recordActions([
-                ViewAction::make()->iconButton(),
             ])
             ->toolbarActions([
             //

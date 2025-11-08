@@ -4,7 +4,6 @@ namespace App\Filament\Resources\CatalogTerms\RelationManagers;
 
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Actions\AttachAction;
 use Filament\Actions\DetachAction;
@@ -29,19 +28,12 @@ class ProductsRelationManager extends RelationManager
     {
         return $schema
             ->schema([
-                Grid::make()
-                    ->schema([
-                        Toggle::make('pivot.is_primary')
-                            ->label('Là thuộc tính chính')
-                            ->inline(false),
-                        TextInput::make('pivot.position')
-                            ->label('Thứ tự')
-                            ->numeric()
-                            ->default(0)
-                            ->minValue(0)
-                            ->step(1),
-                    ])
-                    ->columns(2),
+                TextInput::make('pivot.position')
+                    ->label('Thứ tự')
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0)
+                    ->step(1),
                 KeyValue::make('pivot.extra')
                     ->label('Dữ liệu bổ sung')
                     ->keyLabel('Key')
@@ -59,18 +51,16 @@ class ProductsRelationManager extends RelationManager
                     ->label('Sản phẩm')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('productCategory.name')
-                    ->label('Danh mục')
+                TextColumn::make('type.name')
+                    ->label('Loại')
                     ->badge()
                     ->toggleable(),
-                IconColumn::make('pivot.is_primary')
-                    ->label('Là chính')
-                    ->boolean(),
                 TextColumn::make('pivot.position')
                     ->label('Thứ tự')
                     ->numeric()
                     ->sortable(),
-            ]);
+            ])
+            ->defaultSort('pivot.position', 'asc');
     }
 
     protected function getTableHeaderActions(): array
@@ -87,8 +77,8 @@ class ProductsRelationManager extends RelationManager
     protected function getTableActions(): array
     {
         return [
-            EditAction::make(),
-            DetachAction::make(),
+            EditAction::make()->iconButton(),
+            DetachAction::make()->iconButton(),
         ];
     }
 

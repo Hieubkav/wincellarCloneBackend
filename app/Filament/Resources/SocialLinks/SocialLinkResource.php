@@ -8,7 +8,6 @@ use UnitEnum;
 use App\Filament\Resources\SocialLinks\Pages\CreateSocialLink;
 use App\Filament\Resources\SocialLinks\Pages\EditSocialLink;
 use App\Filament\Resources\SocialLinks\Pages\ListSocialLinks;
-use App\Filament\Resources\SocialLinks\Pages\ViewSocialLink;
 use App\Models\Image;
 use App\Models\SocialLink;
 use Filament\Resources\Resource;
@@ -20,7 +19,6 @@ use Filament\Schemas\Components\Toggle as SchemaToggle;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
@@ -114,7 +112,6 @@ class SocialLinkResource extends Resource
     public static function getTableActions(): array
     {
         return [
-            ViewAction::make()->iconButton(),
             EditAction::make()->iconButton(),
         ];
     }
@@ -140,7 +137,6 @@ class SocialLinkResource extends Resource
         return [
             'index' => ListSocialLinks::route('/'),
             'create' => CreateSocialLink::route('/create'),
-            'view' => ViewSocialLink::route('/{record}'),
             'edit' => EditSocialLink::route('/{record}/edit'),
         ];
     }

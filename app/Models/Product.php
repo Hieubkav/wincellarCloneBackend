@@ -96,7 +96,7 @@ class Product extends Model
             'term_id'
         )
             ->using(\App\Models\Pivots\ProductTermPivot::class)
-            ->withPivot(['is_primary', 'position', 'extra'])
+            ->withPivot(['position', 'extra'])
             ->withTimestamps()
             ->orderByPivot('position');
     }
@@ -124,8 +124,7 @@ class Product extends Model
         $terms = $this->ensureTermsLoaded();
 
         return $terms->first(function (CatalogTerm $term) use ($groupCode) {
-            return optional($term->group)->code === $groupCode
-                && (bool) $term->pivot?->is_primary === true;
+            return optional($term->group)->code === $groupCode;
         });
     }
 
