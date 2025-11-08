@@ -3,9 +3,11 @@
 namespace App\Providers;
 
 use App\Models\CatalogAttributeGroup;
+use App\Models\Image;
 use App\Models\Product;
 use App\Models\RichEditorMedia;
 use App\Observers\CatalogAttributeGroupObserver;
+use App\Observers\ImageObserver;
 use App\Observers\ProductObserver;
 use App\Observers\RichEditorMediaObserver;
 use App\Support\Security\IpHasher;
@@ -33,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Đăng ký Observer
         CatalogAttributeGroup::observe(CatalogAttributeGroupObserver::class);
+        Image::observe(ImageObserver::class);
         Product::observe(ProductObserver::class);
         RichEditorMedia::observe(RichEditorMediaObserver::class);
 
