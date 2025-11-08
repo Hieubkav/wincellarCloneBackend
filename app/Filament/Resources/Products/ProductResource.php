@@ -17,7 +17,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
@@ -85,7 +84,7 @@ class ProductResource extends BaseResource
 
                         Tabs\Tab::make('Giá & Thông số')
                             ->schema([
-                                Section::make('Giá cả')
+                                Grid::make()
                                     ->schema([
                                         TextInput::make('price')
                                             ->label('Giá bán')
@@ -108,7 +107,7 @@ class ProductResource extends BaseResource
                                     ])
                                     ->columns(2),
 
-                                Section::make('Thông số kỹ thuật')
+                                Grid::make()
                                     ->schema([
                                         TextInput::make('alcohol_percent')
                                             ->label('Nồng độ cồn (%)')
