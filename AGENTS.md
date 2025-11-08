@@ -1,64 +1,41 @@
 Trả lời bằng tiếng việt
 
-Hiểu rõ filament 4x ở trong vendor\filament
+## 📁 Project Structure
+- Đừng để logic hoặc file quá 500 dòng
+- Hãy gọi các file để chia logic và kế thừa hợp lý
+- **Tham khảo**: `PLAN.md` để hiểu dự án làm gì, chức năng gì
 
-Đừng để logic hoặc file quá 500 dòng hãy gọi các file để chia logic và kế thừa hợp lý
+## 🎨 Filament 4.x Rules
+**⚠️ QUAN TRỌNG**: Khi làm việc với Filament, LUÔN tham khảo:
+- **📖 File rule chính**: `docs/FILAMENT_RULES.md` - Chi tiết đầy đủ về:
+  - List/Create/Edit/RelationManager pages
+  - Observer patterns (SEO, alt, order tự sinh)
+  - Reorderable cho table có order column
+  - Storage & File upload (WebP conversion)
+  - Common mistakes & solutions
+- **📚 Source code**: `vendor/filament/` - Đọc để hiểu sâu
+- **🌐 Docs**: https://filamentphp.com/docs/4.x
 
-Hãy tham khảo E:\Laravel\Laravel12\wincellarClone\wincellarcloneBackend\PLAN.md để hiểu dự án này làm gì chức năng gì nha
+### Quick Summary:
+- ✅ Mọi resource quan trọng: Navigation badge (số lượng)
+- ✅ Mọi cột: `->sortable()`, Có order → `->reorderable()`
+- ✅ Mọi list: Bulk delete, Mọi record: Edit + Delete
+- ✅ SEO fields: Tự sinh bằng Observer, ẨN khỏi form
+- ✅ Image: Observer auto alt/order/delete + WebP 85%
+- ✅ Eager load: `->modifyQueryUsing()`
 
-## Filament Actions UI
-- **KHÔNG dùng ViewAction**: Chỉ dùng Edit/Delete, không có nút Xem (edit = xem)
-- Actions trong table chỉ hiển thị icon: `EditAction::make()->iconButton()`, `DeleteAction::make()->iconButton()`
-- **Nút tạo mới**: Dùng `->label('Tạo')` thay vì "Tạo mới [Tên]"
-  - Ví dụ: `Actions\CreateAction::make()->label('Tạo')`
+### 🔄 Cập nhật Rules khi cần:
+**Nếu gặp lỗi/hiểu sai về Filament**:
+1. Research đúng solution
+2. **CẬP NHẬT** `docs/FILAMENT_RULES.md` với fix + example
+3. Thêm vào section "Common Mistakes"
+4. Commit: `docs(filament): fix rule về [vấn đề]`
 
-## Storage & File Management
-- **Nguyên tắc**: Ảnh/file lưu trong storage, database chỉ lưu đường dẫn (relative path)
-- **Symlink**: BẮT BUỘC `php artisan storage:link` để tạo `public/storage` -> `storage/app/public`
-- **Relative Paths**: Luôn dùng `/storage/...` thay vì absolute URLs (tránh lỗi khi đổi domain)
+→ File rules là **LIVING DOCUMENT**, luôn cải thiện!
 
-## Image Upload & Optimization  
-- **Disk**: `->disk('public')` + `->directory('folder-name')`
-- **WebP**: Tự động convert sang WebP 85% quality, resize phù hợp
-- **Observer**: BẮT BUỘC tạo Observer xóa file cũ khi update/delete (đăng ký trong AppServiceProvider)
 
-```php
-// FileUpload
-FileUpload::make('icon_path')->disk('public')->directory('icons')->imageEditor()
-    ->saveUploadedFileUsing(fn($file) => /* convert WebP logic */);
 
-// Observer  
-public function updating(Model $m): void {
-    if ($m->isDirty('icon_path') && $old = $m->getOriginal('icon_path')) {
-        Storage::disk('public')->delete($old);
-    }
-}
-```
-
-## Rich Text Editor (Lexical Editor)
-- **Package**: `malzariey/filament-lexical-editor` cho description/content fields
-- **HasRichEditorMedia Trait**: BẮT BUỘC để auto-handle images
-  - Khai báo: `protected array $richEditorFields = ['description'];`
-  - Tự động convert base64 → files trong `storage/rich-editor-images/`
-  - Lưu relative paths (`/storage/...`) thay vì absolute URLs
-  - Track trong `rich_editor_media` table (polymorphic)
-  - Cleanup khi content thay đổi hoặc record deleted
-- **Command**: `php artisan rich-editor:fix-absolute-urls` để fix URLs cũ
-
-```php
-// Model
-use App\Models\Concerns\HasRichEditorMedia;
-class Product extends Model { 
-    use HasRichEditorMedia;
-    protected array $richEditorFields = ['description'];
-}
-
-// Form
-LexicalEditor::make('description')->label('Mô tả')->columnSpanFull();
-```
-
-## Database Schema Management
-- **Luôn đồng bộ mermaid.rb**: Khi tạo/sửa migration, PHẢI cập nhật file `mermaid.rb` ngay lập tức
-- mermaid.rb phải phản ánh chính xác cấu trúc database hiện tại
-- Bao gồm: tên bảng, cột, kiểu dữ liệu, constraints, indexes, foreign keys
-- Format giống Rails schema.rb để dễ đọc và track changes
+## 🗄️ Database Schema Management
+- **Luôn sync `mermaid.rb`** khi tạo/sửa migration
+- Phản ánh chính xác: tables, columns, types, constraints, indexes, FKs
+- Format giống Rails schema.rb
