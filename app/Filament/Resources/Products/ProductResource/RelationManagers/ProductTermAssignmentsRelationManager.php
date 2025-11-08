@@ -62,7 +62,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
     protected function getTableHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()->label('Tạo'),
         ];
     }
 

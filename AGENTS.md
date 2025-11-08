@@ -10,7 +10,8 @@ Hãy tham khảo E:\Laravel\Laravel12\wincellarClone\wincellarcloneBackend\PLAN.
 - Tất cả các action (Edit, Delete, View...) trong table chỉ hiển thị icon, không hiển thị text
 - Sử dụng `->iconButton()` cho tất cả recordActions hoặc getTableActions
 - Ví dụ: `EditAction::make()->iconButton()`, `DeleteAction::make()->iconButton()`, `ViewAction::make()->iconButton()`
-- **Nút tạo mới**: Tất cả Resource phải extend từ `App\Filament\Resources\BaseResource` để nút tạo chỉ hiển thị "Tạo" thay vì "Tạo mới [Tên]"
+- **Nút tạo mới**: Tất cả CreateAction phải dùng `->label('Tạo')` để chỉ hiển thị "Tạo" thay vì "Tạo mới [Tên]"
+  - Ví dụ trong ListRecords page: `Actions\CreateAction::make()->label('Tạo')`
 
 ## Image Upload & Optimization
 - **Lưu trữ**: Sử dụng Laravel Storage với disk `public` để lưu ảnh
