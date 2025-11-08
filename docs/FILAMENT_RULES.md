@@ -11,6 +11,24 @@
 
 ## 🎨 UI/UX Standards
 
+### Ngôn ngữ & Labels
+- ✅ **Việt hóa tất cả labels** - Giao diện phải 100% tiếng Việt
+  ```php
+  TextColumn::make('name')
+      ->label('Tên nhóm')  // ✅ Tiếng Việt
+      ->searchable()
+      ->sortable()
+  
+  // ❌ KHÔNG dùng:
+  ->label('Name')  // Tiếng Anh
+  ```
+- ✅ **Format ngày tháng Việt Nam**: `d/m/Y H:i` (31/12/2024 14:30)
+  ```php
+  TextColumn::make('created_at')
+      ->label('Tạo lúc')
+      ->dateTime('d/m/Y H:i')
+  ```
+
 ### Navigation Badge (Hiển thị số lượng)
 - ✅ **Resource quan trọng** (Product, Order, User...) PHẢI có badge
 - Hiển thị số lượng record active/total
@@ -52,6 +70,7 @@
 - ✅ **Mọi cột**: BẮT BUỘC có `->sortable()` (trừ image, badge nhiều giá trị)
   ```php
   TextColumn::make('name')
+      ->label('Tên')  // ← Việt hóa label
       ->searchable()
       ->sortable()  // ← BẮT BUỘC
   ```
@@ -59,6 +78,11 @@
   ```php
   ->defaultSort('order', 'asc')
   ->reorderable('order')
+  ```
+  ⚠️ **Khi có reorderable → ẨN cột order** (user dùng drag-drop, không cần nhìn số)
+  ```php
+  // ❌ KHÔNG có cột order khi đã reorderable
+  TextColumn::make('order')  // Xóa cột này đi!
   ```
 - **Badge**: Dùng cho categories, tags, status
   ```php
@@ -556,6 +580,39 @@ class ImageObserver
 
 ---
 
+## 🌍 Internationalization (i18n)
+
+### Việt hóa toàn bộ UI
+```php
+// Resource labels
+protected static ?string $navigationLabel = 'Danh mục sản phẩm';
+protected static ?string $modelLabel = 'Danh mục sản phẩm';
+protected static ?string $pluralModelLabel = 'Các danh mục sản phẩm';
+
+// Table columns
+TextColumn::make('name')->label('Tên nhóm')
+TextColumn::make('slug')->label('Đường dẫn')
+TextColumn::make('products_count')->label('Số sản phẩm')
+TextColumn::make('active')->label('Hiển thị')
+TextColumn::make('created_at')->label('Tạo lúc')
+TextColumn::make('updated_at')->label('Cập nhật')
+
+// Form fields
+TextInput::make('name')->label('Tên nhóm')
+Textarea::make('description')->label('Mô tả')
+Toggle::make('active')->label('Đang hiển thị')
+
+// Actions
+CreateAction::make()->label('Tạo')
+EditAction::make()->label('Sửa')
+DeleteAction::make()->label('Xóa')
+
+// Date format Việt Nam
+->dateTime('d/m/Y H:i')  // 31/12/2024 14:30
+```
+
+---
+
 ## 📝 Rich Text Editor (Lexical)
 
 ### Model Setup:
@@ -702,9 +759,11 @@ protected static function booted()
 Khi tạo Resource mới, CHECK đầy đủ:
 
 ### UI/UX
+- [ ] **Việt hóa 100%**: Tất cả labels phải tiếng Việt
+- [ ] **Format ngày**: `d/m/Y H:i` (31/12/2024 14:30)
 - [ ] Navigation badge hiển thị số lượng (nếu resource quan trọng)
 - [ ] Mọi cột có `->sortable()` (trừ image/badge)
-- [ ] Nếu có `order` column → `->reorderable('order')`
+- [ ] Nếu có `order` column → `->reorderable('order')` + **ẨN cột order**
 - [ ] Actions: EditAction + DeleteAction (iconButton)
 - [ ] BulkActions: DeleteBulkAction
 - [ ] Nút tạo: `->label('Tạo')`

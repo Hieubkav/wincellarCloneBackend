@@ -5,9 +5,11 @@ namespace App\Providers;
 use App\Models\CatalogAttributeGroup;
 use App\Models\Image;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\RichEditorMedia;
 use App\Observers\CatalogAttributeGroupObserver;
 use App\Observers\ImageObserver;
+use App\Observers\ProductCategoryObserver;
 use App\Observers\ProductObserver;
 use App\Observers\RichEditorMediaObserver;
 use App\Support\Security\IpHasher;
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         CatalogAttributeGroup::observe(CatalogAttributeGroupObserver::class);
         Image::observe(ImageObserver::class);
         Product::observe(ProductObserver::class);
+        ProductCategory::observe(ProductCategoryObserver::class);
         RichEditorMedia::observe(RichEditorMediaObserver::class);
 
         $this->normalizeLoopbackAppUrl();

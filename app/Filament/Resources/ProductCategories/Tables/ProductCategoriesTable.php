@@ -16,40 +16,40 @@ class ProductCategoriesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('order')
+            ->modifyQueryUsing(fn ($query) => $query->withCount('products'))
+            ->defaultSort('order', 'asc')
+            ->reorderable('order')
             ->columns([
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Tên nhóm')
                     ->searchable()
+                    ->sortable()
                     ->weight('medium'),
                 TextColumn::make('slug')
-                    ->label('Slug')
+                    ->label('Đường dẫn')
                     ->searchable()
+                    ->sortable()
                     ->badge()
                     ->copyable()
-                    ->tooltip('Click to copy the slug'),
+                    ->tooltip('Click để copy'),
                 TextColumn::make('products_count')
-                    ->label('Products')
-                    ->counts('products')
+                    ->label('Số sản phẩm')
                     ->badge()
                     ->color('gray')
                     ->sortable(),
-                TextColumn::make('order')
-                    ->label('Order')
-                    ->numeric()
-                    ->sortable(),
                 IconColumn::make('active')
-                    ->label('Active')
-                    ->boolean(),
+                    ->label('Hiển thị')
+                    ->boolean()
+                    ->sortable(),
                 TextColumn::make('updated_at')
-                    ->label('Updated')
-                    ->dateTime()
-                    ->since()
+                    ->label('Cập nhật')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
-                    ->label('Created')
-                    ->dateTime()
+                    ->label('Tạo lúc')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
