@@ -3,12 +3,14 @@
 namespace App\Providers;
 
 use App\Models\CatalogAttributeGroup;
+use App\Models\CatalogTerm;
 use App\Models\Image;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
 use App\Models\RichEditorMedia;
 use App\Observers\CatalogAttributeGroupObserver;
+use App\Observers\CatalogTermObserver;
 use App\Observers\ImageObserver;
 use App\Observers\ProductCategoryObserver;
 use App\Observers\ProductObserver;
@@ -39,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Đăng ký Observer
         CatalogAttributeGroup::observe(CatalogAttributeGroupObserver::class);
+        CatalogTerm::observe(CatalogTermObserver::class);
         Image::observe(ImageObserver::class);
         Product::observe(ProductObserver::class);
         ProductCategory::observe(ProductCategoryObserver::class);

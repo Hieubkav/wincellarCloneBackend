@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CatalogTerms\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -16,64 +17,61 @@ class CatalogTermsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['group', 'parent'])->withCount('products'))
-            ->defaultSort('position')
+            ->modifyQueryUsing(fn ($query) => $query->with(['group'])->withCount('products'))
+            ->defaultSort('position', 'asc')
+            ->reorderable('position')
             ->columns([
                 TextColumn::make('group.name')
-                    ->label('Group')
+                    ->label('Nhóm thuộc tính')
                     ->badge()
                     ->sortable()
                     ->toggleable(false),
-                TextColumn::make('parent.name')
-                    ->label('Parent')
-                    ->placeholder('Top level')
-                    ->sortable()
-                    ->toggleable(),
                 TextColumn::make('name')
-                    ->label('Name')
+                    ->label('Tên thuộc tính')
                     ->searchable()
+                    ->sortable()
                     ->weight('medium'),
                 TextColumn::make('slug')
-                    ->label('Slug')
+                    ->label('Đường dẫn')
                     ->searchable()
+                    ->sortable()
                     ->copyable()
-                    ->badge(),
+                    ->badge()
+                    ->tooltip('Click để copy'),
                 TextColumn::make('products_count')
-                    ->label('Products')
+                    ->label('Số sản phẩm')
                     ->badge()
                     ->color('gray')
                     ->sortable(),
                 IconColumn::make('is_active')
-                    ->label('Active')
-                    ->boolean(),
-                TextColumn::make('position')
-                    ->label('Order')
-                    ->numeric()
+                    ->label('Hiển thị')
+                    ->boolean()
                     ->sortable(),
                 TextColumn::make('updated_at')
-                    ->label('Updated')
-                    ->dateTime()
-                    ->since()
+                    ->label('Cập nhật')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
-                    ->label('Created')
-                    ->dateTime()
+                    ->label('Tạo lúc')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('group_id')
-                    ->label('Group')
+                    ->label('Nhóm thuộc tính')
                     ->relationship('group', 'name')
                     ->searchable()
                     ->preload(),
                 TernaryFilter::make('is_active')
-                    ->label('Active'),
+                    ->label('Trạng thái hiển thị'),
             ])
             ->recordActions([
                 EditAction::make()->iconButton(),
+                DeleteAction::make()->iconButton(),
             ])
-            ->toolbarActions([
+            ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

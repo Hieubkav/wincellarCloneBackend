@@ -5,10 +5,8 @@ namespace App\Filament\Resources\CatalogTerms;
 use App\Filament\Resources\CatalogTerms\Pages\CreateCatalogTerm;
 use App\Filament\Resources\CatalogTerms\Pages\EditCatalogTerm;
 use App\Filament\Resources\CatalogTerms\Pages\ListCatalogTerms;
-use App\Filament\Resources\CatalogTerms\Pages\ViewCatalogTerm;
 use App\Filament\Resources\CatalogTerms\RelationManagers\ProductsRelationManager;
 use App\Filament\Resources\CatalogTerms\Schemas\CatalogTermForm;
-use App\Filament\Resources\CatalogTerms\Schemas\CatalogTermInfolist;
 use App\Filament\Resources\CatalogTerms\Tables\CatalogTermsTable;
 use App\Models\CatalogTerm;
 use BackedEnum;
@@ -28,7 +26,7 @@ class CatalogTermResource extends Resource
 
     protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
 
-    protected static ?string $navigationLabel = 'Thuộc tính sản phẩm';
+    protected static ?string $navigationLabel = 'Giá trị thuộc tính';
 
     protected static ?int $navigationSort = 40;
 
@@ -39,11 +37,6 @@ class CatalogTermResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return CatalogTermForm::configure($schema);
-    }
-
-    public static function infolist(Schema $schema): Schema
-    {
-        return CatalogTermInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -77,7 +70,6 @@ class CatalogTermResource extends Resource
         return [
             'index' => ListCatalogTerms::route('/'),
             'create' => CreateCatalogTerm::route('/create'),
-            'view' => ViewCatalogTerm::route('/{record}'),
             'edit' => EditCatalogTerm::route('/{record}/edit'),
         ];
     }

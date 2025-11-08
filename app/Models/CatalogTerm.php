@@ -17,7 +17,6 @@ class CatalogTerm extends Model
      */
     protected $fillable = [
         'group_id',
-        'parent_id',
         'name',
         'slug',
         'description',
@@ -43,17 +42,6 @@ class CatalogTerm extends Model
     public function group(): BelongsTo
     {
         return $this->belongsTo(CatalogAttributeGroup::class, 'group_id');
-    }
-
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(self::class, 'parent_id');
-    }
-
-    public function children(): HasMany
-    {
-        return $this->hasMany(self::class, 'parent_id')
-            ->orderBy('position');
     }
 
     public function products(): BelongsToMany

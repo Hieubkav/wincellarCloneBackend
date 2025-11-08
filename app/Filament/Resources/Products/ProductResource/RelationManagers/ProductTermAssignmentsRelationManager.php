@@ -17,7 +17,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'termAssignments';
     
-    protected static ?string $title = 'Thuộc tính sản phẩm';
+    protected static ?string $title = 'Giá trị thuộc tính';
     
     protected static ?string $modelLabel = 'thuộc tính';
 
