@@ -11,10 +11,10 @@ use App\Filament\Resources\SocialLinks\Pages\ListSocialLinks;
 use App\Models\Image;
 use App\Models\SocialLink;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid as SchemaGrid;
-use Filament\Schemas\Components\Select as SchemaSelect;
-use Filament\Schemas\Components\TextInput as SchemaTextInput;
-use Filament\Schemas\Components\Toggle as SchemaToggle;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -61,23 +61,23 @@ class SocialLinkResource extends Resource
     {
         return $schema
             ->schema([
-                SchemaGrid::make()
+                Grid::make()
                     ->schema([
-                        SchemaTextInput::make('platform')
+                        TextInput::make('platform')
                             ->label('Tên mạng xã hội')
                             ->required()
                             ->maxLength(255),
-                        SchemaTextInput::make('url')
+                        TextInput::make('url')
                             ->label('Đường dẫn')
                             ->required()
                             ->url()
                             ->maxLength(255),
-                        SchemaSelect::make('icon_image_id')
+                        Select::make('icon_image_id')
                             ->label('Biểu tượng')
                             ->relationship('iconImage', 'file_path')
                             ->searchable()
                             ->preload(),
-                        SchemaToggle::make('active')
+                        Toggle::make('active')
                             ->label('Đang hiển thị')
                             ->default(true)
                             ->inline(false),

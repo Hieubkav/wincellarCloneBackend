@@ -51,10 +51,13 @@ Danh sách sản phẩm được yêu thích/nổi bật
   - `products[]`: Select từ Products
 
 ### 5. Brand Showcase - Giới thiệu thương hiệu
-Giới thiệu các thương hiệu đối tác
+Giới thiệu các thương hiệu đối tác (logo + link)
 - **Form fields**:
   - `title`: Tiêu đề
-  - `brands[]`: Select từ CatalogTerms (attribute_group_key = 'brand')
+  - `brands[]`: Repeater
+    - `image_id`: Select từ bảng Images (logo thương hiệu)
+    - `href`: URL link (optional)
+    - `alt`: Tên thương hiệu
 
 ### 6. Collection Showcase - Bộ sưu tập sản phẩm
 Bộ sưu tập sản phẩm theo chủ đề (Rượu Vang, Rượu Mạnh...)
@@ -177,7 +180,90 @@ Select::make('type')
 
 **Lý do**: Dự án dùng `Schema` thay vì `Form`, nên namespace khác.
 
-### 2. Validation cho nested config fields
+### 2. Column Not Found: Unknown column 'title' in 'images' table
+
+**Problem**: 
+```php
+// ❌ WRONG - Column 'title' does not exist
+->options(fn () => Image::pluck('title', 'id'))
+
+// Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'title' in 'field list'
+```
+
+**Solution**:
+```php
+// ✅ CORRECT - Use COALESCE to fallback from alt to file_path
+->options(fn () => Image::query()
+    ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
+    ->pluck('display_name', 'id')
+)
+```
+
+**Lý do**: 
+- Bảng `images` không có cột `title`, chỉ có `alt` và `file_path`
+- `COALESCE(NULLIF(alt, ''), file_path)` = hiển thị `alt` nếu có, nếu không thì hiển thị `file_path`
+- `NULLIF(alt, '')` = convert empty string thành NULL để COALESCE fallback về file_path
+
+**Khi nào gặp**: Khi tạo Select field cho Image model trong bất kỳ form nào.
+
+**Áp dụng cho bảng khác**:
+Cùng pattern này áp dụng cho mọi bảng không có cột `title`. Ví dụ:
+- `products` table: dùng `name` thay vì `title`
+  ```php
+  // ❌ WRONG
+  ->options(fn () => Product::pluck('title', 'id'))
+  
+  // ✅ CORRECT
+  ->options(fn () => Product::pluck('name', 'id'))
+  ```
+- `articles` table: dùng `title` (nếu có)
+- `catalog_terms` table: dùng `name`
+
+**Quy tắc chung**: Luôn kiểm tra migration trước khi viết query pluck!
+
+### 3. Filter với Relationship khi column không tồn tại
+
+**Problem**: 
+```php
+// ❌ WRONG - Column 'attribute_group_key' does not exist in catalog_terms
+->options(fn () => CatalogTerm::where('attribute_group_key', 'brand')->pluck('name', 'id'))
+
+// Error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'attribute_group_key' in 'where clause'
+```
+
+**Solution 1 - Use whereHas**:
+```php
+// ✅ CORRECT - Use whereHas to join with relationship
+->options(fn () => CatalogTerm::whereHas('group', function ($query) {
+    $query->where('code', 'brand');
+})->pluck('name', 'id'))
+```
+
+**Solution 2 - Đơn giản hơn**: Đối với brand showcase, thay vì dùng CatalogTerm, chỉ cần chọn ảnh + link:
+```php
+// ✅ BEST - Đơn giản và linh hoạt hơn
+Repeater::make('config.brands')
+    ->schema([
+        Select::make('image_id')
+            ->label('Logo thương hiệu')
+            ->options(fn () => Image::query()
+                ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
+                ->pluck('display_name', 'id')
+            ),
+        TextInput::make('href')->label('Link')->url(),
+        TextInput::make('alt')->label('Tên thương hiệu'),
+    ])
+```
+
+**Lý do**: 
+- Bảng `catalog_terms` có FK `group_id` đến bảng `catalog_attribute_groups`
+- Bảng `catalog_attribute_groups` có cột `code` (không phải `attribute_group_key`)
+- Cần dùng `whereHas()` để filter qua relationship thay vì trực tiếp where trên cột không tồn tại
+- **Hoặc**: Với brand showcase, dùng ảnh trực tiếp đơn giản hơn là map qua catalog_terms
+
+**Khi nào gặp**: Khi cần filter theo attribute từ bảng liên quan (relationship), hoặc cân nhắc thiết kế đơn giản hơn.
+
+### 4. Validation cho nested config fields
 
 **Problem**:
 ```php
@@ -193,7 +279,7 @@ TextInput::make('config.title')
     ->rules(['required'])
 ```
 
-### 3. Reset config khi change type
+### 5. Reset config khi change type
 
 **Problem**:
 ```php
@@ -212,7 +298,7 @@ Select::make('type')
 
 **Lý do**: Livewire đã tự động re-render form khi type thay đổi, không cần manual reset.
 
-### 4. Data mutation trong CreateRecord
+### 6. Data mutation trong CreateRecord
 
 **Best Practice**:
 ```php

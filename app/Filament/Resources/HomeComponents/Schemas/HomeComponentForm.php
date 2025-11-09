@@ -85,7 +85,10 @@ class HomeComponentForm
                 ->schema([
                     Select::make('image_id')
                         ->label('Hình ảnh')
-                        ->options(fn () => Image::pluck('title', 'id'))
+                        ->options(fn () => Image::query()
+                            ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
+                            ->pluck('display_name', 'id')
+                        )
                         ->searchable()
                         ->required()
                         ->preload(),
@@ -113,7 +116,10 @@ class HomeComponentForm
                 ->schema([
                     Select::make('image_id')
                         ->label('Hình ảnh')
-                        ->options(fn () => Image::pluck('title', 'id'))
+                        ->options(fn () => Image::query()
+                            ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
+                            ->pluck('display_name', 'id')
+                        )
                         ->searchable()
                         ->required()
                         ->preload(),
@@ -147,7 +153,10 @@ class HomeComponentForm
                         ->preload(),
                     Select::make('image_id')
                         ->label('Hình ảnh')
-                        ->options(fn () => Image::pluck('title', 'id'))
+                        ->options(fn () => Image::query()
+                            ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
+                            ->pluck('display_name', 'id')
+                        )
                         ->searchable()
                         ->preload(),
                 ])
@@ -175,14 +184,14 @@ class HomeComponentForm
                 ->schema([
                     Select::make('product_id')
                         ->label('Sản phẩm')
-                        ->options(fn () => Product::pluck('title', 'id'))
+                        ->options(fn () => Product::pluck('name', 'id'))
                         ->searchable()
                         ->required()
                         ->preload(),
                 ])
                 ->simple(Select::make('product_id')
                     ->label('Sản phẩm')
-                    ->options(fn () => Product::pluck('title', 'id'))
+                    ->options(fn () => Product::pluck('name', 'id'))
                     ->searchable()
                     ->required()
                     ->preload()
@@ -202,23 +211,28 @@ class HomeComponentForm
             Repeater::make('config.brands')
                 ->label('Danh sách thương hiệu')
                 ->schema([
-                    Select::make('term_id')
-                        ->label('Thương hiệu')
-                        ->options(fn () => CatalogTerm::where('attribute_group_key', 'brand')->pluck('name', 'id'))
+                    Select::make('image_id')
+                        ->label('Logo thương hiệu')
+                        ->options(fn () => Image::query()
+                            ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
+                            ->pluck('display_name', 'id')
+                        )
                         ->searchable()
                         ->required()
                         ->preload(),
+                    TextInput::make('href')
+                        ->label('Link đến (URL)')
+                        ->url()
+                        ->placeholder('https://example.com'),
+                    TextInput::make('alt')
+                        ->label('Tên thương hiệu (Alt text)')
+                        ->placeholder('Tên thương hiệu'),
                 ])
-                ->simple(Select::make('term_id')
-                    ->label('Thương hiệu')
-                    ->options(fn () => CatalogTerm::where('attribute_group_key', 'brand')->pluck('name', 'id'))
-                    ->searchable()
-                    ->required()
-                    ->preload()
-                )
                 ->columnSpanFull()
                 ->defaultItems(1)
-                ->addActionLabel('Thêm thương hiệu'),
+                ->addActionLabel('Thêm thương hiệu')
+                ->collapsible()
+                ->itemLabel(fn (array $state): ?string => $state['alt'] ?? 'Thương hiệu mới'),
         ];
     }
 
@@ -262,14 +276,14 @@ class HomeComponentForm
                 ->schema([
                     Select::make('product_id')
                         ->label('Sản phẩm')
-                        ->options(fn () => Product::pluck('title', 'id'))
+                        ->options(fn () => Product::pluck('name', 'id'))
                         ->searchable()
                         ->required()
                         ->preload(),
                 ])
                 ->simple(Select::make('product_id')
                     ->label('Sản phẩm')
-                    ->options(fn () => Product::pluck('title', 'id'))
+                    ->options(fn () => Product::pluck('name', 'id'))
                     ->searchable()
                     ->required()
                     ->preload()

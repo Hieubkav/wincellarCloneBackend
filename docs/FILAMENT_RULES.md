@@ -1080,6 +1080,69 @@ public function form(Schema $schema): Schema
 
 ---
 
+### ❌ Mistake: Import sai namespace cho form field components
+```php
+// BAD - Class "Filament\Schemas\Components\TextInput" not found
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\TextInput;  // ❌ Sai
+use Filament\Schemas\Components\Select;     // ❌ Sai
+use Filament\Schemas\Components\Toggle;     // ❌ Sai
+
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Grid::make()->schema([
+            TextInput::make('name'),  // ❌ Lỗi: Class not found
+            Select::make('category'),
+            Toggle::make('active'),
+        ]),
+    ]);
+}
+```
+
+### ✅ Solution: TextInput, Select, Toggle... phải dùng Forms\Components
+```php
+// GOOD - Phân biệt rõ Layout vs Form Fields
+use Filament\Schemas\Components\Grid;        // ✅ Layout từ Schemas
+use Filament\Forms\Components\TextInput;     // ✅ Form field từ Forms
+use Filament\Forms\Components\Select;        // ✅ Form field từ Forms
+use Filament\Forms\Components\Toggle;        // ✅ Form field từ Forms
+use Filament\Forms\Components\Textarea;      // ✅ Form field từ Forms
+use Filament\Forms\Components\FileUpload;    // ✅ Form field từ Forms
+
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Grid::make()->schema([
+            TextInput::make('name'),  // ✅ OK
+            Select::make('category'),
+            Toggle::make('active'),
+        ]),
+    ]);
+}
+```
+
+⚠️ **LƯU Ý - Quy tắc import trong dự án này:**
+- **Layout components** (Grid, Section, Tabs...): `Filament\Schemas\Components\*`
+- **Form field components** (TextInput, Select, Toggle, Textarea, FileUpload...): `Filament\Forms\Components\*`
+
+**❌ ĐỪNG nhầm lẫn:**
+```php
+// ❌ SAI
+use Filament\Schemas\Components\TextInput;
+use Filament\Schemas\Components\Select;
+use Filament\Schemas\Components\Toggle;
+use Filament\Schemas\Components\Textarea;
+
+// ✅ ĐÚNG
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Textarea;
+```
+
+---
+
 ### ❌ Mistake: Dùng nhầm namespace cho Get utility trong dynamic forms
 ```php
 // BAD - Argument #1 ($get) must be of type Filament\Forms\Get, Filament\Schemas\Components\Utilities\Get given
