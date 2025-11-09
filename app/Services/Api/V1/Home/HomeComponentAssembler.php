@@ -108,10 +108,15 @@ class HomeComponentAssembler
         foreach ($components as $component) {
             $config = is_array($component->config) ? $component->config : [];
 
+            // Extract from object format: [{"product_id": 126}, ...]
             $ids['products'] = array_merge($ids['products'], $this->extractIds($config, 'product_id'));
             $ids['articles'] = array_merge($ids['articles'], $this->extractIds($config, 'article_id'));
             $ids['images'] = array_merge($ids['images'], $this->extractIds($config, 'image_id'));
             $ids['terms'] = array_merge($ids['terms'], $this->extractIds($config, 'term_id'));
+
+            // Also extract from simple format: ["126", "127", ...] used by Filament .simple()
+            $ids['products'] = array_merge($ids['products'], $this->extractSimpleIds($config, 'products'));
+            $ids['articles'] = array_merge($ids['articles'], $this->extractSimpleIds($config, 'articles'));
         }
 
         return array_map(
@@ -142,6 +147,35 @@ class HomeComponentAssembler
 
             if (is_array($value)) {
                 $results = array_merge($results, $this->extractIds($value, $key));
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Extract IDs from simple array format used by Filament .simple()
+     * Example: {"products": ["126", "127"]} -> [126, 127]
+     *
+     * @param array<string, mixed> $config
+     * @param string $arrayKey
+     * @return int[]
+     */
+    private function extractSimpleIds(array $config, string $arrayKey): array
+    {
+        if (!isset($config[$arrayKey]) || !is_array($config[$arrayKey])) {
+            return [];
+        }
+
+        $results = [];
+
+        foreach ($config[$arrayKey] as $item) {
+            // Only process non-array items (simple format)
+            if (!is_array($item)) {
+                $intValue = $this->toPositiveInt($item);
+                if ($intValue !== null) {
+                    $results[] = $intValue;
+                }
             }
         }
 

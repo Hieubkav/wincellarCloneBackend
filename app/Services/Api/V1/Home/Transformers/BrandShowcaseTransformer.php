@@ -19,20 +19,20 @@ class BrandShowcaseTransformer extends AbstractComponentTransformer
                 continue;
             }
 
-            $termId = $this->toPositiveInt($item['term_id'] ?? null);
-            if (!$termId) {
+            $imageId = $this->toPositiveInt($item['image_id'] ?? null);
+            if (!$imageId) {
                 continue;
             }
 
-            $term = $resources->term($component, $termId);
-            if (!$term) {
+            $image = $resources->image($component, $imageId);
+            if (!$image) {
                 continue;
             }
 
             $entries[] = [
-                'term' => $resources->mapTermSummary($term),
+                'image' => $resources->mapImageSummary($image),
                 'href' => $item['href'] ?? null,
-                'badge' => $item['badge'] ?? null,
+                'alt' => $item['alt'] ?? $image->alt,
             ];
         }
 

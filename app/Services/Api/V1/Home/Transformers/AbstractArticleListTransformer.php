@@ -16,11 +16,20 @@ abstract class AbstractArticleListTransformer extends AbstractComponentTransform
         $entries = [];
 
         foreach ($itemsConfig as $item) {
-            if (!is_array($item)) {
-                continue;
+            $articleId = null;
+            $href = null;
+
+            // Support 2 formats:
+            // 1. Simple format from Filament .simple(): ["1", "2"] or [1, 2]
+            // 2. Object format: [{"article_id": 1, "href": "/article"}, ...]
+            if (is_array($item)) {
+                $articleId = $this->toPositiveInt($item['article_id'] ?? null);
+                $href = $item['href'] ?? null;
+            } else {
+                // Simple format: just ID as string or int
+                $articleId = $this->toPositiveInt($item);
             }
 
-            $articleId = $this->toPositiveInt($item['article_id'] ?? null);
             if (!$articleId) {
                 continue;
             }
@@ -32,7 +41,7 @@ abstract class AbstractArticleListTransformer extends AbstractComponentTransform
 
             $entries[] = [
                 'article' => $resources->mapArticleSummary($article),
-                'href' => $item['href'] ?? $resources->defaultArticleHref($article),
+                'href' => $href ?? $resources->defaultArticleHref($article),
             ];
         }
 

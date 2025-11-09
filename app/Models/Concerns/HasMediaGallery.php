@@ -38,6 +38,14 @@ trait HasMediaGallery
             return $cover->url;
         }
 
+        // Fallback: try to get first image if no order=0 image exists
+        if ($this->relationLoaded('images')) {
+            $firstImage = $this->getRelation('images')->first();
+            if ($firstImage instanceof Image) {
+                return $firstImage->url;
+            }
+        }
+
         return MediaConfig::placeholder($this->mediaPlaceholderKey());
     }
 

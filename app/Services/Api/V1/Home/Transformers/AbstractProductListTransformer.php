@@ -16,11 +16,22 @@ abstract class AbstractProductListTransformer extends AbstractComponentTransform
         $entries = [];
 
         foreach ($itemsConfig as $item) {
-            if (!is_array($item)) {
-                continue;
+            $productId = null;
+            $badge = null;
+            $href = null;
+
+            // Support 2 formats:
+            // 1. Simple format from Filament .simple(): ["126", "127"] or [126, 127]
+            // 2. Object format: [{"product_id": 126, "badge": "New"}, ...]
+            if (is_array($item)) {
+                $productId = $this->toPositiveInt($item['product_id'] ?? null);
+                $badge = $item['badge'] ?? null;
+                $href = $item['href'] ?? null;
+            } else {
+                // Simple format: just ID as string or int
+                $productId = $this->toPositiveInt($item);
             }
 
-            $productId = $this->toPositiveInt($item['product_id'] ?? null);
             if (!$productId) {
                 continue;
             }
@@ -32,8 +43,8 @@ abstract class AbstractProductListTransformer extends AbstractComponentTransform
 
             $entries[] = [
                 'product' => $resources->mapProductSummary($product),
-                'badge' => $item['badge'] ?? null,
-                'href' => $item['href'] ?? $resources->defaultProductHref($product),
+                'badge' => $badge,
+                'href' => $href ?? $resources->defaultProductHref($product),
             ];
         }
 
