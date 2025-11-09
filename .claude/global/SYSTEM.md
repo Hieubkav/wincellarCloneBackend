@@ -54,6 +54,12 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user</location>
 </skill>
 
+<skill>
+<name>api-design-principles</name>
+<description>Master REST and GraphQL API design principles to build intuitive, scalable, and maintainable APIs that delight developers. USE WHEN designing new APIs, reviewing API specifications, establishing API design standards, implementing RESTful endpoints, or working with API architecture.</description>
+<location>user</location>
+</skill>
+
 </available_skills>
 
 ---
