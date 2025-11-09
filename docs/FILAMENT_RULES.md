@@ -6,6 +6,88 @@
 ## 📚 Tài liệu tham khảo
 - **Vendor code**: `vendor/filament/` - Đọc source code để hiểu sâu
 - **Docs chính thức**: https://filamentphp.com/docs/4.x
+- **Dynamic Component Management**: `@/docs/COMPONENT_SETUP_GUIDE.md` - Pattern quản lý component động
+
+---
+
+## 🧩 Dynamic Component Management Pattern
+
+### Overview
+Pattern này dùng để tạo hệ thống quản lý các component động với:
+- ✅ Dropdown chọn component type thay vì viết JSON
+- ✅ Dynamic form builder tự động hiển thị fields phù hợp
+- ✅ Safe và user-friendly cho admin
+
+### When to use
+Khi bạn cần:
+- Quản lý các block/component UI động (Homepage, Landing pages...)
+- Admin có thể CRUD dễ dàng mà không cần code
+- Có nhiều loại component với config khác nhau
+- Tránh cho admin phải viết JSON phức tạp
+
+### Key Components
+```php
+// 1. Enum - Define component types
+enum HomeComponentType: string
+{
+    case HeroCarousel = 'hero_carousel';
+    case DualBanner = 'dual_banner';
+    // ...
+    
+    public function getLabel(): string { /* ... */ }
+    public function getDescription(): string { /* ... */ }
+    public function getIcon(): string { /* ... */ }
+}
+
+// 2. Model - Simple JSON storage
+class HomeComponent extends Model
+{
+    protected $fillable = ['type', 'config', 'order', 'active'];
+    protected $casts = ['config' => 'array', 'active' => 'bool'];
+}
+
+// 3. Form - Dynamic fields based on type
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Select::make('type')
+            ->options(HomeComponentType::options())
+            ->live()
+            ->helperText(fn (Get $get) => self::getTypeDescription($get('type'))),
+        
+        Section::make('Config')
+            ->schema(fn (Get $get): array => self::getConfigFields($get('type')))
+            ->visible(fn (Get $get) => $get('type') !== null),
+    ]);
+}
+
+protected static function getConfigFields(?string $type): array
+{
+    return match ($type) {
+        'hero_carousel' => self::heroCarouselFields(),
+        'dual_banner' => self::dualBannerFields(),
+        // ...
+        default => [],
+    };
+}
+```
+
+### Implementation Guide
+Đọc chi tiết tại: **`@/docs/COMPONENT_SETUP_GUIDE.md`**
+
+Includes:
+- Full code examples cho 8 component types
+- API transformation pattern
+- Frontend integration guide
+- Database schema
+- Best practices
+
+### Benefits
+- ✅ **Admin-friendly**: No JSON editing needed
+- ✅ **Type-safe**: Enum-based type system
+- ✅ **Flexible**: Easy to add new component types
+- ✅ **Reusable**: Pattern works for any dynamic content management
+- ✅ **Maintainable**: Centralized component definitions
 
 ---
 
@@ -995,6 +1077,59 @@ public function form(Schema $schema): Schema
 ⚠️ **LƯU Ý**: Trong dự án này, phân biệt 2 loại components:
 - **Layout components** (Grid, Section): `Filament\Schemas\Components\*`
 - **Form field components** (TextInput, Select, Textarea, Toggle, FileUpload...): `Filament\Forms\Components\*`
+
+---
+
+### ❌ Mistake: Dùng nhầm namespace cho Get utility trong dynamic forms
+```php
+// BAD - Argument #1 ($get) must be of type Filament\Forms\Get, Filament\Schemas\Components\Utilities\Get given
+use Filament\Forms\Get;
+use Filament\Schemas\Components\Section;
+
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Select::make('type')
+            ->live()
+            ->helperText(fn (Get $get) => self::getTypeDescription($get('type'))),  // ❌ Lỗi
+        
+        Section::make('Config')
+            ->schema(fn (Get $get): array => self::getFields($get('type'))),  // ❌ Lỗi
+    ]);
+}
+```
+
+### ✅ Solution: Get phải dùng Schemas\Components\Utilities\Get
+```php
+// GOOD - Trong dự án này
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;  // ✅ Get từ Schemas\Components\Utilities
+
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Select::make('type')
+            ->live()
+            ->helperText(fn (Get $get) => self::getTypeDescription($get('type'))),  // ✅ OK
+        
+        Section::make('Config')
+            ->schema(fn (Get $get): array => self::getFields($get('type'))),  // ✅ OK
+    ]);
+}
+```
+
+⚠️ **LƯU Ý**: Khi dùng `fn (Get $get)` trong closures của Schema:
+- ❌ KHÔNG dùng: `Filament\Forms\Get`
+- ✅ PHẢI dùng: `Filament\Schemas\Components\Utilities\Get`
+
+**Use cases phổ biến:**
+- `->helperText(fn (Get $get) => ...)`
+- `->visible(fn (Get $get) => ...)`
+- `->schema(fn (Get $get): array => ...)`
+- `->afterStateUpdated(fn ($state, Get $get) => ...)`
 
 ---
 

@@ -14,6 +14,7 @@ use App\Services\Api\V1\Home\Transformers\DefaultComponentTransformer;
 use App\Services\Api\V1\Home\Transformers\DualBannerTransformer;
 use App\Services\Api\V1\Home\Transformers\EditorialSpotlightTransformer;
 use App\Services\Api\V1\Home\Transformers\FavouriteProductsTransformer;
+use App\Services\Api\V1\Home\Transformers\FooterTransformer;
 use App\Services\Api\V1\Home\Transformers\HeroCarouselTransformer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -27,6 +28,7 @@ class HomeComponentAssembler
     private CollectionShowcaseTransformer $collectionShowcase;
     private EditorialSpotlightTransformer $editorialSpotlight;
     private BrandShowcaseTransformer $brandShowcase;
+    private FooterTransformer $footer;
     private DefaultComponentTransformer $defaultTransformer;
 
     public function __construct(
@@ -37,6 +39,7 @@ class HomeComponentAssembler
         ?CollectionShowcaseTransformer $collectionShowcase = null,
         ?EditorialSpotlightTransformer $editorialSpotlight = null,
         ?BrandShowcaseTransformer $brandShowcase = null,
+        ?FooterTransformer $footer = null,
         ?DefaultComponentTransformer $defaultTransformer = null,
     ) {
         $this->heroCarousel = $heroCarousel ?? new HeroCarouselTransformer();
@@ -46,6 +49,7 @@ class HomeComponentAssembler
         $this->collectionShowcase = $collectionShowcase ?? new CollectionShowcaseTransformer();
         $this->editorialSpotlight = $editorialSpotlight ?? new EditorialSpotlightTransformer();
         $this->brandShowcase = $brandShowcase ?? new BrandShowcaseTransformer();
+        $this->footer = $footer ?? new FooterTransformer();
         $this->defaultTransformer = $defaultTransformer ?? new DefaultComponentTransformer();
     }
 
@@ -217,13 +221,14 @@ class HomeComponentAssembler
     private function transformComponent(HomeComponent $component, HomeComponentResources $resources): ?array
     {
         return match ($component->type) {
-            'HeroCarousel' => $this->heroCarousel->transform($component, $resources),
-            'DualBanner' => $this->dualBanner->transform($component, $resources),
-            'CategoryGrid' => $this->categoryGrid->transform($component, $resources),
-            'FavouriteProducts' => $this->favouriteProducts->transform($component, $resources),
-            'CollectionShowcase' => $this->collectionShowcase->transform($component, $resources),
-            'EditorialSpotlight' => $this->editorialSpotlight->transform($component, $resources),
-            'BrandShowcase' => $this->brandShowcase->transform($component, $resources),
+            'hero_carousel', 'HeroCarousel' => $this->heroCarousel->transform($component, $resources),
+            'dual_banner', 'DualBanner' => $this->dualBanner->transform($component, $resources),
+            'category_grid', 'CategoryGrid' => $this->categoryGrid->transform($component, $resources),
+            'favourite_products', 'FavouriteProducts' => $this->favouriteProducts->transform($component, $resources),
+            'collection_showcase', 'CollectionShowcase' => $this->collectionShowcase->transform($component, $resources),
+            'editorial_spotlight', 'EditorialSpotlight' => $this->editorialSpotlight->transform($component, $resources),
+            'brand_showcase', 'BrandShowcase' => $this->brandShowcase->transform($component, $resources),
+            'footer', 'Footer' => $this->footer->transform($component, $resources),
             default => $this->defaultTransformer->transform($component, $resources),
         };
     }
