@@ -30,6 +30,8 @@ return [
         'X-Total-Count',
         'X-RateLimit-Limit',
         'X-RateLimit-Remaining',
+        'X-RateLimit-Reset',
+        'X-Correlation-ID',
     ],
 
     'max_age' => 86400,

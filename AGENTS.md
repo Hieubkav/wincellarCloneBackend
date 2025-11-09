@@ -42,6 +42,7 @@ read .claude/global/SYSTEM.md
 4. **database-backup** - Safe migrations
 5. **filament-resource-generator** - Auto scaffolding
 6. **filament-form-debugger** - Fix errors
+7. **api-design-principles** - REST/GraphQL API best practices
 
 **Chi tiết:** `.claude/skills/[skill-name]/SKILL.md`
 
