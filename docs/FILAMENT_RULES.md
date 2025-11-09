@@ -893,6 +893,249 @@ class ImageObserver
 
 ---
 
+## 🖼️ Image Management
+
+> **📖 COMPREHENSIVE GUIDE**: Đọc chi tiết tại **`@/docs/IMAGE_MANAGEMENT.md`**
+> 
+> File IMAGE_MANAGEMENT.md chứa đầy đủ:
+> - Kiến trúc hệ thống (Architecture diagrams)
+> - Database schema chi tiết
+> - Tất cả usage patterns (Products, Articles, Settings)
+> - CheckboxList image picker implementation
+> - Performance optimization
+> - Troubleshooting guide
+> - Migration từ hệ thống cũ
+
+### Overview
+Dự án sử dụng **centralized image management system** với:
+- ✅ **Single `images` table** cho tất cả entities (polymorphic)
+- ✅ **CheckboxList picker**: Chọn từ thư viện với preview + search
+- ✅ **FileUpload**: Upload mới với WebP auto-conversion
+- ✅ **Order management** (order = 0 là cover image)
+- ✅ **Soft deletes** với reference cleanup tự động
+- ✅ **ImageObserver**: Auto-generate alt text, order, cleanup files
+
+### When to Use Images Table
+
+**✅ ALWAYS use `images` table for:**
+- Product galleries (polymorphic morphMany)
+- Article featured images (polymorphic morphOne)
+- Banner images, hero images
+- Logo, favicon (via BelongsTo foreign key)
+- Any user-uploaded images
+
+**❌ NEVER:**
+- Store paths directly in model fields (bad practice)
+- Use Spatie Media Library (conflicts with our polymorphic design)
+- Create separate image tables per entity (not scalable)
+- Bypass the Image model (skip observers & cleanup)
+
+### Quick Reference
+
+#### Pattern 1: Multiple Images (Gallery)
+```php
+// Model
+class Product extends Model
+{
+    public function images(): MorphMany
+    {
+        return $this->morphMany(Image::class, 'model')->orderBy('order');
+    }
+    
+    public function coverImage(): MorphOne
+    {
+        return $this->morphOne(Image::class, 'model')->where('order', 0);
+    }
+}
+
+// Resource
+public static function getRelations(): array
+{
+    return [
+        ImagesRelationManager::class, // Auto upload, reorder, delete
+    ];
+}
+```
+
+#### Pattern 2: Single Image (BelongsTo)
+```php
+// Model
+class Setting extends Model
+{
+    public function logoImage(): BelongsTo
+    {
+        return $this->belongsTo(Image::class, 'logo_image_id');
+    }
+}
+
+// Resource Form
+Select::make('logo_image_id')
+    ->label('Logo')
+    ->relationship('logoImage', 'file_path')
+    ->getOptionLabelFromRecordUsing(fn ($record) => basename($record->file_path))
+    ->searchable()
+    ->preload();
+```
+
+### Image Upload Standard
+
+**All uploads MUST:**
+1. Convert to WebP (quality: 85)
+2. Resize if width > 1200px (configurable per entity)
+3. Store in entity-specific directory (`products/`, `articles/`)
+4. Use unique filename: `uniqid('prefix_') . '.webp'`
+
+**Example (already in ImagesRelationManager):**
+```php
+FileUpload::make('file_path')
+    ->saveUploadedFileUsing(function ($file) {
+        $filename = uniqid('product_') . '.webp';
+        $path = 'products/' . $filename;
+        
+        $manager = new ImageManager(new Driver());
+        $image = $manager->read($file->getRealPath());
+        
+        if ($image->width() > 1200) {
+            $image->scale(width: 1200);
+        }
+        
+        $webp = $image->toWebp(quality: 85);
+        Storage::disk('public')->put($path, $webp);
+        
+        return $path;
+    });
+```
+
+### Order Management
+
+- **`order = 0`**: Cover/primary image (only one per model)
+- **`order > 0`**: Gallery images (auto-incremented)
+- **Reorderable**: Use `->reorderable('order')` in table
+- **Auto-handled**: ImageObserver prevents duplicate order = 0
+
+### Key Features
+
+1. **Automatic Cleanup**
+   - Soft delete: Detaches references in `settings`, `social_links`
+   - Force delete: Removes physical file from storage
+   - Handled by `ImageObserver`
+
+2. **Polymorphic Support**
+   ```php
+   // Works with ANY model
+   $product->images()->create([...]);
+   $article->images()->create([...]);
+   ```
+
+3. **URL Accessor**
+   ```php
+   $image->url // Auto-generates correct URL based on disk
+   ```
+
+4. **Grid View in Admin**
+   - Navigate to `/admin/images` to see all images
+   - Filter by model_type, disk, active status
+   - Preview thumbnails
+
+### Image Picker Implementation (v1.2.0 - Current)
+
+✅ **Dùng CheckboxList có sẵn của Filament** - KHÔNG custom ViewField:
+
+**Đúng cách (ProductResource/ArticleResource):**
+```php
+Action::make('selectFromLibrary')
+    ->label('Chọn từ thư viện')
+    ->modalWidth('7xl')
+    ->form(function () {
+        $images = Image::query()
+            ->where('active', true)
+            ->whereNull('deleted_at')
+            ->orderBy('created_at', 'desc')
+            ->limit(100)
+            ->get();
+
+        $options = $images->mapWithKeys(function ($image) {
+            $filename = basename($image->file_path);
+            $imageUrl = $image->url ?? '/images/placeholder.png';
+            
+            // HTML label với preview ảnh
+            $html = '<div style="display: flex; align-items: center; gap: 8px;">';
+            $html .= '<img src="' . e($imageUrl) . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" />';
+            $html .= '<span>' . e($filename) . '</span>';
+            $html .= '</div>';
+            
+            return [$image->id => $html];
+        })->toArray();
+
+        return [
+            CheckboxList::make('image_ids')
+                ->label('Chọn ảnh')
+                ->options($options)
+                ->columns(3)
+                ->gridDirection(GridDirection::Column)
+                ->required()
+                ->searchable()      // Built-in search
+                ->bulkToggleable()  // Select all / Deselect all
+                ->allowHtml(),      // Cho phép HTML trong label
+        ];
+    })
+    ->action(function (array $data, RelationManager $livewire): void {
+        // Copy images vào product/article
+    });
+```
+
+**Features built-in của CheckboxList:**
+- ✅ **Search**: Tìm kiếm theo text (built-in Alpine.js)
+- ✅ **Bulk toggle**: Chọn tất cả / Bỏ chọn (built-in)
+- ✅ **Multi-select**: Checkbox với wire:model
+- ✅ **HTML labels**: allowHtml() cho preview ảnh
+- ✅ **Columns layout**: Responsive grid
+- ✅ **Dark mode**: Tự động support
+
+**❌ ĐỪNG dùng custom ViewField:**
+```php
+// ❌ SAI - ViewField với Alpine.js custom
+ViewField::make('image_ids')
+    ->view('filament.forms.custom-picker')  // Conflict với Filament internals
+```
+
+**Tại sao CheckboxList tốt hơn:**
+1. Native Filament component → no conflicts
+2. Đầy đủ Alpine.js bindings sẵn
+3. UI consistent với Filament design system
+4. Ít code hơn, ít bugs hơn
+5. Documented & maintained bởi Filament team
+
+### Troubleshooting
+
+**Images not showing?**
+1. Run: `php artisan storage:link`
+2. Check `APP_URL` in `.env`
+3. Verify `config/filesystems.php` disk config
+
+**Upload fails?**
+1. Check `php.ini`: `upload_max_filesize`, `post_max_size`
+2. Check permissions: `chmod -R 775 storage/app/public`
+
+**Need image optimization?**
+- Already implemented! All uploads → WebP + resize
+- Located in each entity's `ImagesRelationManager`
+
+### Full Documentation
+
+**📖 Read the complete guide:** `@/docs/IMAGE_MANAGEMENT.md`
+
+Includes:
+- Architecture diagrams
+- Database schema
+- Model relationships
+- Usage patterns
+- Performance optimization
+- Migration guide
+- Troubleshooting
+
+---
+
 ## 🌍 Internationalization (i18n)
 
 ### Việt hóa toàn bộ UI
@@ -988,6 +1231,68 @@ TextInput::make('field')
 
 ## ⚠️ Common Mistakes & Solutions
 
+### ❌ Mistake: Unique Constraint Violation khi Copy Images
+```php
+// BAD - Có thể bị duplicate order
+$maxOrder = $product->images()->max('order') ?? 0;
+foreach ($selectedImageIds as $index => $imageId) {
+    $image = Image::find($imageId);
+    if (!$image) continue;  // Skip làm lỗi order
+    
+    $product->images()->create([
+        'order' => $maxOrder + $index + 1,  // ← Lỗi ở đây
+    ]);
+}
+```
+
+### ✅ Solution: Dùng ImageObserver để Auto-Handle Order
+```php
+// BEST - Centralized trong Observer, áp dụng cho tất cả image creation
+// app/Observers/ImageObserver.php
+class ImageObserver
+{
+    public function creating(Image $image): void
+    {
+        // Auto-assign order if not set
+        if ($image->order === null && $image->model_type && $image->model_id) {
+            $image->order = $this->findNextAvailableOrder($image);
+        }
+    }
+    
+    private function findNextAvailableOrder(Image $image): int
+    {
+        $nextOrder = 0;
+        
+        while (Image::query()
+            ->where('model_type', $image->model_type)
+            ->where('model_id', $image->model_id)
+            ->where('order', $nextOrder)
+            ->exists()
+        ) {
+            $nextOrder++;
+        }
+        
+        return $nextOrder;
+    }
+}
+
+// Khi tạo image, không cần set order - Observer sẽ tự động handle
+$product->images()->create([
+    'file_path' => $path,
+    // order sẽ tự động được set bởi Observer
+]);
+```
+
+**Lợi ích:**
+- ✅ Hoạt động với TẤT CẢ cách tạo image (CreateAction, selectFromLibrary, code)
+- ✅ Logic tập trung 1 chỗ, dễ maintain
+- ✅ Không cần xử lý order thủ công ở mỗi action
+- ✅ Đảm bảo order luôn unique
+
+**Chi tiết:** `@/docs/IMAGE_MANAGEMENT.md#troubleshooting` - Unique Constraint Violation
+
+---
+
 ### ❌ Mistake: N+1 Query Problem
 ```php
 // BAD
@@ -1080,6 +1385,104 @@ public function form(Schema $schema): Schema
 
 ---
 
+### ❌ Mistake: Import sai namespace Tabs
+```php
+// BAD - Class "Filament\Forms\Components\Tabs" not found
+use Filament\Forms\Components\Tabs;  // ❌ SAI - Tabs không có trong Forms\Components
+
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Tabs::make()->tabs([...])  // ❌ Lỗi: Class not found
+    ]);
+}
+```
+
+### ✅ Solution: Tabs phải dùng Schemas\Components\Tabs
+```php
+// GOOD - Tabs là Layout component
+use Filament\Schemas\Components\Tabs;  // ✅ ĐÚNG
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Tabs::make()
+            ->tabs([
+                Tabs\Tab::make('Tab 1')->schema([
+                    TextInput::make('name'),
+                    Toggle::make('active'),
+                ]),
+            ]),
+    ]);
+}
+```
+
+⚠️ **CRITICAL - Namespace Structure trong dự án này:**
+
+Dự án đã customize Filament để dùng `Schema` thay vì `Form`, nên namespace khác với docs chính thức:
+
+**Layout Components** → `Filament\Schemas\Components\*`
+- `Tabs` - Tab navigation
+- `Grid` - Column layout
+- `Section` - Grouped fields
+- `Fieldset` - Form fieldset
+- `Group` - Field grouping
+
+**Form Field Components** → `Filament\Forms\Components\*`
+- `TextInput` - Text input
+- `Select` - Dropdown select
+- `Toggle` - Boolean toggle
+- `Textarea` - Multi-line text
+- `FileUpload` - File upload
+- `CheckboxList` - Multiple checkboxes
+- `DateTimePicker` - Date/time picker
+
+**Support Classes** → `Filament\Support\Enums\*`
+- `GridDirection` - Grid direction enum
+
+**Complete Example:**
+```php
+use Filament\Schemas\Components\Tabs;        // ✅ Layout
+use Filament\Schemas\Components\Grid;        // ✅ Layout
+use Filament\Schemas\Components\Section;     // ✅ Layout
+use Filament\Forms\Components\TextInput;     // ✅ Form field
+use Filament\Forms\Components\Select;        // ✅ Form field
+use Filament\Forms\Components\Toggle;        // ✅ Form field
+use Filament\Forms\Components\CheckboxList;  // ✅ Form field
+use Filament\Support\Enums\GridDirection;    // ✅ Enum
+
+public function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Tabs::make()->tabs([
+            Tabs\Tab::make('Info')->schema([
+                Grid::make(2)->schema([
+                    TextInput::make('name'),
+                    Select::make('status'),
+                ]),
+            ]),
+        ]),
+    ]);
+}
+```
+
+**❌ ĐỪNG nhầm lẫn:**
+```php
+// ❌ SAI - Tabs không có trong Forms\Components
+use Filament\Forms\Components\Tabs;
+
+// ❌ SAI - TextInput không có trong Schemas\Components
+use Filament\Schemas\Components\TextInput;
+
+// ✅ ĐÚNG
+use Filament\Schemas\Components\Tabs;      // Layout
+use Filament\Forms\Components\TextInput;   // Form field
+```
+
+---
+
 ### ❌ Mistake: Import sai namespace cho form field components
 ```php
 // BAD - Class "Filament\Schemas\Components\TextInput" not found
@@ -1120,25 +1523,6 @@ public function form(Schema $schema): Schema
         ]),
     ]);
 }
-```
-
-⚠️ **LƯU Ý - Quy tắc import trong dự án này:**
-- **Layout components** (Grid, Section, Tabs...): `Filament\Schemas\Components\*`
-- **Form field components** (TextInput, Select, Toggle, Textarea, FileUpload...): `Filament\Forms\Components\*`
-
-**❌ ĐỪNG nhầm lẫn:**
-```php
-// ❌ SAI
-use Filament\Schemas\Components\TextInput;
-use Filament\Schemas\Components\Select;
-use Filament\Schemas\Components\Toggle;
-use Filament\Schemas\Components\Textarea;
-
-// ✅ ĐÚNG
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
-use Filament\Forms\Components\Textarea;
 ```
 
 ---

@@ -10,13 +10,40 @@ class ImageObserver
 {
     /**
      * Handle the Image "creating" event.
-     * Tự động set alt text cho ảnh mới (order được Model tự handle)
+     * Tự động set order và alt text cho ảnh mới
      */
     public function creating(Image $image): void
     {
+        // Auto-assign order if not set
+        if ($image->order === null && $image->model_type && $image->model_id) {
+            $image->order = $this->findNextAvailableOrder($image);
+        }
+        
+        // Auto-generate alt text
         if (empty($image->alt)) {
             $image->alt = $this->generateAltText($image);
         }
+    }
+    
+    /**
+     * Tìm order trống tiếp theo cho model
+     */
+    private function findNextAvailableOrder(Image $image): int
+    {
+        $nextOrder = 0;
+        
+        while (Image::query()
+            ->where('model_type', $image->model_type)
+            ->where('model_id', $image->model_id)
+            ->where('order', $nextOrder)
+            ->whereNull('deleted_at')  // Exclude soft deleted
+            ->when($image->id, fn($q) => $q->where('id', '!=', $image->id))  // Exclude current image if updating
+            ->exists()
+        ) {
+            $nextOrder++;
+        }
+        
+        return $nextOrder;
     }
 
     /**

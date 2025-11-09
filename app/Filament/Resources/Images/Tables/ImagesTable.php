@@ -31,7 +31,8 @@ class ImagesTable
                 ImageColumn::make('url')
                     ->label('Xem trước')
                     ->state(fn (Image $record): ?string => $record->url)
-                    ->square()
+                    ->size(80)
+                    ->defaultImageUrl('/images/placeholder.png')
                     ->toggleable(),
                 TextColumn::make('file_path')
                     ->label('Đường dẫn')
@@ -39,20 +40,39 @@ class ImagesTable
                     ->tooltip(fn (?string $state): ?string => $state)
                     ->copyable()
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->wrap(),
+                TextColumn::make('dimensions')
+                    ->label('Kích thước')
+                    ->state(fn (Image $record): string => 
+                        $record->width && $record->height 
+                            ? "{$record->width}x{$record->height}px" 
+                            : '-'
+                    )
+                    ->toggleable(),
                 TextColumn::make('disk')
                     ->label('Nơi lưu')
                     ->badge()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('model_type')
                     ->label('Loại chủ sở hữu')
                     ->formatStateUsing(fn (?string $state): ?string => self::formatModelType($state))
                     ->badge()
-                    ->sortable(),
-                TextColumn::make('model_id')
-                    ->label('ID chủ sở hữu')
-                    ->numeric()
-                    ->sortable(),
+                    ->color(fn (?string $state): string => match($state) {
+                        'App\Models\Product' => 'success',
+                        'App\Models\Article' => 'info',
+                        default => 'gray',
+                    })
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('order')
+                    ->label('Thứ tự')
+                    ->badge()
+                    ->color(fn (int $state): string => $state === 0 ? 'warning' : 'gray')
+                    ->formatStateUsing(fn (int $state): string => $state === 0 ? 'Cover' : (string) $state)
+                    ->sortable()
+                    ->toggleable(),
                 IconColumn::make('active')
                     ->label('Hiển thị')
                     ->boolean()
@@ -88,11 +108,44 @@ class ImagesTable
             ])
             ->recordActions([
                 EditAction::make()->iconButton(),
-                \Filament\Actions\DeleteAction::make()->iconButton(),
+                \Filament\Actions\DeleteAction::make()
+                    ->iconButton()
+                    ->before(function (\Filament\Actions\DeleteAction $action, Image $record) {
+                        // Kiểm tra xem ảnh có đang được dùng không
+                        if ($record->model_type && $record->model_id) {
+                            $ownerType = class_basename($record->model_type);
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->danger()
+                                ->title('Không thể xóa ảnh')
+                                ->body("Ảnh này đang được sử dụng bởi {$ownerType} #{$record->model_id}. Vui lòng gỡ liên kết trước khi xóa.")
+                                ->persistent()
+                                ->send();
+                            
+                            // Cancel deletion
+                            $action->cancel();
+                        }
+                    }),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->before(function (DeleteBulkAction $action, $records) {
+                            // Kiểm tra xem có ảnh nào đang được dùng không
+                            $inUse = $records->filter(fn (Image $img) => $img->model_type && $img->model_id);
+                            
+                            if ($inUse->isNotEmpty()) {
+                                \Filament\Notifications\Notification::make()
+                                    ->danger()
+                                    ->title('Không thể xóa một số ảnh')
+                                    ->body("Có {$inUse->count()} ảnh đang được sử dụng. Vui lòng gỡ liên kết trước khi xóa.")
+                                    ->persistent()
+                                    ->send();
+                                
+                                // Cancel deletion
+                                $action->cancel();
+                            }
+                        }),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
                 ]),

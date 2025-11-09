@@ -13,6 +13,11 @@ Trả lời bằng tiếng việt
   - Reorderable cho table có order column
   - Storage & File upload (WebP conversion)
   - Common mistakes & solutions
+- **🖼️ Image Management**: `docs/IMAGE_MANAGEMENT.md` - Hệ thống quản lý ảnh:
+  - Polymorphic images table (single source of truth)
+  - CheckboxList cho image picker
+  - WebP conversion & optimization
+  - Pattern cho Products/Articles/Settings
 - **📚 Source code**: `vendor/filament/` - Đọc để hiểu sâu
 - **🌐 Docs**: https://filamentphp.com/docs/4.x
 
@@ -23,6 +28,34 @@ Trả lời bằng tiếng việt
 - ✅ SEO fields: Tự sinh bằng Observer, ẨN khỏi form
 - ✅ Image: Observer auto alt/order/delete + WebP 85%
 - ✅ Eager load: `->modifyQueryUsing()`
+
+### ❌ KHÔNG dùng Alpine.js trong dự án này
+**⚠️ CRITICAL**: Filament đã có Alpine.js tích hợp, ĐỪNG viết custom Alpine code:
+- ❌ **ĐỪNG** dùng `x-data`, `x-model`, `x-show`, `x-on:click`
+- ❌ **ĐỪNG** tạo custom ViewField với Alpine.js
+- ✅ **LUÔN** dùng Filament components có sẵn (CheckboxList, Select, Toggle...)
+- ✅ **NẾU CẦN** JavaScript: Dùng vanilla JS với addEventListener
+- ✅ **NẾU CẦN** interactivity: Dùng Livewire wire:model, wire:click
+
+**Lý do**:
+1. Filament components đã có Alpine.js binding sẵn
+2. Custom Alpine code dễ conflict với Filament internals
+3. Dùng built-in components → UI consistent, less bugs
+4. ViewField chỉ dùng cho read-only displays, KHÔNG dùng cho forms
+
+**Examples:**
+```php
+// ❌ SAI - Custom ViewField với Alpine.js
+ViewField::make('images')
+    ->view('filament.forms.custom-picker')  // có x-data, x-model
+
+// ✅ ĐÚNG - Dùng CheckboxList có sẵn
+CheckboxList::make('images')
+    ->options($options)
+    ->searchable()
+    ->bulkToggleable()
+    ->allowHtml()  // cho preview ảnh
+```
 
 ### 🔄 Cập nhật Rules khi cần:
 **Nếu gặp lỗi/hiểu sai về Filament**:
