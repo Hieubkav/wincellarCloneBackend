@@ -2,6 +2,7 @@
 
 namespace App\Services\Api\V1\Home\Transformers;
 
+use App\Models\CatalogTerm;
 use App\Models\HomeComponent;
 use App\Services\Api\V1\Home\HomeComponentResources;
 
@@ -19,21 +20,32 @@ class CategoryGridTransformer extends AbstractComponentTransformer
                 continue;
             }
 
+            // Get term info
+            $termId = $this->toPositiveInt($item['term_id'] ?? null);
+            $term = null;
+            if ($termId) {
+                $term = CatalogTerm::find($termId);
+            }
+
+            // Get image (required)
             $imageId = $this->toPositiveInt($item['image_id'] ?? null);
-            if ($imageId) {
-                $image = $resources->image($component, $imageId);
-                if (!$image) {
-                    continue;
-                }
-
-                $item['image'] = $resources->mapImage($image, $item['alt'] ?? null);
+            if (!$imageId) {
+                continue;
             }
 
-            unset($item['image_id']);
-
-            if (!empty($item)) {
-                $categories[] = $item;
+            $image = $resources->image($component, $imageId);
+            if (!$image) {
+                continue;
             }
+
+            // Build category item
+            $categoryItem = [
+                'title' => $item['title'] ?? ($term?->name ?? 'Untitled'),
+                'href' => $item['href'] ?? ($term ? "/categories/{$term->slug}" : '#'),
+                'image' => $resources->mapImage($image, $item['title'] ?? $term?->name),
+            ];
+
+            $categories[] = $categoryItem;
         }
 
         if (empty($categories)) {
@@ -45,4 +57,3 @@ class CategoryGridTransformer extends AbstractComponentTransformer
         return $resources->payload($component, $config);
     }
 }
-

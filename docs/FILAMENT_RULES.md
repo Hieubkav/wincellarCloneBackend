@@ -7,6 +7,8 @@
 - **Vendor code**: `vendor/filament/` - Đọc source code để hiểu sâu
 - **Docs chính thức**: https://filamentphp.com/docs/4.x
 - **Dynamic Component Management**: `@/docs/COMPONENT_SETUP_GUIDE.md` - Pattern quản lý component động
+- **Select with Image Preview**: `@/docs/FILAMENT_SELECT_WITH_IMAGES.md` - Hiển thị thumbnail trong dropdown
+- **⭐ allowHtml() Deep Dive**: `@/docs/FILAMENT_ALLOWHTML_DEEP_DIVE.md` - Kiến thức sâu & patterns nâng cao
 
 ---
 

@@ -199,6 +199,15 @@ Select::make('type')
 )
 ```
 
+**⭐ BETTER SOLUTION - Image Preview trong dropdown**:
+```php
+// ✅ BEST - Hiển thị thumbnail + tên file + dimensions
+->options(fn () => self::getImageOptionsWithPreview())
+->allowHtml()
+
+// Chi tiết implementation xem: @/docs/FILAMENT_SELECT_WITH_IMAGES.md
+```
+
 **Lý do**: 
 - Bảng `images` không có cột `title`, chỉ có `alt` và `file_path`
 - `COALESCE(NULLIF(alt, ''), file_path)` = hiển thị `alt` nếu có, nếu không thì hiển thị `file_path`

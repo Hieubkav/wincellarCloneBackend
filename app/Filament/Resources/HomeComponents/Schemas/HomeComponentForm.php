@@ -19,6 +19,65 @@ use Filament\Schemas\Schema;
 
 class HomeComponentForm
 {
+    protected static function getImageOptionsWithPreview(): array
+    {
+        $images = Image::query()
+            ->where('active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(200)
+            ->get();
+
+        return $images->mapWithKeys(function ($image) {
+            $filename = basename($image->file_path);
+            $imageUrl = $image->url ?? '/images/placeholder.png';
+            
+            $html = '<div style="display: flex; align-items: center; gap: 8px;">';
+            $html .= '<img src="' . e($imageUrl) . '" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb;" />';
+            $html .= '<div style="display: flex; flex-direction: column;">';
+            $html .= '<span style="font-weight: 500;">' . e($image->alt ?: $filename) . '</span>';
+            if ($image->width && $image->height) {
+                $html .= '<span style="font-size: 0.75rem; color: #6b7280;">' . $image->width . 'x' . $image->height . '</span>';
+            }
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            return [$image->id => $html];
+        })->toArray();
+    }
+
+    protected static function getProductOptionsWithPreview(): array
+    {
+        $products = Product::query()
+            ->with('images')
+            ->where('active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(200)
+            ->get();
+
+        return $products->mapWithKeys(function ($product) {
+            $imageUrl = $product->cover_image_url ?? '/images/placeholder.png';
+            
+            $html = '<div style="display: flex; align-items: center; gap: 10px;">';
+            $html .= '<img src="' . e($imageUrl) . '" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb;" />';
+            $html .= '<div style="display: flex; flex-direction: column; gap: 2px;">';
+            $html .= '<span style="font-weight: 500; color: #111827;">' . e($product->name) . '</span>';
+            
+            $priceHtml = '<div style="display: flex; gap: 8px; align-items: center;">';
+            $priceHtml .= '<span style="font-size: 0.875rem; color: #059669; font-weight: 600;">' . number_format($product->price) . ' ₫</span>';
+            
+            if ($product->original_price && $product->original_price > $product->price) {
+                $priceHtml .= '<span style="font-size: 0.75rem; color: #9ca3af; text-decoration: line-through;">' . number_format($product->original_price) . ' ₫</span>';
+            }
+            $priceHtml .= '</div>';
+            
+            $html .= $priceHtml;
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            return [$product->id => $html];
+        })->toArray();
+    }
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -85,10 +144,8 @@ class HomeComponentForm
                 ->schema([
                     Select::make('image_id')
                         ->label('Hình ảnh')
-                        ->options(fn () => Image::query()
-                            ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
-                            ->pluck('display_name', 'id')
-                        )
+                        ->options(fn () => self::getImageOptionsWithPreview())
+                        ->allowHtml()
                         ->searchable()
                         ->required()
                         ->preload(),
@@ -116,10 +173,8 @@ class HomeComponentForm
                 ->schema([
                     Select::make('image_id')
                         ->label('Hình ảnh')
-                        ->options(fn () => Image::query()
-                            ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
-                            ->pluck('display_name', 'id')
-                        )
+                        ->options(fn () => self::getImageOptionsWithPreview())
+                        ->allowHtml()
                         ->searchable()
                         ->required()
                         ->preload(),
@@ -145,27 +200,49 @@ class HomeComponentForm
             Repeater::make('config.categories')
                 ->label('Danh sách danh mục')
                 ->schema([
-                    Select::make('term_id')
-                        ->label('Danh mục')
-                        ->options(fn () => CatalogTerm::pluck('name', 'id'))
-                        ->searchable()
+                    Grid::make()
+                        ->columns(2)
+                        ->schema([
+                            Select::make('term_id')
+                                ->label('Danh mục')
+                                ->options(fn () => CatalogTerm::pluck('name', 'id'))
+                                ->searchable()
+                                ->required()
+                                ->preload()
+                                ->live()
+                                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                    if ($state && !$get('title')) {
+                                        $term = CatalogTerm::find($state);
+                                        if ($term) {
+                                            $set('title', $term->name);
+                                        }
+                                    }
+                                }),
+                            Select::make('image_id')
+                                ->label('Hình ảnh nền')
+                                ->options(fn () => self::getImageOptionsWithPreview())
+                                ->allowHtml()
+                                ->searchable()
+                                ->required()
+                                ->preload(),
+                        ]),
+                    TextInput::make('title')
+                        ->label('Tiêu đề hiển thị')
+                        ->placeholder('VANG ĐỎ')
                         ->required()
-                        ->preload(),
-                    Select::make('image_id')
-                        ->label('Hình ảnh')
-                        ->options(fn () => Image::query()
-                            ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
-                            ->pluck('display_name', 'id')
-                        )
-                        ->searchable()
-                        ->preload(),
+                        ->helperText('Tự động lấy từ tên danh mục, có thể chỉnh sửa'),
+                    TextInput::make('href')
+                        ->label('Link đến (URL)')
+                        ->url()
+                        ->placeholder('/categories/vang-do')
+                        ->helperText('Để trống sẽ tự động dùng link của danh mục'),
                 ])
                 ->columnSpanFull()
                 ->defaultItems(1)
                 ->addActionLabel('Thêm danh mục')
                 ->collapsible()
                 ->itemLabel(fn (array $state): ?string => 
-                    $state['term_id'] ? CatalogTerm::find($state['term_id'])?->name : 'Danh mục mới'
+                    $state['title'] ?? ($state['term_id'] ? CatalogTerm::find($state['term_id'])?->name : 'Danh mục mới')
                 ),
         ];
     }
@@ -184,14 +261,16 @@ class HomeComponentForm
                 ->schema([
                     Select::make('product_id')
                         ->label('Sản phẩm')
-                        ->options(fn () => Product::pluck('name', 'id'))
+                        ->options(fn () => self::getProductOptionsWithPreview())
+                        ->allowHtml()
                         ->searchable()
                         ->required()
                         ->preload(),
                 ])
                 ->simple(Select::make('product_id')
                     ->label('Sản phẩm')
-                    ->options(fn () => Product::pluck('name', 'id'))
+                    ->options(fn () => self::getProductOptionsWithPreview())
+                    ->allowHtml()
                     ->searchable()
                     ->required()
                     ->preload()
@@ -213,10 +292,8 @@ class HomeComponentForm
                 ->schema([
                     Select::make('image_id')
                         ->label('Logo thương hiệu')
-                        ->options(fn () => Image::query()
-                            ->selectRaw("id, COALESCE(NULLIF(alt, ''), file_path) as display_name")
-                            ->pluck('display_name', 'id')
-                        )
+                        ->options(fn () => self::getImageOptionsWithPreview())
+                        ->allowHtml()
                         ->searchable()
                         ->required()
                         ->preload(),
@@ -276,14 +353,16 @@ class HomeComponentForm
                 ->schema([
                     Select::make('product_id')
                         ->label('Sản phẩm')
-                        ->options(fn () => Product::pluck('name', 'id'))
+                        ->options(fn () => self::getProductOptionsWithPreview())
+                        ->allowHtml()
                         ->searchable()
                         ->required()
                         ->preload(),
                 ])
                 ->simple(Select::make('product_id')
                     ->label('Sản phẩm')
-                    ->options(fn () => Product::pluck('name', 'id'))
+                    ->options(fn () => self::getProductOptionsWithPreview())
+                    ->allowHtml()
                     ->searchable()
                     ->required()
                     ->preload()
