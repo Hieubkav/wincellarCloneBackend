@@ -6,9 +6,9 @@
 ## 📚 Tài liệu tham khảo
 - **Vendor code**: `vendor/filament/` - Đọc source code để hiểu sâu
 - **Docs chính thức**: https://filamentphp.com/docs/4.x
-- **Dynamic Component Management**: `@/docs/COMPONENT_SETUP_GUIDE.md` - Pattern quản lý component động
-- **Select with Image Preview**: `@/docs/FILAMENT_SELECT_WITH_IMAGES.md` - Hiển thị thumbnail trong dropdown
-- **⭐ allowHtml() Deep Dive**: `@/docs/FILAMENT_ALLOWHTML_DEEP_DIVE.md` - Kiến thức sâu & patterns nâng cao
+- **Dynamic Component Management**: `@/docs/filament/COMPONENT_SETUP_GUIDE.md` - Pattern quản lý component động
+- **Select with Image Preview**: `@/docs/filament/FILAMENT_SELECT_WITH_IMAGES.md` - Hiển thị thumbnail trong dropdown
+- **⭐ allowHtml() Deep Dive**: `@/docs/filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md` - Kiến thức sâu & patterns nâng cao
 
 ---
 
@@ -75,7 +75,7 @@ protected static function getConfigFields(?string $type): array
 ```
 
 ### Implementation Guide
-Đọc chi tiết tại: **`@/docs/COMPONENT_SETUP_GUIDE.md`**
+Đọc chi tiết tại: **`@/docs/filament/COMPONENT_SETUP_GUIDE.md`**
 
 Includes:
 - Full code examples cho 8 component types

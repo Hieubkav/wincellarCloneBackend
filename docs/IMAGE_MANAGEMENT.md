@@ -862,7 +862,7 @@ use Filament\Schemas\Components\Tabs;       // Layout
 use Filament\Forms\Components\CheckboxList; // Form field
 ```
 
-**See also:** `@/docs/FILAMENT_RULES.md` - Section "Common Mistakes" for detailed namespace guide
+**See also:** `@/docs/filament/FILAMENT_RULES.md` - Section "Common Mistakes" for detailed namespace guide
 
 ---
 

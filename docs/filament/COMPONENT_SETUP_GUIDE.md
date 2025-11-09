@@ -1,6 +1,6 @@
 # Dynamic Component Management Guide
 
-> **Reference**: Pattern này được documented trong `@/docs/FILAMENT_RULES.md` section "🧩 Dynamic Component Management Pattern"
+> **Reference**: Pattern này được documented trong `@/docs/filament/FILAMENT_RULES.md` section "🧩 Dynamic Component Management Pattern"
 
 ## Tổng quan
 
@@ -205,7 +205,7 @@ Select::make('type')
 ->options(fn () => self::getImageOptionsWithPreview())
 ->allowHtml()
 
-// Chi tiết implementation xem: @/docs/FILAMENT_SELECT_WITH_IMAGES.md
+// Chi tiết implementation xem: @/docs/filament/FILAMENT_SELECT_WITH_IMAGES.md
 ```
 
 **Lý do**: 
@@ -411,4 +411,4 @@ Xem code trong thư mục `app/Filament/Resources/HomeComponents/` làm referenc
 - Filament Forms: https://filamentphp.com/docs/4.x/forms
 - Filament Tables: https://filamentphp.com/docs/4.x/tables
 - PHP Enums: https://www.php.net/manual/en/language.enumerations.php
-- **Project Rules**: `@/docs/FILAMENT_RULES.md`
+- **Project Rules**: `@/docs/filament/FILAMENT_RULES.md`

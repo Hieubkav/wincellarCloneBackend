@@ -7,25 +7,25 @@ Welcome to the project documentation! Tài liệu được organize theo topics 
 ## 🎯 Quick Navigation
 
 ### Filament Admin Panel
-1. **[FILAMENT_RULES.md](FILAMENT_RULES.md)** 📖 ⭐ **START HERE**
+1. **[filament/FILAMENT_RULES.md](filament/FILAMENT_RULES.md)** 📖 ⭐ **START HERE**
    - Coding standards & best practices
    - UI/UX guidelines
    - Quy tắc bắt buộc khi làm việc với Filament 4.x
 
-2. **[FILAMENT_ALLOWHTML_DEEP_DIVE.md](FILAMENT_ALLOWHTML_DEEP_DIVE.md)** 🔥 **ADVANCED**
+2. **[filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md](filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md)** 🔥 **ADVANCED**
    - Deep dive vào `.allowHtml()` technique
    - Architecture & source code analysis
    - 6+ advanced patterns với real-world examples
    - Security, performance, best practices
    - **Level**: Intermediate to Advanced
 
-3. **[FILAMENT_SELECT_WITH_IMAGES.md](FILAMENT_SELECT_WITH_IMAGES.md)** 🖼️ **PRACTICAL**
+3. **[filament/FILAMENT_SELECT_WITH_IMAGES.md](filament/FILAMENT_SELECT_WITH_IMAGES.md)** 🖼️ **PRACTICAL**
    - Hiển thị image preview trong Select dropdown
    - Step-by-step implementation guide
    - 4 use cases cụ thể (Image, Product, User, Category)
    - **Level**: Beginner to Intermediate
 
-4. **[COMPONENT_SETUP_GUIDE.md](COMPONENT_SETUP_GUIDE.md)** 🧩 **PATTERN**
+4. **[filament/COMPONENT_SETUP_GUIDE.md](filament/COMPONENT_SETUP_GUIDE.md)** 🧩 **PATTERN**
    - Dynamic Component Management pattern
    - Enum-based type system + JSON config
    - 8 component types examples (Hero, Banner, Footer...)
@@ -57,10 +57,12 @@ Welcome to the project documentation! Tài liệu được organize theo topics 
 ```
 docs/
 ├── README.md (you are here)
-├── FILAMENT_RULES.md                    ⭐ Main reference
-├── FILAMENT_ALLOWHTML_DEEP_DIVE.md      🔥 Advanced technique
-├── FILAMENT_SELECT_WITH_IMAGES.md       🖼️ Practical guide
-├── COMPONENT_SETUP_GUIDE.md             🧩 Reusable pattern
+├── filament/                            🎨 Filament Admin Panel docs
+│   ├── FILAMENT_RULES.md                ⭐ Main reference
+│   ├── FILAMENT_ALLOWHTML_DEEP_DIVE.md  🔥 Advanced technique
+│   ├── FILAMENT_SELECT_WITH_IMAGES.md   🖼️ Practical guide
+│   ├── COMPONENT_SETUP_GUIDE.md         🧩 Reusable pattern
+│   └── CHANGELOG_ALLOWHTML.md           📝 AllowHTML changelog
 ├── IMAGE_MANAGEMENT.md                  📸 Media handling
 ├── IMAGE_DELETE_PROTECTION.md           🛡️ Data integrity
 ├── spatie_backup.md                     💾 Backup system
@@ -77,14 +79,14 @@ docs/
 ## 🎓 Learning Path
 
 ### For New Developers:
-1. ✅ Read **FILAMENT_RULES.md** first
-2. ✅ Try **FILAMENT_SELECT_WITH_IMAGES.md** - quick win
-3. ✅ Study **COMPONENT_SETUP_GUIDE.md** - reusable pattern
-4. ✅ Deep dive **FILAMENT_ALLOWHTML_DEEP_DIVE.md** - level up
+1. ✅ Read **filament/FILAMENT_RULES.md** first
+2. ✅ Try **filament/FILAMENT_SELECT_WITH_IMAGES.md** - quick win
+3. ✅ Study **filament/COMPONENT_SETUP_GUIDE.md** - reusable pattern
+4. ✅ Deep dive **filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md** - level up
 
 ### For Filament Masters:
-1. 🔥 **FILAMENT_ALLOWHTML_DEEP_DIVE.md** - unlock new capabilities
-2. 🧩 **COMPONENT_SETUP_GUIDE.md** - apply to new domains
+1. 🔥 **filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md** - unlock new capabilities
+2. 🧩 **filament/COMPONENT_SETUP_GUIDE.md** - apply to new domains
 3. 📸 **IMAGE_MANAGEMENT.md** - polymorphic patterns
 
 ---
@@ -92,20 +94,20 @@ docs/
 ## 🔍 Find Documentation by Topic
 
 ### UI/UX Enhancement
-- [FILAMENT_SELECT_WITH_IMAGES.md](FILAMENT_SELECT_WITH_IMAGES.md) - Dropdowns với thumbnails
-- [FILAMENT_ALLOWHTML_DEEP_DIVE.md](FILAMENT_ALLOWHTML_DEEP_DIVE.md) - Rich content trong forms
+- [filament/FILAMENT_SELECT_WITH_IMAGES.md](filament/FILAMENT_SELECT_WITH_IMAGES.md) - Dropdowns với thumbnails
+- [filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md](filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md) - Rich content trong forms
 
 ### Architecture Patterns
-- [COMPONENT_SETUP_GUIDE.md](COMPONENT_SETUP_GUIDE.md) - Dynamic components
+- [filament/COMPONENT_SETUP_GUIDE.md](filament/COMPONENT_SETUP_GUIDE.md) - Dynamic components
 - [IMAGE_MANAGEMENT.md](IMAGE_MANAGEMENT.md) - Polymorphic relations
 
 ### Security
-- [FILAMENT_ALLOWHTML_DEEP_DIVE.md](FILAMENT_ALLOWHTML_DEEP_DIVE.md#-security-xss-prevention-strategy) - XSS prevention
+- [filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md](filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md#-security-xss-prevention-strategy) - XSS prevention
 - [IMAGE_DELETE_PROTECTION.md](IMAGE_DELETE_PROTECTION.md) - Cascade protection
 
 ### Performance
-- [FILAMENT_ALLOWHTML_DEEP_DIVE.md](FILAMENT_ALLOWHTML_DEEP_DIVE.md#-performance-optimization) - Caching & lazy loading
-- [FILAMENT_SELECT_WITH_IMAGES.md](FILAMENT_SELECT_WITH_IMAGES.md#-performance-considerations) - Limit & eager loading
+- [filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md](filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md#-performance-optimization) - Caching & lazy loading
+- [filament/FILAMENT_SELECT_WITH_IMAGES.md](filament/FILAMENT_SELECT_WITH_IMAGES.md#-performance-considerations) - Limit & eager loading
 
 ---
 
@@ -125,8 +127,8 @@ Select::make('image_id')
 ```
 
 **Learn more:**
-- Quick start: [FILAMENT_SELECT_WITH_IMAGES.md](FILAMENT_SELECT_WITH_IMAGES.md)
-- Deep dive: [FILAMENT_ALLOWHTML_DEEP_DIVE.md](FILAMENT_ALLOWHTML_DEEP_DIVE.md)
+- Quick start: [filament/FILAMENT_SELECT_WITH_IMAGES.md](filament/FILAMENT_SELECT_WITH_IMAGES.md)
+- Deep dive: [filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md](filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md)
 
 ---
 
@@ -139,7 +141,7 @@ Build admin panels for dynamic content without JSON editing!
 3. Dynamic form builder
 4. API transformers
 
-**Learn more:** [COMPONENT_SETUP_GUIDE.md](COMPONENT_SETUP_GUIDE.md)
+**Learn more:** [filament/COMPONENT_SETUP_GUIDE.md](filament/COMPONENT_SETUP_GUIDE.md)
 
 ---
 
@@ -216,9 +218,10 @@ Located in: `docs/api/v1/`
 
 ## 📈 Recent Updates
 
-- **2025-11-09**: Added `FILAMENT_ALLOWHTML_DEEP_DIVE.md` - Advanced `.allowHtml()` techniques
-- **2025-11-09**: Added `FILAMENT_SELECT_WITH_IMAGES.md` - Image preview in dropdowns
-- **2025-11-09**: Updated `COMPONENT_SETUP_GUIDE.md` - Added allowHtml reference
+- **2025-11-09**: Reorganized docs - Moved Filament files to `/docs/filament/` directory
+- **2025-11-09**: Added `filament/FILAMENT_ALLOWHTML_DEEP_DIVE.md` - Advanced `.allowHtml()` techniques
+- **2025-11-09**: Added `filament/FILAMENT_SELECT_WITH_IMAGES.md` - Image preview in dropdowns
+- **2025-11-09**: Updated `filament/COMPONENT_SETUP_GUIDE.md` - Added allowHtml reference
 
 ---
 

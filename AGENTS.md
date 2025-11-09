@@ -7,12 +7,17 @@ Trả lời bằng tiếng việt
 
 ## 🎨 Filament 4.x Rules
 **⚠️ QUAN TRỌNG**: Khi làm việc với Filament, LUÔN tham khảo:
-- **📖 File rule chính**: `docs/FILAMENT_RULES.md` - Chi tiết đầy đủ về:
+- **📖 File rule chính**: `docs/filament/FILAMENT_RULES.md` - Chi tiết đầy đủ về:
   - List/Create/Edit/RelationManager pages
   - Observer patterns (SEO, alt, order tự sinh)
   - Reorderable cho table có order column
   - Storage & File upload (WebP conversion)
   - Common mistakes & solutions
+- **🎨 Filament docs folder**: `docs/filament/` - Tất cả tài liệu Filament:
+  - `FILAMENT_RULES.md` - Main reference
+  - `FILAMENT_ALLOWHTML_DEEP_DIVE.md` - Advanced techniques
+  - `FILAMENT_SELECT_WITH_IMAGES.md` - Image preview patterns
+  - `COMPONENT_SETUP_GUIDE.md` - Dynamic component management
 - **🖼️ Image Management**: `docs/IMAGE_MANAGEMENT.md` - Hệ thống quản lý ảnh:
   - Polymorphic images table (single source of truth)
   - CheckboxList cho image picker
@@ -60,7 +65,7 @@ CheckboxList::make('images')
 ### 🔄 Cập nhật Rules khi cần:
 **Nếu gặp lỗi/hiểu sai về Filament**:
 1. Research đúng solution
-2. **CẬP NHẬT** `docs/FILAMENT_RULES.md` với fix + example
+2. **CẬP NHẬT** `docs/filament/FILAMENT_RULES.md` với fix + example
 3. Thêm vào section "Common Mistakes"
 4. Commit: `docs(filament): fix rule về [vấn đề]`
 

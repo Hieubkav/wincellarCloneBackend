@@ -179,4 +179,4 @@ $image->model_id = null;   // Was: 126
 ## See Also
 
 - [@/docs/IMAGE_MANAGEMENT.md](./IMAGE_MANAGEMENT.md) - Complete image system documentation
-- [@/docs/FILAMENT_RULES.md](./FILAMENT_RULES.md) - Filament coding conventions
+- [@/docs/filament/FILAMENT_RULES.md](./filament/FILAMENT_RULES.md) - Filament coding conventions
