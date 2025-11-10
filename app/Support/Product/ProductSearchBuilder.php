@@ -23,13 +23,13 @@ class ProductSearchBuilder
         $relations = $withRelations ?? ($isList ? [
             'coverImage',
             'terms.group',
-            'productCategory',
+            'categories',
             'type',
         ] : [
             'coverImage',
             'images' => fn ($relation) => $relation->orderBy('order'),
             'terms.group',
-            'productCategory',
+            'categories',
             'type',
         ]);
 

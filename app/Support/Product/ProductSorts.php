@@ -16,12 +16,12 @@ class ProductSorts
         $sortKey = $sort ?: '-created_at';
 
         $mapping = [
-            'price' => ['price', 'asc'],
-            '-price' => ['price', 'desc'],
-            'name' => ['name', 'asc'],
-            '-name' => ['name', 'desc'],
-            'created_at' => ['created_at', 'asc'],
-            '-created_at' => ['created_at', 'desc'],
+            'price' => ['products.price', 'asc'],
+            '-price' => ['products.price', 'desc'],
+            'name' => ['products.name', 'asc'],
+            '-name' => ['products.name', 'desc'],
+            'created_at' => ['products.created_at', 'asc'],
+            '-created_at' => ['products.created_at', 'desc'],
         ];
 
         $sortConfig = Arr::get($mapping, $sortKey, $mapping['-created_at']);

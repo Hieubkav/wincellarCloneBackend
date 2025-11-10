@@ -40,10 +40,10 @@ class ProductOutput
             'alcohol_percent' => $product->alcohol_percent,
             'volume_ml' => $product->volume_ml,
             'badges' => $product->badges ?? [],
-            'category' => $product->productCategory ? [
-                'id' => $product->productCategory->id,
-                'name' => $product->productCategory->name,
-                'slug' => $product->productCategory->slug,
+            'category' => $product->categories->first() ? [
+                'id' => $product->categories->first()->id,
+                'name' => $product->categories->first()->name,
+                'slug' => $product->categories->first()->slug,
             ] : null,
             'type' => $product->type ? [
                 'id' => $product->type->id,
@@ -74,10 +74,10 @@ class ProductOutput
             'main_image_url' => $coverImageUrl,
             'brand_term' => self::transformTerm($product->primaryTerm('brand')),
             'country_term' => self::transformTerm($product->primaryTerm('origin')),
-            'category' => $product->productCategory ? [
-                'id' => $product->productCategory->id,
-                'name' => $product->productCategory->name,
-                'slug' => $product->productCategory->slug,
+            'category' => $product->categories->first() ? [
+                'id' => $product->categories->first()->id,
+                'name' => $product->categories->first()->name,
+                'slug' => $product->categories->first()->slug,
             ] : null,
             'type' => $product->type ? [
                 'id' => $product->type->id,
@@ -125,10 +125,10 @@ class ProductOutput
             'alcohol_percent' => $product->alcohol_percent,
             'volume_ml' => $product->volume_ml,
             'badges' => $product->badges ?? [],
-            'category' => $product->productCategory ? [
-                'id' => $product->productCategory->id,
-                'name' => $product->productCategory->name,
-                'slug' => $product->productCategory->slug,
+            'category' => $product->categories->first() ? [
+                'id' => $product->categories->first()->id,
+                'name' => $product->categories->first()->name,
+                'slug' => $product->categories->first()->slug,
             ] : null,
             'type' => $product->type ? [
                 'id' => $product->type->id,
@@ -176,10 +176,10 @@ class ProductOutput
     {
     $breadcrumbs = [];
 
-    if ($product->productCategory) {
+    if ($category = $product->categories->first()) {
     $breadcrumbs[] = [
-    'label' => $product->productCategory->name,
-    'href' => '/san-pham/'.$product->productCategory->slug,
+    'label' => $category->name,
+    'href' => '/san-pham/'.$category->slug,
     ];
     }
 

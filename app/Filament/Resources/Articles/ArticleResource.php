@@ -100,11 +100,10 @@ class ArticleResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->with(['author', 'coverImage']))
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['author', 'images']))
             ->columns([
-                Tables\Columns\ImageColumn::make('coverImage.file_path')
+                Tables\Columns\ImageColumn::make('cover_image_url')
                     ->label('Ảnh bìa')
-                    ->disk('public')
                     ->width(60)
                     ->height(60)
                     ->defaultImageUrl('/images/placeholder.png'),

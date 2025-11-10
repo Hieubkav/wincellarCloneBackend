@@ -21,7 +21,6 @@ class JsonFormatter extends MonologJsonFormatter
             'context' => $record->context,
             'extra' => array_merge($record->extra, [
                 'correlation_id' => request()->header('X-Correlation-ID'),
-                'request_id' => request()->id(),
                 'user_id' => auth()->id(),
                 'ip' => request()->ip(),
                 'method' => request()->method(),

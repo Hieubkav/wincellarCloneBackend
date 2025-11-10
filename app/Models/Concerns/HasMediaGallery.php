@@ -20,30 +20,33 @@ trait HasMediaGallery
     }
 
     /**
+     * Get cover image (image with minimum order value).
+     * 
      * @return \Illuminate\Database\Eloquent\Relations\MorphOne<\App\Models\Image>
      */
     public function coverImage(): MorphOne
     {
         return $this->morphOne(Image::class, 'model')
-            ->where('order', 0);
+            ->orderBy('order', 'asc');
     }
 
     public function getCoverImageUrlAttribute(): ?string
     {
+        // If images are already loaded, use first from collection (already ordered by 'order' asc)
+        if ($this->relationLoaded('images')) {
+            $firstImage = $this->getRelation('images')->first();
+            if ($firstImage instanceof Image) {
+                return $firstImage->url;
+            }
+        }
+
+        // Otherwise, load cover image (min order)
         $cover = $this->relationLoaded('coverImage')
             ? $this->getRelation('coverImage')
             : $this->coverImage;
 
         if ($cover instanceof Image) {
             return $cover->url;
-        }
-
-        // Fallback: try to get first image if no order=0 image exists
-        if ($this->relationLoaded('images')) {
-            $firstImage = $this->getRelation('images')->first();
-            if ($firstImage instanceof Image) {
-                return $firstImage->url;
-            }
         }
 
         return MediaConfig::placeholder($this->mediaPlaceholderKey());

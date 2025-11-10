@@ -40,7 +40,8 @@ class ProductFacetAggregator
         $builder = $this->newAggregateBuilder();
 
         return $builder
-            ->join('product_categories', 'product_categories.id', '=', 'products.product_category_id')
+            ->join('product_category_product', 'product_category_product.product_id', '=', 'products.id')
+            ->join('product_categories', 'product_categories.id', '=', 'product_category_product.product_category_id')
             ->where('product_categories.active', true)
             ->select([
                 'product_categories.id',
@@ -49,7 +50,7 @@ class ProductFacetAggregator
                 DB::raw('COUNT(DISTINCT products.id) as total'),
             ])
             ->groupBy('product_categories.id', 'product_categories.name', 'product_categories.slug')
-            ->orderByDesc('total')
+            ->orderByRaw('total desc')
             ->orderBy('product_categories.order')
             ->orderBy('product_categories.id')
             ->get()
@@ -133,14 +134,13 @@ class ProductFacetAggregator
     }
 
     /**
-     * @return array<int, array{id:int,name:string,slug:string,count:int,regions:array<int, array{id:int,name:string,slug:string,count:int}>}>
+     * @return array<int, array{id:int,name:string,slug:string,count:int}>
      */
     private function origins(): array
     {
         $builder = $this->newAggregateBuilder();
 
-        /** @var \Illuminate\Support\Collection<int, object{ id:int, name:string, slug:string, parent_id:int|null, total:int }> $rows */
-        $rows = $builder
+        return $builder
             ->join('product_term_assignments as pta', 'pta.product_id', '=', 'products.id')
             ->join('catalog_terms', 'catalog_terms.id', '=', 'pta.term_id')
             ->join('catalog_attribute_groups as cag', 'cag.id', '=', 'catalog_terms.group_id')
@@ -150,75 +150,26 @@ class ProductFacetAggregator
                 'catalog_terms.id',
                 'catalog_terms.name',
                 'catalog_terms.slug',
-                'catalog_terms.parent_id',
                 DB::raw('COUNT(DISTINCT products.id) as total'),
             ])
             ->groupBy(
                 'catalog_terms.id',
                 'catalog_terms.name',
-                'catalog_terms.slug',
-                'catalog_terms.parent_id'
+                'catalog_terms.slug'
             )
-            ->get();
-
-        $countries = [];
-        $regionsByCountry = [];
-
-        foreach ($rows as $row) {
-            $termData = [
-                'id' => (int) $row->id,
-                'name' => (string) $row->name,
-                'slug' => (string) $row->slug,
-                'count' => (int) $row->total,
-            ];
-
-            if ($row->parent_id === null) {
-                $countries[$row->id] = $termData + ['regions' => []];
-            } else {
-                $regionsByCountry[$row->parent_id][] = $termData;
-            }
-        }
-
-        if (!empty($regionsByCountry)) {
-            $countryIds = array_unique(array_keys($regionsByCountry));
-            $missingCountryIds = array_diff($countryIds, array_keys($countries));
-
-            if (!empty($missingCountryIds)) {
-                CatalogTerm::query()
-                    ->whereIn('id', $missingCountryIds)
-                    ->active()
-                    ->get(['id', 'name', 'slug'])
-                    ->each(function (CatalogTerm $country) use (&$countries): void {
-                        $countries[$country->id] = [
-                            'id' => $country->id,
-                            'name' => $country->name,
-                            'slug' => $country->slug,
-                            'count' => 0,
-                            'regions' => [],
-                        ];
-                    });
-            }
-
-            foreach ($regionsByCountry as $countryId => $regions) {
-                if (!isset($countries[$countryId])) {
-                    continue;
-                }
-
-                $countries[$countryId]['regions'] = collect($regions)
-                    ->sortByDesc('count')
-                    ->values()
-                    ->all();
-
-                $countries[$countryId]['count'] = max(
-                    $countries[$countryId]['count'],
-                    array_sum(array_column($countries[$countryId]['regions'], 'count'))
-                );
-            }
-        }
-
-        return collect($countries)
-            ->sortByDesc(fn (array $country) => $country['count'])
-            ->values()
+            ->orderByDesc('total')
+            ->orderBy('catalog_terms.position')
+            ->orderBy('catalog_terms.id')
+            ->limit(30)
+            ->get()
+            ->map(static function ($row) {
+                return [
+                    'id' => (int) $row->id,
+                    'name' => (string) $row->name,
+                    'slug' => (string) $row->slug,
+                    'count' => (int) $row->total,
+                ];
+            })
             ->all();
     }
 

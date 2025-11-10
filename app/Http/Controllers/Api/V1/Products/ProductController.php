@@ -17,7 +17,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProductController extends Controller
 {
-    public function index(ProductIndexRequest $request): JsonResponse
+    public function index(ProductIndexRequest $request)
     {
         try {
             $filters = $request->validated();
@@ -96,7 +96,7 @@ class ProductController extends Controller
                 'coverImage',
                 'images' => fn ($relation) => $relation->orderBy('order'),
                 'terms.group',
-                'productCategory',
+                'categories',
                 'type',
             ])
             ->active()

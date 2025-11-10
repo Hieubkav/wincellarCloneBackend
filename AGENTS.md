@@ -4,6 +4,87 @@
 
 ---
 
+## 🚨 CRITICAL RULES
+
+### ⚠️ Test/Debug Files - ALWAYS Follow
+
+**RULE: Test files belong in /tests, cleanup immediately**
+
+```bash
+# ❌ NEVER DO THIS - Files in root!
+check_something.php
+test_feature.php
+debug_issue.php
+fix_problem.php
+
+# ✅ CORRECT - Files in /tests directory
+tests/Feature/CheckSomethingTest.php
+tests/Unit/FeatureTest.php
+tests/Debug/DebugIssueTest.php
+
+# Or use temporary PHP scripts
+php -r "echo 'Quick test';"
+php artisan tinker --execute="..."
+```
+
+**Process:**
+1. 🔧 Create test file → ONLY in `/tests` directory
+2. ✅ Run test & verify
+3. 🗑️ **DELETE immediately after use**
+4. 📝 Document findings in `/docs` if needed
+
+**Auto-cleanup check:**
+```bash
+# After creating any test file, run this:
+Get-ChildItem -Filter "*test*.php","*check*.php","*debug*.php","*fix*.php" | 
+    Where-Object { $_.DirectoryName -notmatch "\\tests\\?" } | 
+    Remove-Item -Force
+```
+
+---
+
+### 📁 Documentation Organization - /docs Structure
+
+**RULE: Tổ chức docs theo chuyên đề, không để rải rác**
+
+```
+/docs
+├─ /setup/                      # Hướng dẫn thiết lập ban đầu
+│  ├─ README.md                 # Tổng quan docs
+│  ├─ TESTING_SETUP_GUIDE.md
+│  └─ spatie_backup.md
+│
+├─ /architecture/               # Thiết kế kiến trúc tổng thể
+│  ├─ FINAL_SUMMARY.md
+│  └─ mermaid.rb                # Database diagram
+│
+├─ /phases/                     # Lịch sử phát triển theo phase
+│  ├─ PHASE_1_IMPLEMENTATION_SUMMARY.md
+│  ├─ PHASE_2_IMPLEMENTATION_SUMMARY.md
+│  └─ PHASE_3_IMPLEMENTATION_SUMMARY.md
+│
+├─ /api/                        # API documentation (keep as is)
+├─ /database/                   # Database migrations (keep as is)
+├─ /features/                   # Feature documentation (keep as is)
+├─ /filament/                   # Filament admin (keep as is)
+│
+├─ /features-detailed/          # Chi tiết từng feature lớn
+│  ├─ IMAGE_MANAGEMENT.md
+│  └─ IMAGE_DELETE_PROTECTION.md
+│
+└─ /deprecated/                 # Tài liệu cũ
+   └─ DEPRECATED.md
+```
+
+**Quy tắc:**
+- Mỗi **PHASE** hoặc tính năng **MỚI** → `/docs/[chuyên-đề]/*.md`
+- **Setup guide** → `/docs/setup/`
+- **Architecture overview** → `/docs/architecture/`
+- **API/DB/Feature chi tiết** → trong thư mục chuyên đề tương ứng
+- **Tài liệu cũ** → `/docs/deprecated/` hoặc xóa nếu không cần
+
+---
+
 ## 🎯 BẮT ĐẦU TẠI ĐÂY
 
 Đọc file global context:

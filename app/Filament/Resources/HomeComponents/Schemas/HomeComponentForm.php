@@ -391,14 +391,16 @@ class HomeComponentForm
                 ->schema([
                     Select::make('article_id')
                         ->label('Bài viết')
-                        ->options(fn () => Article::pluck('title', 'id'))
+                        ->options(fn () => self::getArticleOptionsWithPreview())
+                        ->allowHtml()
                         ->searchable()
                         ->required()
                         ->preload(),
                 ])
                 ->simple(Select::make('article_id')
                     ->label('Bài viết')
-                    ->options(fn () => Article::pluck('title', 'id'))
+                    ->options(fn () => self::getArticleOptionsWithPreview())
+                    ->allowHtml()
                     ->searchable()
                     ->required()
                     ->preload()
@@ -407,6 +409,34 @@ class HomeComponentForm
                 ->defaultItems(1)
                 ->addActionLabel('Thêm bài viết'),
         ];
+    }
+
+    protected static function getArticleOptionsWithPreview(): array
+    {
+        $articles = Article::query()
+            ->with('coverImage')
+            ->where('active', true)
+            ->orderBy('created_at', 'desc')
+            ->limit(200)
+            ->get();
+
+        return $articles->mapWithKeys(function ($article) {
+            $imageUrl = $article->cover_image_url ?? '/images/placeholder.png';
+            
+            $html = '<div style="display: flex; align-items: center; gap: 10px;">';
+            $html .= '<img src="' . e($imageUrl) . '" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb;" />';
+            $html .= '<div style="display: flex; flex-direction: column; gap: 2px;">';
+            $html .= '<span style="font-weight: 500; color: #111827;">' . e($article->title) . '</span>';
+            
+            if ($article->published_at) {
+                $html .= '<span style="font-size: 0.75rem; color: #6b7280;">' . $article->published_at->format('d/m/Y') . '</span>';
+            }
+            
+            $html .= '</div>';
+            $html .= '</div>';
+            
+            return [$article->id => $html];
+        })->toArray();
     }
 
     protected static function footerFields(): array

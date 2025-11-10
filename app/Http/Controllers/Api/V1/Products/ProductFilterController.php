@@ -29,14 +29,13 @@ class ProductFilterController extends Controller
         $brands = $this->fetchTermsByGroup('brand');
         $grapes = $this->fetchTermsByGroup('grape');
 
+        // Get all origin terms (countries are now flat, no parent_id)
         $countries = CatalogTerm::query()
-            ->with(['children' => fn ($query) => $query->active()->orderBy('position')->orderBy('id')])
             ->active()
-            ->whereNull('parent_id')
             ->whereHas('group', fn ($query) => $query->where('code', 'origin'))
             ->orderBy('position')
             ->orderBy('id')
-            ->get(['id', 'name', 'slug', 'parent_id', 'position']);
+            ->get(['id', 'name', 'slug', 'position']);
 
         $priceMin = Product::query()->active()->min('price') ?? 0;
         $priceMax = Product::query()->active()->max('price') ?? 0;
@@ -58,20 +57,11 @@ class ProductFilterController extends Controller
                 ])->values(),
                 'brands' => $brands,
                 'grapes' => $grapes,
-                'countries' => $countries->map(function (CatalogTerm $country) {
-                    return [
-                        'id' => $country->id,
-                        'name' => $country->name,
-                        'slug' => $country->slug,
-                        'regions' => $country->children
-                            ->map(fn (CatalogTerm $region) => [
-                                'id' => $region->id,
-                                'name' => $region->name,
-                                'slug' => $region->slug,
-                            ])
-                            ->values(),
-                    ];
-                })->values(),
+                'countries' => $countries->map(fn (CatalogTerm $country) => [
+                    'id' => $country->id,
+                    'name' => $country->name,
+                    'slug' => $country->slug,
+                ])->values(),
                 'price' => [
                     'min' => (int) $priceMin,
                     'max' => (int) $priceMax,

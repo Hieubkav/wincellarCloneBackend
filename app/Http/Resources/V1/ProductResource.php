@@ -72,12 +72,14 @@ class ProductResource extends JsonResource
             'volume_ml' => $this->volume_ml,
             'badges' => $this->badges ?? [],
             
-            // Category and Type
-            'category' => $this->when($this->relationLoaded('productCategory') && $this->productCategory, [
-                'id' => $this->productCategory->id,
-                'name' => $this->productCategory->name,
-                'slug' => $this->productCategory->slug,
-            ]),
+            // Categories (now many-to-many)
+            'categories' => $this->when($this->relationLoaded('categories'), function () {
+                return $this->categories->map(fn ($category) => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                ])->values();
+            }),
             
             'type' => $this->when($this->relationLoaded('type') && $this->type, [
                 'id' => $this->type->id,
@@ -106,8 +108,8 @@ class ProductResource extends JsonResource
                     'href' => route('api.v1.products.index'),
                     'method' => 'GET',
                 ],
-                'category' => $this->when($this->productCategory, [
-                    'href' => route('api.v1.products.index', ['category' => [$this->productCategory->id]]),
+                'category' => $this->when($this->relationLoaded('categories') && $this->categories->isNotEmpty(), [
+                    'href' => route('api.v1.products.index', ['category' => $this->categories->pluck('id')->toArray()]),
                     'method' => 'GET',
                 ]),
                 'type' => $this->when($this->type, [
@@ -123,7 +125,9 @@ class ProductResource extends JsonResource
                 }),
                 'related' => $this->when($request->routeIs('api.v1.products.show'), [
                     'href' => route('api.v1.products.index', [
-                        'category' => $this->productCategory ? [$this->productCategory->id] : null,
+                        'category' => $this->relationLoaded('categories') && $this->categories->isNotEmpty() 
+                            ? $this->categories->pluck('id')->toArray() 
+                            : null,
                         'per_page' => 6,
                     ]),
                     'method' => 'GET',
@@ -139,10 +143,11 @@ class ProductResource extends JsonResource
     {
         $breadcrumbs = [];
 
-        if ($this->productCategory) {
+        if ($this->relationLoaded('categories') && $this->categories->isNotEmpty()) {
+            $firstCategory = $this->categories->first();
             $breadcrumbs[] = [
-                'label' => $this->productCategory->name,
-                'href' => route('api.v1.products.index', ['category' => [$this->productCategory->id]]),
+                'label' => $firstCategory->name,
+                'href' => route('api.v1.products.index', ['category' => [$firstCategory->id]]),
             ];
         }
 

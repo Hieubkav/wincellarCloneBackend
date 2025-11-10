@@ -20,7 +20,7 @@ class ErrorResponse
             'message' => $message,
             'timestamp' => now()->toIso8601String(),
             'path' => request()->path(),
-            'correlation_id' => request()->header('X-Correlation-ID') ?? request()->id(),
+            'correlation_id' => request()->header('X-Correlation-ID') ?? \Illuminate\Support\Str::uuid()->toString(),
             'details' => $details,
         ], $statusCode);
     }

@@ -226,7 +226,7 @@ php artisan tinker
 
 **Nếu phát hiện best practice mới hoặc gặp lỗi**:
 1. Research giải pháp đúng
-2. **CẬP NHẬT** file `docs/spatie_backup.md` này
+2. **CẬP NHẬT** file `docs/setup/spatie_backup.md` này
 3. Thêm vào section "Troubleshooting" hoặc tạo section mới
 4. Commit: `docs(backup): add rule về [vấn đề]`
 

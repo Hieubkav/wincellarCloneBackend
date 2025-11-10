@@ -95,7 +95,7 @@ class ProductSearchController extends Controller
             $request->input('q'),
             [
                 'coverImage',
-                'productCategory',
+                'categories',
                 'type',
                 'terms.group',
             ]

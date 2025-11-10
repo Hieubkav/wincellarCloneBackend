@@ -103,7 +103,7 @@ class Product extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('active', true);
+        return $query->where('products.active', true);
     }
 
     public function scopeWhereHasTerm(Builder $query, string $groupCode, $termIds): Builder
