@@ -20,7 +20,7 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 
 <skill>
 <name>create-skill</name>
-<description>Framework for creating new Claude skills with proper structure, YAML frontmatter, and progressive disclosure. USE WHEN user says 'tạo skill mới', 'create new skill', 'add skill for', or wants to extend capabilities systematically.</description>
+<description>Guide for creating effective skills with automation tools (init_skill.py, package_skill.py, quick_validate.py) and bundled resources (scripts/, references/, assets/). Includes distribution via .zip files and progressive disclosure principles. USE WHEN user says 'tạo skill mới', 'create new skill', 'add skill for', 'package skill', 'validate skill', or wants to extend capabilities with specialized workflows, tool integrations, or bundled resources.</description>
 <location>user</location>
 </skill>
 

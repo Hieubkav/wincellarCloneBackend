@@ -29,6 +29,8 @@ Skills **automatically activate** when you use natural language:
 "Thêm gallery vào Article"           → image-management
 "Chạy migration"                      → database-backup
 "Tạo skill mới"                       → create-skill
+"Package skill"                       → create-skill
+"Validate skill"                      → create-skill
 "Phải Ctrl+F5 mới thấy data mới"    → api-cache-invalidation
 "Tìm tài liệu cho Next.js"           → docs-seeker
 "Bug này không fix được"              → systematic-debugging
@@ -74,7 +76,7 @@ Skills **automatically activate** when you use natural language:
 - **ui-styling** - shadcn/ui + Tailwind CSS component library and styling system
 
 **Meta:**
-- **create-skill** - Create new skills
+- **create-skill** - Create new skills with automation (init, validate, package)
 
 **Details:** `read .claude/skills/[skill-name]/SKILL.md`
 

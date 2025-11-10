@@ -1,346 +1,237 @@
 ---
-name: create-skill
-description: Framework for creating new Claude skills with proper YAML frontmatter, progressive disclosure (SKILL.md + CLAUDE.md), and integration with global context. USE WHEN user says 'tạo skill mới', 'create new skill', 'add skill for', 'extend capabilities', or wants to create systematic documentation for AI agents.
+name: skill-creator
+description: Guide for creating effective skills. This skill should be used when users want to create a new skill (or update an existing skill) that extends Claude's capabilities with specialized knowledge, workflows, or tool integrations.
+license: Complete terms in LICENSE.txt
 ---
 
-# Create Skill - Skill Creation Framework
+# Skill Creator
 
-## When to Activate This Skill
+This skill provides guidance for creating effective skills.
 
-- User says "tạo skill mới"
-- User says "create new skill for X"
-- User wants to "add skill" for a capability
-- User wants to "extend" AI capabilities systematically
-- User needs to document workflows for future AI use
-- User mentions "skill" in context of creating documentation
+## About Skills
 
-## Core Skill Creation Workflow
+Skills are modular, self-contained packages that extend Claude's capabilities by providing
+specialized knowledge, workflows, and tools. Think of them as "onboarding guides" for specific
+domains or tasks—they transform Claude from a general-purpose agent into a specialized agent
+equipped with procedural knowledge that no model can fully possess.
 
-### Bước 1: Hiểu Rõ Mục Đích
+### What Skills Provide
 
-Hỏi user các câu hỏi sau:
-- **Skill này làm gì?** (Mục đích cụ thể)
-- **Khi nào activate?** (Trigger conditions, user phrases)
-- **Dùng tools/commands nào?** (Dependencies)
-- **Simple hay Complex?** (Quyết định cấu trúc)
+1. Specialized workflows - Multi-step procedures for specific domains
+2. Tool integrations - Instructions for working with specific file formats or APIs
+3. Domain expertise - Company-specific knowledge, schemas, business logic
+4. Bundled resources - Scripts, references, and assets for complex and repetitive tasks
 
-### Bước 2: Chọn Loại Skill
+### Anatomy of a Skill
 
-**Simple Skill** (chỉ SKILL.md):
-- Single focused capability
-- < 100 lines instructions
-- No sub-components needed
-- Minimal context required
+Every skill consists of a required SKILL.md file and optional bundled resources:
 
-**Complex Skill** (SKILL.md + CLAUDE.md + subdirs):
-- Multi-step workflows
-- Extensive methodology
-- Multiple components
-- Deep context documentation
+```
+skill-name/
+├── SKILL.md (required)
+│   ├── YAML frontmatter metadata (required)
+│   │   ├── name: (required)
+│   │   └── description: (required)
+│   └── Markdown instructions (required)
+└── Bundled Resources (optional)
+    ├── scripts/          - Executable code (Python/Bash/etc.)
+    ├── references/       - Documentation intended to be loaded into context as needed
+    └── assets/           - Files used in output (templates, icons, fonts, etc.)
+```
 
-### Bước 3: Tạo Cấu Trúc Thư Mục
+#### Requirements (important)
+
+- Skill should be combined into specific topics, for example: `cloudflare`, `cloudflare-r2`, `cloudflare-workers`, `docker`, `gcloud` should be combined into `devops`
+- `SKILL.md` should be **less than 200 lines** and include the references of related markdown files and scripts.
+- Each script or referenced markdown file should be also **less than 200 lines**, remember that you can always split them into multiple files (**progressive disclosure** principle).
+- Descriptions in metadata of `SKILL.md` files should be both concise and still contains enough usecases of the references and scripts, this will help skills can be activated automatically during the implementation process of Claude Code.
+- **Referenced markdowns**:
+  - Sacrifice grammar for the sake of concision when writing these files.
+  - Can reference other markdown files or scripts as well.
+- **Referenced scripts**:
+  - Prefer nodejs or python scripts instead of bash script, because bash scripts are not well-supported on Windows.
+  - If you're going to write python scripts, make sure you have `requirements.txt`
+  - Make sure scripts respect `.env` file follow this order: `process.env` > `.claude/skills/${SKILL}/.env` > `.claude/skills/.env` > `.claude/.env` 
+  - Create `.env.example` file to show the required environment variables.
+  - Always write tests for these scripts.
+
+**Why?**
+Better **context engineering**: inspired from **progressive disclosure** technique of Agent Skills, when agent skills are activated, Claude Code will consider to load only relevant files into the context, instead of reading all long `SKILL.md` as before.
+
+#### SKILL.md (required)
+
+**File name:** `SKILL.md` (uppercase)
+**File size:** Under 200 lines, if you need more, plit it to multiple files in `references` folder.
+
+**Metadata Quality:** The `name` and `description` in YAML frontmatter determine when Claude will use the skill. Be specific about what the skill does and when to use it. Use the third-person (e.g. "This skill should be used when..." instead of "Use this skill when...").
+
+#### Bundled Resources (optional)
+
+##### Scripts (`scripts/`)
+
+Executable code (Python/Bash/etc.) for tasks that require deterministic reliability or are repeatedly rewritten.
+
+- **When to include**: When the same code is being rewritten repeatedly or deterministic reliability is needed
+- **Example**: `scripts/rotate_pdf.py` for PDF rotation tasks
+- **Benefits**: Token efficient, deterministic, may be executed without loading into context
+- **Note**: Scripts may still need to be read by Claude for patching or environment-specific adjustments
+
+##### References (`references/`)
+
+Documentation and reference material intended to be loaded as needed into context to inform Claude's process and thinking.
+
+- **When to include**: For documentation that Claude should reference while working
+- **Examples**: `references/finance.md` for financial schemas, `references/mnda.md` for company NDA template, `references/policies.md` for company policies, `references/api_docs.md` for API specifications
+- **Use cases**: Database schemas, API documentation, domain knowledge, company policies, detailed workflow guides
+- **Benefits**: Keeps SKILL.md lean, loaded only when Claude determines it's needed
+- **Best practice**: If files are large (>10k words), include grep search patterns in SKILL.md
+- **Avoid duplication**: Information should live in either SKILL.md or references files, not both. Prefer references files for detailed information unless it's truly core to the skill—this keeps SKILL.md lean while making information discoverable without hogging the context window. Keep only essential procedural instructions and workflow guidance in SKILL.md; move detailed reference material, schemas, and examples to references files.
+
+##### Assets (`assets/`)
+
+Files not intended to be loaded into context, but rather used within the output Claude produces.
+
+- **When to include**: When the skill needs files that will be used in the final output
+- **Examples**: `assets/logo.png` for brand assets, `assets/slides.pptx` for PowerPoint templates, `assets/frontend-template/` for HTML/React boilerplate, `assets/font.ttf` for typography
+- **Use cases**: Templates, images, icons, boilerplate code, fonts, sample documents that get copied or modified
+- **Benefits**: Separates output resources from documentation, enables Claude to use files without loading them into context
+
+### Progressive Disclosure Design Principle
+
+Skills use a three-level loading system to manage context efficiently:
+
+1. **Metadata (name + description)** - Always in context (~100 words)
+2. **SKILL.md body** - When skill triggers (<5k words)
+3. **Bundled resources** - As needed by Claude (Unlimited*)
+
+*Unlimited because scripts can be executed without reading into context window.
+
+## Skill Creation Process
+
+To create a skill, follow the "Skill Creation Process" in order, skipping steps only if there is a clear reason why they are not applicable.
+
+### Step 1: Understanding the Skill with Concrete Examples
+
+Skip this step only when the skill's usage patterns are already clearly understood. It remains valuable even when working with an existing skill.
+
+To create an effective skill, clearly understand concrete examples of how the skill will be used. This understanding can come from either direct user examples or generated examples that are validated with user feedback.
+
+For example, when building an image-editor skill, relevant questions include:
+
+- "What functionality should the image-editor skill support? Editing, rotating, anything else?"
+- "Can you give some examples of how this skill would be used?"
+- "I can imagine users asking for things like 'Remove the red-eye from this image' or 'Rotate this image'. Are there other ways you imagine this skill being used?"
+- "What would a user say that should trigger this skill?"
+
+To avoid overwhelming users, avoid asking too many questions in a single message. Start with the most important questions and follow up as needed for better effectiveness.
+
+Conclude this step when there is a clear sense of the functionality the skill should support.
+
+### Step 2: Planning the Reusable Skill Contents
+
+To turn concrete examples into an effective skill, analyze each example by:
+
+1. Considering how to execute on the example from scratch
+2. Identifying what scripts, references, and assets would be helpful when executing these workflows repeatedly
+
+Example: When building a `pdf-editor` skill to handle queries like "Help me rotate this PDF," the analysis shows:
+
+1. Rotating a PDF requires re-writing the same code each time
+2. A `scripts/rotate_pdf.py` script would be helpful to store in the skill
+
+Example: When designing a `frontend-webapp-builder` skill for queries like "Build me a todo app" or "Build me a dashboard to track my steps," the analysis shows:
+
+1. Writing a frontend webapp requires the same boilerplate HTML/React each time
+2. An `assets/hello-world/` template containing the boilerplate HTML/React project files would be helpful to store in the skill
+
+Example: When building a `big-query` skill to handle queries like "How many users have logged in today?" the analysis shows:
+
+1. Querying BigQuery requires re-discovering the table schemas and relationships each time
+2. A `references/schema.md` file documenting the table schemas would be helpful to store in the skill
+
+To establish the skill's contents, analyze each concrete example to create a list of the reusable resources to include: scripts, references, and assets.
+
+### Step 3: Initializing the Skill
+
+At this point, it is time to actually create the skill.
+
+Skip this step only if the skill being developed already exists, and iteration or packaging is needed. In this case, continue to the next step.
+
+When creating a new skill from scratch, always run the `init_skill.py` script. The script conveniently generates a new template skill directory that automatically includes everything a skill requires, making the skill creation process much more efficient and reliable.
+
+Usage:
 
 ```bash
-# Simple skill
-.claude/skills/[skill-name]/
-└── SKILL.md
-
-# Complex skill
-.claude/skills/[skill-name]/
-├── SKILL.md           # Quick reference (50-200 lines)
-├── CLAUDE.md          # Comprehensive guide (500+ lines)
-└── [subdirectories]/  # Components, templates, patterns
+scripts/init_skill.py <skill-name> --path <output-directory>
 ```
 
-### Bước 4: Viết SKILL.md (Bắt Buộc)
+The script:
 
-**CRITICAL**: Use absolute paths for cross-references, use relative paths only for files within same skill directory.
+- Creates the skill directory at the specified path
+- Generates a SKILL.md template with proper frontmatter and TODO placeholders
+- Creates example resource directories: `scripts/`, `references/`, and `assets/`
+- Adds example files in each directory that can be customized or deleted
 
-Template chuẩn:
+After initialization, customize or remove the generated SKILL.md and example files as needed.
 
-```markdown
----
-name: skill-name
-description: Clear description với activation triggers. USE WHEN user says 'trigger 1', 'trigger 2', or requests this capability.
----
+### Step 4: Edit the Skill
 
-# Skill Name
+When editing the (newly-generated or existing) skill, remember that the skill is being created for another instance of Claude to use. Focus on including information that would be beneficial and non-obvious to Claude. Consider what procedural knowledge, domain-specific details, or reusable assets would help another Claude instance execute these tasks more effectively.
 
-## When to Activate This Skill
-- User says "trigger phrase 1"
-- User requests X
-- Task involves Y
+#### Start with Reusable Skill Contents
 
-## Core Workflow
+To begin implementation, start with the reusable resources identified above: `scripts/`, `references/`, and `assets/` files. Note that this step may require user input. For example, when implementing a `brand-guidelines` skill, the user may need to provide brand assets or templates to store in `assets/`, or documentation to store in `references/`.
 
-### Phase 1: Setup
-[Imperative instructions: "Create", "Execute", "Run"]
+Also, delete any example files and directories not needed for the skill. The initialization script creates example files in `scripts/`, `references/`, and `assets/` to demonstrate structure, but most skills won't need all of them.
 
-### Phase 2: Execution
-[More steps...]
+#### Update SKILL.md
 
-## Available Tools / Commands
-- Tool 1: Purpose
-- Tool 2: Purpose
+**Writing Style:** Write the entire skill using **imperative/infinitive form** (verb-first instructions), not second person. Use objective, instructional language (e.g., "To accomplish X, do Y" rather than "You should do X" or "If you need to do X"). This maintains consistency and clarity for AI consumption.
 
-## Examples
+To complete SKILL.md, answer the following questions:
 
-\`\`\`bash
-# Example 1
-command input --flag
+1. What is the purpose of the skill, in a few sentences?
+2. When should the skill be used?
+3. In practice, how should Claude use the skill? All reusable skill contents developed above should be referenced so that Claude knows how to use them.
 
-# Example 2
-command -a | process
-\`\`\`
+### Step 5: Packaging a Skill
 
-## Key Principles
-1. Principle 1
-2. Principle 2
+Once the skill is ready, it should be packaged into a distributable zip file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
 
-## Supplementary Resources
-For full guide: `read .claude/skills/[name]/CLAUDE.md`
-For components: `read .claude/skills/[name]/[component]/`
-
-**NOTE**: Always use backtick commands (\`read ...\`) instead of markdown links for skill-to-skill references to avoid broken links.
+```bash
+scripts/package_skill.py <path/to/skill-folder>
 ```
 
-### Bước 5: Viết CLAUDE.md (Nếu Complex)
+Optional output directory specification:
 
-Bao gồm:
-- Comprehensive methodology
-- Detailed workflows với examples
-- Component documentation
-- Advanced usage patterns
-- Integration instructions
-- Troubleshooting guides
-- Best practices
-
-### Bước 6: Validate All Links
-
-**CRITICAL**: Before integration, verify all file references work:
-
-1. **Check internal links**: Markdown links `[text](./path)` must point to existing files
-2. **Update after rename**: If you rename files (e.g., WORKFLOWS.md → CLAUDE.md), update ALL references
-3. **Verify command references**: Backtick commands `read .claude/skills/...` must use correct paths
-4. **Test relative paths**: Ensure `./references/file.md` exists in skill directory
-
-**Common scenarios:**
-- Copying skill from external source → May contain links to old file names
-- Renaming WORKFLOWS.md to CLAUDE.md → Must update SKILL.md references
-- Subdirectory references → Verify all `./subdir/file.md` links work
-
-### Bước 7: Thêm vào Global Context
-
-**File 1: `.claude/global/SYSTEM.md`**
-
-Cập nhật trong phần `<available_skills>`:
-
-```xml
-<skill>
-<name>your-new-skill</name>
-<description>Your description here with USE WHEN triggers</description>
-<location>user</location>
-</skill>
+```bash
+scripts/package_skill.py <path/to/skill-folder> ./dist
 ```
 
-**File 2: `AGENTS.md`**
+The packaging script will:
 
-Cập nhật 2 sections:
+1. **Validate** the skill automatically, checking:
+   - YAML frontmatter format and required fields
+   - Skill naming conventions and directory structure
+   - Description completeness and quality
+   - File organization and resource references
 
-**Section 1: Skills Available**
-```markdown
-## 📚 Skills Available
+2. **Package** the skill if validation passes, creating a zip file named after the skill (e.g., `my-skill.zip`) that includes all files and maintains the proper directory structure for distribution.
 
-1. **existing-skill** - Description
-...
-8. **your-new-skill** - Short description
+If validation fails, the script will report the errors and exit without creating a package. Fix any validation errors and run the packaging command again.
 
-**Chi tiết:** `.claude/skills/[skill-name]/SKILL.md`
-```
+### Step 6: Iterate
 
-**Section 2: Natural Language Examples**
-```markdown
-"Natural trigger phrase"              → your-new-skill
-```
+After testing the skill, users may request improvements. Often this happens right after using the skill, with fresh context of how the skill performed.
 
-### Bước 8: Test Skill
+**Iteration workflow:**
+1. Use the skill on real tasks
+2. Notice struggles or inefficiencies
+3. Identify how SKILL.md or bundled resources should be updated
+4. Implement changes and test again
 
-1. Dùng natural language trigger phrases
-2. Verify skill loads correctly
-3. Check tất cả file references hoạt động
-4. Validate workflow với examples
-
-## Skill Naming Conventions
-
-- **Format**: `lowercase-with-hyphens`
-- **Descriptive**: `filament-resource-generator` not `generator`
-- **Action/domain focused**: Clear purpose from name
-
-**Good examples:**
-- `filament-rules`
-- `image-management`
-- `database-backup`
-- `create-skill`
-
-**Bad examples:**
-- `helper` (too generic)
-- `FilamentRules` (capitals)
-- `filament_rules` (underscores)
-
-## Description Best Practices
-
-**CRITICAL**: Description drives skill discovery!
-
-**Must include:**
-- ✅ What it does (clear purpose)
-- ✅ Key methods/tools mentioned
-- ✅ **USE WHEN** triggers (explicit phrases)
-- ✅ Unique characteristics
-
-**Good example:**
-```yaml
-description: Filament 4.x coding standards for Laravel 12 with custom Schema namespace, Vietnamese UI, Observer patterns. USE WHEN creating resources, fixing namespace errors, implementing forms, or any Filament development task.
-```
-
-**Bad example:**
-```yaml
-description: A skill for development
-```
-
-## Instruction Writing Standards
-
-**Use imperative form** (verb-first):
-- ✅ "Create directory structure"
-- ✅ "Execute backup command"
-- ❌ "You should create a directory"
-- ❌ "We will execute"
-
-**Be specific and actionable:**
-- ✅ "Run `php artisan backup:run --only-db`"
-- ✅ "Execute `read .claude/skills/filament-rules/CLAUDE.md`"
-- ❌ "Do a backup"
-- ❌ "Read the docs"
-
-**Reference, don't duplicate:**
-- ✅ "Use project structure from global context"
-- ✅ "Follow Vietnamese-first principle"
-- ❌ [Copying entire global context into skill]
-
-## Progressive Disclosure Pattern
-
-**3-Layer Loading:**
-
-```
-Layer 1: YAML frontmatter (always loaded)
-    ↓
-Layer 2: SKILL.md body (when skill activated)
-    ↓
-Layer 3: CLAUDE.md + subdirs (on demand)
-```
-
-**Benefits:**
-- Saves tokens (only load what's needed)
-- Fast discovery (metadata always available)
-- Deep context when required
-
-## Templates Available
-
-### Template 1: Simple Skill
-Quick reference only, single file.
-
-### Template 2: Complex Skill
-SKILL.md (quick ref) + CLAUDE.md (comprehensive).
-
-### Template 3: Skill with Patterns
-Includes subdirectories for reusable components.
-
-## Common Mistakes to Avoid
-
-❌ **Vague descriptions**: "A skill for X"
-✅ **Specific**: "X capability using Y tools. USE WHEN user says Z"
-
-❌ **Missing triggers**: No "USE WHEN" phrases
-✅ **Clear triggers**: List all activation phrases
-
-❌ **Imperative violations**: "You should do X"
-✅ **Imperative form**: "Do X"
-
-❌ **Duplicating context**: Copying global rules
-✅ **Referencing**: "Follow global principles"
-
-❌ **No examples**: Only abstract instructions
-✅ **Concrete examples**: Bash commands, code snippets
-
-❌ **Broken references**: Files that don't exist, outdated links after renaming
-✅ **Verified paths**: Test all file references, update links when renaming files (e.g., WORKFLOWS.md → CLAUDE.md requires updating all references in SKILL.md)
-
-## Integration Checklist
-
-Before declaring skill complete:
-
-- [ ] **Purpose** - Crystal clear what skill does
-- [ ] **Structure** - Simple/complex pattern chosen correctly
-- [ ] **Description** - Includes USE WHEN triggers
-- [ ] **Instructions** - Imperative form, actionable
-- [ ] **Examples** - Concrete usage scenarios
-- [ ] **References** - All paths work, no broken links after file renames
-- [ ] **Integration SYSTEM.md** - Added to `<available_skills>`
-- [ ] **Integration AGENTS.md** - Added to Skills Available list + trigger examples
-- [ ] **Testing** - Validated with trigger phrases
-- [ ] **Documentation** - CLAUDE.md if complex
-- [ ] **Quality** - Reviewed against standards
-
-## Key Principles
-
-1. **Progressive disclosure**: Quick ref → Deep dive as needed
-2. **Clear activation**: USE WHEN phrases in description
-3. **Imperative instructions**: Verb-first, actionable
-4. **No duplication**: Reference global context
-5. **Self-contained**: Work independently with clear deps
-6. **Template-driven**: Use consistent structure
-7. **Test thoroughly**: Natural language validation
-8. **Iterate constantly**: Skills are living documents
-
-## Supplementary Resources
-
-For comprehensive guide: `read .claude/skills/create-skill/CLAUDE.md`
-
-For real examples:
-- Simple: `read .claude/skills/filament-resource-generator/SKILL.md`
-- Complex: `read .claude/skills/filament-rules/SKILL.md`
-- With patterns: `read .claude/skills/image-management/`
-
-## Quick Start Examples
-
-### Example 1: Create Simple Skill
-```
-User: "Tạo skill cho PDF extraction"
-→ Ask purpose, tools, triggers
-→ Create .claude/skills/pdf-extraction/
-→ Write SKILL.md with examples
-→ Add to SYSTEM.md <available_skills>
-→ Add to AGENTS.md (Skills Available + trigger)
-→ Test with "extract PDF text"
-```
-
-### Example 2: Create Complex Skill
-```
-User: "Tạo skill cho API testing workflow"
-→ Determine multi-phase workflow
-→ Create directory with SKILL.md + CLAUDE.md
-→ Add subdirs for test-templates/
-→ Write comprehensive methodology
-→ Add to SYSTEM.md <available_skills>
-→ Add to AGENTS.md (Skills Available + trigger)
-→ Test with realistic scenarios
-```
-
-## Critical Success Factors
-
-**Description quality** = Skill discovery success
-**Clear triggers** = Auto-activation reliability
-**Imperative form** = Instruction clarity
-**Progressive disclosure** = Token efficiency
-**Testing** = Production readiness
-
-Nếu thiếu bất kỳ yếu tố nào → Skill sẽ không hoạt động tốt!
+## References
+- [Agent Skills](https://docs.claude.com/en/docs/claude-code/skills.md)
+- [Agent Skills Spec](.claude/skills/agent_skills_spec.md)
+- [Agent Skills Overview](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview.md)
+- [Best Practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices.md)
