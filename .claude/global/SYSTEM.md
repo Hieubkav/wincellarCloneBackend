@@ -102,6 +102,12 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user</location>
 </skill>
 
+<skill>
+<name>product-search-scoring</name>
+<description>Advanced product search system with keyword scoring, Vietnamese text normalization, multi-field matching, and search result ranking. Multi-layer system: text normalization (Vietnamese accents), keyword processing (stop word filtering), query building with filters, and caching strategy. USE WHEN implementing search functionality, adding keyword scoring to products, optimizing search algorithm, improving search relevance, handling Vietnamese text with accents, or building e-commerce search features.</description>
+<location>user</location>
+</skill>
+
 </available_skills>
 
 ---

@@ -38,6 +38,9 @@ Skills **automatically activate** when you use natural language:
 "Thiết kế giao diện"                  → ux-designer
 "Thêm shadcn component"               → ui-styling
 "Tạo design system"                   → ui-styling
+"Tìm kiếm sản phẩm"                   → product-search-scoring
+"Thêm tính năng search"               → product-search-scoring
+"Optimize search algorithm"           → product-search-scoring
 ```
 
 **You don't need to explicitly call skills** - just describe what you want!
@@ -53,6 +56,7 @@ Skills **automatically activate** when you use natural language:
 - **image-management** - Polymorphic image system
 - **database-backup** - Safe migration workflow
 - **systematic-debugging** - 4-phase debugging framework (root cause investigation)
+- **product-search-scoring** - Advanced product search with keyword scoring & Vietnamese text normalization
 
 **Infrastructure:**
 - **api-design-principles** - REST/GraphQL best practices
