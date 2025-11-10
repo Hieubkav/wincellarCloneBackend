@@ -66,6 +66,12 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user</location>
 </skill>
 
+<skill>
+<name>docs-seeker</name>
+<description>Searching internet for technical documentation using llms.txt standard, GitHub repositories via Repomix, and parallel exploration. USE WHEN user needs latest documentation for libraries/frameworks, documentation in llms.txt format, GitHub repository analysis, or comprehensive documentation discovery across multiple sources.</description>
+<location>user</location>
+</skill>
+
 </available_skills>
 
 ---
@@ -93,6 +99,62 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 - Tất cả labels, messages phải tiếng Việt
 - Date format: `d/m/Y H:i` (31/12/2024 14:30)
 - Exception: Code, comments, commit messages (English OK)
+
+---
+
+## 🚨 Critical Coding Standards
+
+### Test/Debug Files Policy
+
+**RULE: Test files belong in /tests, cleanup immediately**
+
+**Correct placement:**
+```bash
+# ✅ ALWAYS put in /tests directory
+tests/Feature/CheckSomethingTest.php
+tests/Unit/FeatureTest.php
+tests/Debug/DebugIssueTest.php
+
+# ❌ NEVER in project root
+check_something.php  # Wrong!
+test_feature.php     # Wrong!
+```
+
+**Process:**
+1. Create test file → ONLY in `/tests` directory
+2. Run test & verify
+3. **DELETE immediately after use**
+4. Document findings in `/docs` if needed
+
+**Quick cleanup:**
+```powershell
+# Remove any test files accidentally created in root
+Get-ChildItem -Filter "*test*.php","*check*.php","*debug*.php","*fix*.php" | 
+    Where-Object { $_.DirectoryName -notmatch "\\tests\\?" } | 
+    Remove-Item -Force
+```
+
+### Documentation Organization
+
+**RULE: Tổ chức docs theo chuyên đề, không để rải rác**
+
+```
+/docs
+├── /setup/              # Initial setup guides
+├── /architecture/       # System design & database schema
+├── /phases/             # Development history
+├── /api/                # API documentation
+├── /database/           # Database docs
+├── /features/           # Feature documentation
+├── /features-detailed/  # Deep-dive feature docs
+└── /deprecated/         # Outdated documentation
+```
+
+**Principles:**
+- New features → `/docs/[topic]/*.md`
+- Setup guides → `/docs/setup/`
+- Architecture → `/docs/architecture/`
+- Outdated docs → `/docs/deprecated/` or delete
 
 ---
 

@@ -1,50 +1,51 @@
 ---
 name: image-management
-description: Centralized polymorphic image management system with CheckboxList picker (NO custom Alpine.js), WebP auto-conversion, order management (order=0 for cover), soft deletes with reference cleanup. USE WHEN adding images/gallery to models, implementing image upload, working with ImagesRelationManager, fixing image errors, or any image-related tasks in Laravel.
+description: Centralized polymorphic image management with CheckboxList picker, WebP auto-conversion, order management (order=0 for cover), soft deletes. USE WHEN adding images/gallery to models, implementing image upload, working with ImagesRelationManager, or fixing image errors.
 ---
 
 # Image Management - Quick Reference
 
-## When to Activate This Skill
+Centralized polymorphic image system for all entities with automatic WebP conversion and order management.
 
-- Adding image gallery to Product/Article/Model
+## When to Use
+
+- Adding image gallery to models
 - Implementing single featured image
-- Setting up logo/favicon in Settings
+- Setting up logo/favicon
 - Fixing image upload issues
-- Troubleshooting "Unique constraint violation" on order
 - Working with ImagesRelationManager
-- Implementing image picker (CheckboxList)
-- Any image-related development task
+- Image picker implementation
 
-## 🎯 System Overview
+---
 
-**Centralized Polymorphic System:**
-- ✅ Single `images` table for ALL entities
-- ✅ Polymorphic relationships (morphMany/morphOne/belongsTo)
-- ✅ Order management (0 = cover/primary image)
-- ✅ Auto WebP conversion (85% quality)
-- ✅ Soft deletes with reference cleanup via ImageObserver
-- ✅ CheckboxList picker (native Filament, NO Alpine.js)
+## System Overview
+
+**Centralized Polymorphic:**
+- Single `images` table for ALL entities
+- Polymorphic relationships
+- Order management (0 = cover)
+- Auto WebP conversion (85%)
+- Soft deletes with cleanup
+- CheckboxList picker (native Filament)
+
+---
 
 ## Quick Patterns
 
-### Pattern 1: Multiple Images (Gallery)
+### 1. Multiple Images (Gallery)
 
 **Model:**
 ```php
-class Product extends Model
+public function images(): MorphMany
 {
-    public function images(): MorphMany
-    {
-        return $this->morphMany(Image::class, 'model')
-            ->orderBy('order');
-    }
-    
-    public function coverImage(): MorphOne
-    {
-        return $this->morphOne(Image::class, 'model')
-            ->where('order', 0);
-    }
+    return $this->morphMany(Image::class, 'model')
+        ->orderBy('order');
+}
+
+public function coverImage(): MorphOne
+{
+    return $this->morphOne(Image::class, 'model')
+        ->where('order', 0);
 }
 ```
 
@@ -52,300 +53,159 @@ class Product extends Model
 ```php
 public static function getRelations(): array
 {
-    return [
-        ImagesRelationManager::class,  // Auto CRUD, reorder, WebP
-    ];
+    return [ImagesRelationManager::class];
 }
 ```
 
-### Pattern 2: Single Image (BelongsTo)
+### 2. Single Image (BelongsTo)
 
 **Model:**
 ```php
-class Setting extends Model
+public function logoImage(): BelongsTo
 {
-    public function logoImage(): BelongsTo
-    {
-        return $this->belongsTo(Image::class, 'logo_image_id');
-    }
+    return $this->belongsTo(Image::class, 'logo_image_id');
 }
 ```
 
-**Resource Form:**
+**Form:**
 ```php
 Select::make('logo_image_id')
     ->label('Logo')
     ->relationship('logoImage', 'file_path')
-    ->getOptionLabelFromRecordUsing(fn($record) => basename($record->file_path))
-    ->searchable()
-    ->preload();
+    ->searchable();
 ```
 
-### Pattern 3: CheckboxList Picker (v1.2.0)
-
-**✅ Use native Filament CheckboxList - NO custom ViewField!**
+### 3. CheckboxList Picker
 
 ```php
 Action::make('selectFromLibrary')
     ->label('Chọn từ thư viện')
-    ->modalWidth('7xl')
-    ->form(function () {
-        $images = Image::query()
-            ->where('active', true)
-            ->whereNull('deleted_at')
-            ->orderBy('created_at', 'desc')
+    ->form(function() {
+        $images = Image::where('active', true)
             ->limit(100)
             ->get();
-
-        $options = $images->mapWithKeys(function ($image) {
-            $filename = basename($image->file_path);
-            $imageUrl = $image->url ?? '/images/placeholder.png';
-            
-            // HTML label với preview
-            $html = '<div style="display: flex; align-items: center; gap: 8px;">';
-            $html .= '<img src="' . e($imageUrl) . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" />';
-            $html .= '<span>' . e($filename) . '</span>';
-            $html .= '</div>';
-            
-            return [$image->id => $html];
-        })->toArray();
-
+        
         return [
-            CheckboxList::make('image_ids')
-                ->label('Chọn ảnh')
-                ->options($options)
-                ->columns(3)
-                ->gridDirection(GridDirection::Column)
-                ->required()
-                ->searchable()      // Built-in search
-                ->bulkToggleable()  // Select all/deselect all
-                ->allowHtml(),      // HTML labels for preview
+            CheckboxList::make('selected_images')
+                ->options($images->mapWithKeys(fn($img) => [
+                    $img->id => view('filament.image-option', [
+                        'image' => $img
+                    ])->render()
+                ]))
+                ->columns(4),
         ];
     })
-    ->action(function (array $data, RelationManager $livewire): void {
-        $owner = $livewire->getOwnerRecord();
-        $selectedImageIds = $data['image_ids'] ?? [];
-
-        foreach ($selectedImageIds as $imageId) {
-            $image = Image::find($imageId);
-            if (!$image) continue;
-
-            // Copy image for this owner
-            $owner->images()->create([
-                'file_path' => $image->file_path,
-                'disk' => $image->disk,
-                'alt' => $image->alt,
-                'width' => $image->width,
-                'height' => $image->height,
-                'mime' => $image->mime,
-                // order auto-assigned by ImageObserver
-                'active' => true,
+    ->action(function($data, $record) {
+        foreach ($data['selected_images'] as $imageId) {
+            Image::find($imageId)->update([
+                'model_type' => get_class($record),
+                'model_id' => $record->id,
             ]);
         }
     });
 ```
 
-**Built-in Features:**
-- ✅ Search (native Alpine.js)
-- ✅ Bulk toggle (select all)
-- ✅ Multi-select with checkboxes
-- ✅ HTML labels for image preview
-- ✅ Responsive columns
-- ✅ Dark mode support
+---
 
-## Image Upload Standard
+## ImagesRelationManager
 
-**All uploads MUST:**
-1. Convert to WebP (quality: 85)
-2. Resize if width > 1200px
-3. Store in entity directory (`products/`, `articles/`)
-4. Use unique filename: `uniqid('prefix_') . '.webp'`
+**Auto-generated features:**
+- Upload with drag-drop
+- Reorder with drag-drop
+- Set cover (order=0)
+- Edit alt text/title
+- Delete with confirmation
+- WebP auto-conversion
+
+**Generate:**
+```bash
+php artisan make:filament-relation-manager ProductResource images file_path
+```
+
+---
+
+## ImageObserver
+
+**Auto-features:**
+- Alt text from model name
+- Order auto-increment
+- Cover auto-set
+- Soft delete cleanup
 
 ```php
-FileUpload::make('file_path')
-    ->disk('public')
-    ->directory('products')
-    ->imageEditor()
-    ->saveUploadedFileUsing(function ($file) {
-        $filename = uniqid('product_') . '.webp';
-        $path = 'products/' . $filename;
-        
-        $manager = new ImageManager(new Driver());
-        $image = $manager->read($file->getRealPath());
-        
-        if ($image->width() > 1200) {
-            $image->scale(width: 1200);
+class ImageObserver
+{
+    public function creating(Image $image): void
+    {
+        if (empty($image->alt_text) && $image->model) {
+            $image->alt_text = $image->model->name ?? 'Image';
         }
         
-        $webp = $image->toWebp(quality: 85);
-        Storage::disk('public')->put($path, $webp);
-        
-        return $path;
-    });
-```
-
-## Order Management
-
-- **`order = 0`**: Cover/primary image (only one)
-- **`order > 0`**: Gallery images (auto-incremented)
-- **Reorderable**: Use `->reorderable('order')` in table
-- **Auto-handled**: ImageObserver prevents conflicts
-
-## ImageObserver Auto-Functions
-
-### Auto Order Assignment
-```php
-public function creating(Image $image): void
-{
-    if ($image->order === null && $image->model_type && $image->model_id) {
-        $image->order = $this->findNextAvailableOrder($image);
+        if ($image->order === null) {
+            $max = Image::where('model_type', $image->model_type)
+                ->where('model_id', $image->model_id)
+                ->max('order');
+            $image->order = ($max ?? -1) + 1;
+        }
     }
 }
-
-private function findNextAvailableOrder(Image $image): int
-{
-    $nextOrder = 0;
-    
-    while (Image::query()
-        ->where('model_type', $image->model_type)
-        ->where('model_id', $image->model_id)
-        ->where('order', $nextOrder)
-        ->exists()
-    ) {
-        $nextOrder++;
-    }
-    
-    return $nextOrder;
-}
 ```
 
-### Auto Alt Text
+---
+
+## WebP Conversion
+
+**Automatic on upload:**
+- Original preserved
+- WebP created (85% quality)
+- Stored in `storage/app/public/images/`
+- Auto-served via intervention
+
+**Manual conversion:**
 ```php
-if (empty($image->alt)) {
-    $owner = $image->model;
-    $image->alt = $image->order === 0 
-        ? $owner->name 
-        : "{$owner->name} hình {$image->order}";
-}
+$webpPath = Image::convertToWebP($originalPath);
 ```
 
-### Auto File Cleanup
-```php
-public function deleted(Image $image): void
-{
-    Storage::disk('public')->delete($image->file_path);
-}
-```
+---
 
-## Delete Protection (v1.2.0)
+## Common Issues
 
-**Cannot delete images in use:**
-
-```php
-// Automatic validation in DeleteAction
-if ($image->model_type && $image->model_id) {
-    Notification::make()
-        ->danger()
-        ->title('Không thể xóa ảnh')
-        ->body("Đang được sử dụng bởi {$ownerType} #{$image->model_id}")
-        ->send();
-    $action->cancel();
-}
-```
-
-**Detach before delete:**
-1. Go to `/admin/images/{id}/edit`
-2. See "Relationships" section
-3. Click "Gỡ liên kết" button
-4. Now can delete
-
-## Common Issues & Solutions
-
-### Issue 1: Unique Constraint Violation
-
-**Error:**
-```
-SQLSTATE[23000]: Duplicate entry 'App\Models\Product-126-2' 
-for key 'images_unique_order_per_model'
-```
-
-**Solution (v1.2.0):**
-- ✅ ImageObserver auto-handles order
-- ✅ No unique constraint in DB (removed)
-- ✅ Regular index for performance
-- ✅ Just create images, Observer finds next available order
-
-```php
-// DON'T manually set order - Observer handles it
-$owner->images()->create([
-    'file_path' => $path,
-    // order will be auto-assigned
-]);
-```
-
-### Issue 2: Class Not Found (Namespace)
-
-**Error:**
-```
-Class "Filament\Forms\Components\Tabs" not found
-Class "Filament\Schemas\Components\CheckboxList" not found
-```
+### Issue: Unique constraint violation on order
 
 **Solution:**
 ```php
-// ✅ CORRECT imports
-use Filament\Schemas\Components\Tabs;            // Layout
-use Filament\Forms\Components\CheckboxList;      // Form field
-use Filament\Support\Enums\GridDirection;        // Enum
+// ImageObserver handles auto-increment
+// Don't manually set order=0 for all images
 ```
 
-### Issue 3: Images Not Displaying
+### Issue: Images not showing
 
-**Solutions:**
-1. Run: `php artisan storage:link`
-2. Check `APP_URL` in `.env`
-3. Verify `config/filesystems.php` disk config
+**Check:**
+1. Storage link: `php artisan storage:link`
+2. Disk config: `config/filesystems.php`
+3. Image path: `Storage::url($image->file_path)`
 
-## Key Principles
+### Issue: Multiple covers (order=0)
 
-1. **Single source of truth**: One `images` table
-2. **Polymorphic**: Works with ANY model
-3. **Order = 0**: Cover/primary image
-4. **Observer auto-magic**: alt, order, cleanup
-5. **Native components**: CheckboxList, NO Alpine.js
-6. **WebP always**: 85% quality, resize to 1200px
-7. **Delete protection**: Can't delete images in use
+**Solution:**
+```php
+// When setting new cover
+Image::where('model_type', $type)
+    ->where('model_id', $id)
+    ->where('order', 0)
+    ->update(['order' => 999]);  // Reset old cover
 
-## Critical Success Factors
-
-- ✅ Use morphMany/morphOne/belongsTo correctly
-- ✅ Let ImageObserver handle order (don't manually set)
-- ✅ Use CheckboxList for picker (not custom ViewField)
-- ✅ Always WebP conversion
-- ✅ Detach before delete
-
-## Supplementary Resources
-
-**Full architecture guide:**
-```
-read .claude/skills/image-management/CLAUDE.md
+$newCover->update(['order' => 0]);
 ```
 
-**Related skills:**
-- **filament-rules**: Namespace & form standards
-- **filament-resource-generator**: Auto resource creation
+---
 
-## Quick Commands
+## Complete Guide
 
-```bash
-# Storage link
-php artisan storage:link
+For detailed implementation, advanced patterns, and troubleshooting:
 
-# Check migrations
-php artisan migrate:status
+`read .claude/skills/image-management/CLAUDE.md`
 
-# Create image resource
-php artisan make:filament-resource Image
-```
-
-Follow these patterns → Clean polymorphic image system! 📸
+**Related:**
+- Filament standards: `read .claude/skills/filament-rules/SKILL.md`
+- Resource generator: `read .claude/skills/filament-resource-generator/SKILL.md`

@@ -54,6 +54,8 @@ Hỏi user các câu hỏi sau:
 
 ### Bước 4: Viết SKILL.md (Bắt Buộc)
 
+**CRITICAL**: Use absolute paths for cross-references, use relative paths only for files within same skill directory.
+
 Template chuẩn:
 
 ```markdown
@@ -96,8 +98,10 @@ command -a | process
 2. Principle 2
 
 ## Supplementary Resources
-For full guide: \`read .claude/skills/[name]/CLAUDE.md\`
-For components: \`read .claude/skills/[name]/[component]/\`
+For full guide: `read .claude/skills/[name]/CLAUDE.md`
+For components: `read .claude/skills/[name]/[component]/`
+
+**NOTE**: Always use backtick commands (\`read ...\`) instead of markdown links for skill-to-skill references to avoid broken links.
 ```
 
 ### Bước 5: Viết CLAUDE.md (Nếu Complex)
@@ -111,7 +115,21 @@ Bao gồm:
 - Troubleshooting guides
 - Best practices
 
-### Bước 6: Thêm vào Global Context
+### Bước 6: Validate All Links
+
+**CRITICAL**: Before integration, verify all file references work:
+
+1. **Check internal links**: Markdown links `[text](./path)` must point to existing files
+2. **Update after rename**: If you rename files (e.g., WORKFLOWS.md → CLAUDE.md), update ALL references
+3. **Verify command references**: Backtick commands `read .claude/skills/...` must use correct paths
+4. **Test relative paths**: Ensure `./references/file.md` exists in skill directory
+
+**Common scenarios:**
+- Copying skill from external source → May contain links to old file names
+- Renaming WORKFLOWS.md to CLAUDE.md → Must update SKILL.md references
+- Subdirectory references → Verify all `./subdir/file.md` links work
+
+### Bước 7: Thêm vào Global Context
 
 **File 1: `.claude/global/SYSTEM.md`**
 
@@ -145,7 +163,7 @@ Cập nhật 2 sections:
 "Natural trigger phrase"              → your-new-skill
 ```
 
-### Bước 7: Test Skill
+### Bước 8: Test Skill
 
 1. Dùng natural language trigger phrases
 2. Verify skill loads correctly
@@ -253,8 +271,8 @@ Includes subdirectories for reusable components.
 ❌ **No examples**: Only abstract instructions
 ✅ **Concrete examples**: Bash commands, code snippets
 
-❌ **Broken references**: Files that don't exist
-✅ **Verified paths**: Test all file references
+❌ **Broken references**: Files that don't exist, outdated links after renaming
+✅ **Verified paths**: Test all file references, update links when renaming files (e.g., WORKFLOWS.md → CLAUDE.md requires updating all references in SKILL.md)
 
 ## Integration Checklist
 
@@ -265,7 +283,7 @@ Before declaring skill complete:
 - [ ] **Description** - Includes USE WHEN triggers
 - [ ] **Instructions** - Imperative form, actionable
 - [ ] **Examples** - Concrete usage scenarios
-- [ ] **References** - All paths work
+- [ ] **References** - All paths work, no broken links after file renames
 - [ ] **Integration SYSTEM.md** - Added to `<available_skills>`
 - [ ] **Integration AGENTS.md** - Added to Skills Available list + trigger examples
 - [ ] **Testing** - Validated with trigger phrases
