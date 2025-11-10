@@ -33,6 +33,11 @@ Skills **automatically activate** when you use natural language:
 "Tìm tài liệu cho Next.js"           → docs-seeker
 "Bug này không fix được"              → systematic-debugging
 "Test fail liên tục"                  → systematic-debugging
+"Tạo controller mới"                  → backend-dev-guidelines
+"Tạo component React"                 → frontend-dev-guidelines
+"Thiết kế giao diện"                  → ux-designer
+"Thêm shadcn component"               → ui-styling
+"Tạo design system"                   → ui-styling
 ```
 
 **You don't need to explicitly call skills** - just describe what you want!
@@ -53,6 +58,12 @@ Skills **automatically activate** when you use natural language:
 - **api-design-principles** - REST/GraphQL best practices
 - **api-cache-invalidation** - Auto sync frontend-backend
 - **docs-seeker** - Find technical documentation
+
+**Development Guidelines:**
+- **backend-dev-guidelines** - Node.js/Express/TypeScript microservices patterns
+- **frontend-dev-guidelines** - React/TypeScript with Suspense and modern patterns
+- **ux-designer** - UI/UX design guidance for unique, accessible interfaces
+- **ui-styling** - shadcn/ui + Tailwind CSS component library and styling system
 
 **Meta:**
 - **create-skill** - Create new skills

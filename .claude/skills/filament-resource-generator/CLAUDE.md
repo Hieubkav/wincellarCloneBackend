@@ -724,6 +724,456 @@ TextColumn::make('status')
 
 ---
 
+## Advanced Components Library
+
+**All components verified from Filament 4.x source code.**
+
+### Builder (Dynamic Content Blocks)
+
+```php
+use Filament\Forms\Components\Builder;
+
+Builder::make('content')
+    ->label('Nội dung động')
+    ->blocks([
+        Builder\Block::make('text')
+            ->label('Văn bản')
+            ->icon('heroicon-o-document-text')
+            ->schema([
+                RichEditor::make('content')
+                    ->label('Nội dung')
+                    ->required(),
+            ]),
+        
+        Builder\Block::make('image')
+            ->label('Hình ảnh')
+            ->icon('heroicon-o-photo')
+            ->schema([
+                FileUpload::make('image')
+                    ->label('Hình ảnh')
+                    ->image()
+                    ->required(),
+                TextInput::make('caption')
+                    ->label('Chú thích'),
+            ]),
+        
+        Builder\Block::make('code')
+            ->label('Code')
+            ->icon('heroicon-o-code-bracket')
+            ->schema([
+                CodeEditor::make('code')
+                    ->label('Mã nguồn')
+                    ->language('php'),
+            ]),
+    ])
+    ->collapsible()
+    ->cloneable()
+    ->blockNumbers(false)
+    ->addActionLabel('Thêm khối'),
+```
+
+### Repeater with Relationship
+
+```php
+use Filament\Forms\Components\Repeater;
+
+Repeater::make('variants')
+    ->label('Biến thể sản phẩm')
+    ->relationship('variants')
+    ->schema([
+        Grid::make(3)->schema([
+            TextInput::make('sku')
+                ->label('Mã SKU')
+                ->required()
+                ->unique(ignoreRecord: true),
+            
+            TextInput::make('price')
+                ->label('Giá')
+                ->numeric()
+                ->prefix('₫')
+                ->required(),
+            
+            TextInput::make('stock')
+                ->label('Tồn kho')
+                ->numeric()
+                ->default(0),
+        ]),
+        
+        Select::make('size')
+            ->label('Kích thước')
+            ->options(['S', 'M', 'L', 'XL'])
+            ->required(),
+        
+        ColorPicker::make('color')
+            ->label('Màu sắc'),
+    ])
+    ->orderable()
+    ->collapsible()
+    ->collapsed()
+    ->itemLabel(fn($state) => $state['sku'] ?? 'Biến thể mới')
+    ->addActionLabel('Thêm biến thể')
+    ->defaultItems(0)
+    ->reorderable()
+    ->cloneable()
+    ->grid(2),
+```
+
+### Wizard (Multi-step Form)
+
+```php
+use Filament\Schemas\Components\Wizard;
+
+Wizard::make([
+    Wizard\Step::make('Thông tin cơ bản')
+        ->icon('heroicon-o-information-circle')
+        ->description('Thông tin sản phẩm')
+        ->schema([
+            TextInput::make('name')->required(),
+            Select::make('category_id')->required(),
+            RichEditor::make('description'),
+        ])
+        ->columns(2),
+    
+    Wizard\Step::make('Giá & Kho')
+        ->icon('heroicon-o-currency-dollar')
+        ->schema([
+            TextInput::make('price')->numeric()->required(),
+            TextInput::make('stock')->numeric()->default(0),
+            Toggle::make('active')->default(true),
+        ])
+        ->columns(2),
+    
+    Wizard\Step::make('Hình ảnh')
+        ->icon('heroicon-o-photo')
+        ->schema([
+            FileUpload::make('images')
+                ->image()
+                ->multiple()
+                ->maxFiles(5),
+        ]),
+])
+    ->skippable()
+    ->persistStepInQueryString()
+    ->submitAction(view('filament.submit-button')),
+```
+
+### KeyValue (Dynamic Key-Value Pairs)
+
+```php
+use Filament\Forms\Components\KeyValue;
+
+KeyValue::make('specifications')
+    ->label('Thông số kỹ thuật')
+    ->keyLabel('Tên thông số')
+    ->valueLabel('Giá trị')
+    ->addActionLabel('Thêm thông số')
+    ->reorderable()
+    ->default([
+        'weight' => '1kg',
+        'dimensions' => '10x10x10cm',
+    ]),
+```
+
+### TagsInput
+
+```php
+use Filament\Forms\Components\TagsInput;
+
+TagsInput::make('keywords')
+    ->label('Từ khóa SEO')
+    ->placeholder('Nhập từ khóa...')
+    ->suggestions(['smartphone', 'điện thoại', 'công nghệ'])
+    ->separator(',')
+    ->splitKeys(['Tab', ','])
+    ->helperText('Nhấn Tab hoặc dấu phẩy để thêm'),
+```
+
+### ToggleButtons (Visual Radio)
+
+```php
+use Filament\Forms\Components\ToggleButtons;
+
+ToggleButtons::make('status')
+    ->label('Trạng thái')
+    ->options([
+        'draft' => 'Nháp',
+        'published' => 'Xuất bản',
+        'archived' => 'Lưu trữ',
+    ])
+    ->icons([
+        'draft' => 'heroicon-o-pencil',
+        'published' => 'heroicon-o-check-circle',
+        'archived' => 'heroicon-o-archive-box',
+    ])
+    ->colors([
+        'draft' => 'warning',
+        'published' => 'success',
+        'archived' => 'gray',
+    ])
+    ->inline()
+    ->grouped(),
+```
+
+### Slider
+
+```php
+use Filament\Forms\Components\Slider;
+
+Slider::make('discount_percent')
+    ->label('Giảm giá (%)')
+    ->minValue(0)
+    ->maxValue(100)
+    ->step(5)
+    ->suffix('%')
+    ->marks([
+        0 => '0%',
+        25 => '25%',
+        50 => '50%',
+        75 => '75%',
+        100 => '100%',
+    ]),
+```
+
+### CodeEditor
+
+```php
+use Filament\Forms\Components\CodeEditor;
+
+CodeEditor::make('custom_css')
+    ->label('CSS tùy chỉnh')
+    ->language('css')
+    ->lineNumbers()
+    ->minHeight('200px')
+    ->maxHeight('400px'),
+```
+
+### MorphToSelect (Polymorphic)
+
+```php
+use Filament\Forms\Components\MorphToSelect;
+
+MorphToSelect::make('commentable')
+    ->label('Bình luận cho')
+    ->types([
+        MorphToSelect\Type::make(Product::class)
+            ->titleAttribute('name')
+            ->label('Sản phẩm'),
+        MorphToSelect\Type::make(Article::class)
+            ->titleAttribute('title')
+            ->label('Bài viết'),
+    ])
+    ->searchable()
+    ->preload(),
+```
+
+### Advanced Table Columns
+
+#### TextColumn with Badge & Icon
+
+```php
+use Filament\Tables\Columns\TextColumn;
+
+TextColumn::make('status')
+    ->label('Trạng thái')
+    ->badge()
+    ->color(fn($state) => match($state) {
+        'draft' => 'warning',
+        'published' => 'success',
+        'archived' => 'gray',
+        default => 'info',
+    })
+    ->icon(fn($state) => match($state) {
+        'draft' => 'heroicon-o-pencil',
+        'published' => 'heroicon-o-check-circle',
+        'archived' => 'heroicon-o-archive-box',
+        default => 'heroicon-o-document',
+    })
+    ->iconPosition('after')
+    ->formatStateUsing(fn($state) => ucfirst($state))
+    ->description(fn($record) => 'Cập nhật: ' . $record->updated_at->diffForHumans())
+    ->descriptionIcon('heroicon-o-clock')
+    ->wrap()
+    ->searchable()
+    ->sortable(),
+```
+
+#### ImageColumn with Stacking
+
+```php
+use Filament\Tables\Columns\ImageColumn;
+
+ImageColumn::make('images.file_path')
+    ->label('Hình ảnh')
+    ->disk('public')
+    ->stacked()
+    ->circular()
+    ->limit(3)
+    ->limitedRemainingText()
+    ->ring(2)
+    ->overlap(4)
+    ->tooltip(fn($record) => $record->images->count() . ' ảnh'),
+```
+
+#### SelectColumn (Inline Edit)
+
+```php
+use Filament\Tables\Columns\SelectColumn;
+
+SelectColumn::make('status')
+    ->label('Trạng thái')
+    ->options([
+        'draft' => 'Nháp',
+        'published' => 'Xuất bản',
+        'archived' => 'Lưu trữ',
+    ])
+    ->rules(['required'])
+    ->selectablePlaceholder(false)
+    ->beforeStateUpdated(function ($record, $state) {
+        // Validation logic
+        if ($state === 'published' && !$record->content) {
+            throw new \Exception('Không thể xuất bản khi chưa có nội dung');
+        }
+    })
+    ->afterStateUpdated(function ($record, $state) {
+        // Notification
+        Notification::make()
+            ->title('Đã cập nhật trạng thái')
+            ->success()
+            ->send();
+    }),
+```
+
+#### TextInputColumn (Inline Edit)
+
+```php
+use Filament\Tables\Columns\TextInputColumn;
+
+TextInputColumn::make('stock')
+    ->label('Tồn kho')
+    ->type('number')
+    ->rules(['numeric', 'min:0'])
+    ->beforeStateUpdated(function ($record, $state) {
+        // Log old value
+        Log::info("Stock changed from {$record->stock} to {$state}");
+    })
+    ->afterStateUpdated(function ($record, $state) {
+        // Update related records
+        $record->updateStockStatus();
+    }),
+```
+
+### Advanced Filters
+
+#### QueryBuilder Filter
+
+```php
+use Filament\Tables\Filters\QueryBuilder;
+
+QueryBuilder::make()
+    ->constraints([
+        QueryBuilder\Constraints\TextConstraint::make('name')
+            ->label('Tên sản phẩm')
+            ->icon('heroicon-o-document-text'),
+        
+        QueryBuilder\Constraints\NumberConstraint::make('price')
+            ->label('Giá')
+            ->icon('heroicon-o-currency-dollar'),
+        
+        QueryBuilder\Constraints\DateConstraint::make('created_at')
+            ->label('Ngày tạo')
+            ->icon('heroicon-o-calendar'),
+        
+        QueryBuilder\Constraints\BooleanConstraint::make('active')
+            ->label('Đang hiển thị')
+            ->icon('heroicon-o-eye'),
+        
+        QueryBuilder\Constraints\RelationshipConstraint::make('category')
+            ->label('Danh mục')
+            ->icon('heroicon-o-folder')
+            ->multiple()
+            ->relationship('category', 'name')
+            ->selectable(),
+    ]),
+```
+
+#### Custom Filter with Date Range
+
+```php
+use Filament\Tables\Filters\Filter;
+
+Filter::make('created_at')
+    ->form([
+        DatePicker::make('created_from')
+            ->label('Từ ngày')
+            ->placeholder('Chọn ngày bắt đầu'),
+        DatePicker::make('created_until')
+            ->label('Đến ngày')
+            ->placeholder('Chọn ngày kết thúc'),
+    ])
+    ->query(function (Builder $query, array $data): Builder {
+        return $query
+            ->when(
+                $data['created_from'],
+                fn($query, $date) => $query->whereDate('created_at', '>=', $date)
+            )
+            ->when(
+                $data['created_until'],
+                fn($query, $date) => $query->whereDate('created_at', '<=', $date)
+            );
+    })
+    ->indicateUsing(function (array $data): array {
+        $indicators = [];
+        
+        if ($data['created_from'] ?? null) {
+            $indicators[] = Indicator::make('Từ ' . Carbon::parse($data['created_from'])->format('d/m/Y'))
+                ->removeField('created_from');
+        }
+        
+        if ($data['created_until'] ?? null) {
+            $indicators[] = Indicator::make('Đến ' . Carbon::parse($data['created_until'])->format('d/m/Y'))
+                ->removeField('created_until');
+        }
+        
+        return $indicators;
+    }),
+```
+
+### Bulk Actions
+
+```php
+use Filament\Actions\BulkAction;
+
+BulkAction::make('updateStock')
+    ->label('Cập nhật kho')
+    ->icon('heroicon-o-arrow-path')
+    ->form([
+        TextInput::make('stock')
+            ->label('Số lượng mới')
+            ->numeric()
+            ->required()
+            ->minValue(0),
+    ])
+    ->action(function (Collection $records, array $data) {
+        $records->each(fn($record) => $record->update(['stock' => $data['stock']]));
+        
+        Notification::make()
+            ->title('Đã cập nhật ' . $records->count() . ' sản phẩm')
+            ->success()
+            ->send();
+    })
+    ->requiresConfirmation()
+    ->deselectRecordsAfterCompletion(),
+
+BulkAction::make('export')
+    ->label('Xuất Excel')
+    ->icon('heroicon-o-arrow-down-tray')
+    ->action(function (Collection $records) {
+        return Excel::download(new ProductsExport($records), 'products.xlsx');
+    }),
+```
+
+---
+
 ## Troubleshooting
 
 ### Issue 1: Class not found Tabs/Grid

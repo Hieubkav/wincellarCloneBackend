@@ -518,6 +518,270 @@ php artisan optimize:clear && composer dump-autoload
 
 ---
 
+## Source-Based Insights
+
+**All insights extracted from Filament 4.x source code analysis.**
+
+### Understanding Component Hierarchy
+
+From Filament source code structure:
+
+**Schemas Package (`packages/schemas/src/Components/`):**
+- Base: `Component.php` - All schema components extend this
+- Layout components: Tabs, Grid, Section, Fieldset, Group, Flex
+- Display components: Text, Icon, Image, Html, EmptyState
+- Special: Wizard, Builder (form builder)
+- Utilities: Get class for closures
+
+**Forms Package (`packages/forms/src/Components/`):**
+- Base: `Field.php` - All form fields extend this
+- Input fields: TextInput, Textarea, Select, etc.
+- File handling: FileUpload, BaseFileUpload
+- Complex: Repeater, Builder, KeyValue
+- Each component has its own directory with related classes
+
+**Key insight:** The separation is intentional:
+- **Schemas** = Structure/Layout (how things are arranged)
+- **Forms** = Data input (what users fill in)
+
+### Common Concerns/Traits
+
+From source analysis, components use these traits:
+
+**Section (Schemas):**
+```php
+use CanBeCollapsed;      // ->collapsible(), ->collapsed()
+use CanBeCompact;        // ->compact()
+use HasDescription;      // ->description()
+use HasHeaderActions;    // ->headerActions()
+use HasFooterActions;    // ->footerActions()
+use HasHeading;          // ->heading()
+use HasIcon;            // ->icon()
+use HasIconColor;       // ->iconColor()
+```
+
+**TextInput (Forms):**
+```php
+use CanBeReadOnly;      // ->readOnly()
+use HasAffixes;         // ->prefix(), ->suffix()
+use HasPlaceholder;     // ->placeholder()
+use HasExtraInputAttributes; // ->extraInputAttributes()
+```
+
+**Select (Forms):**
+```php
+use CanBeSearchable;    // ->searchable()
+use CanBePreloaded;     // ->preload()
+use HasOptions;         // ->options()
+use HasPlaceholder;     // ->placeholder()
+```
+
+### Error Pattern Recognition
+
+#### Pattern 1: Missing Imports After Copy-Paste
+
+**Symptom:** Works in one file, breaks in another
+
+**Cause:** Copied code but not imports
+
+**Fix:**
+1. Find ALL `use` statements in working file
+2. Copy ALL imports (not just the ones you think you need)
+3. Let IDE remove unused imports later
+
+#### Pattern 2: Autocomplete Suggests Wrong Namespace
+
+**Symptom:** IDE autocompletes with wrong namespace
+
+**Cause:** IDE doesn't know project convention
+
+**Prevention:**
+- Always verify imported namespace
+- Layout? → Must be `Schemas\Components\`
+- Field? → Must be `Forms\Components\`
+- Don't trust autocomplete blindly
+
+#### Pattern 3: Mixed V3 and V4 Code
+
+**Symptom:** Code from tutorial/documentation doesn't work
+
+**Cause:** Mixing Filament v3 patterns with v4 structure
+
+**V3 vs V4 differences:**
+```php
+// V3 (DON'T USE)
+use Filament\Forms\Form;
+public function form(Form $form): Form
+
+// V4 (USE THIS)
+use Filament\Schemas\Schema;
+public function form(Schema $schema): Schema
+```
+
+### Advanced Debugging Techniques
+
+#### Technique 1: Check Filament Documentation
+
+When unsure about a component:
+1. Check component class namespace in your IDE
+2. Hover over the class to see its full path
+3. Verify it matches the correct namespace:
+   - Layout? → `Filament\Schemas\Components\`
+   - Field? → `Filament\Forms\Components\`
+   - Action? → `Filament\Actions\`
+4. Consult official Filament docs at filamentphp.com
+
+#### Technique 2: Trace Error Stack
+
+Read error from bottom to top:
+```
+1. YourResource.php:25 → Your code (fix here)
+   ↓
+2. Schema.php:150 → Schema trying to render
+   ↓
+3. Component.php:88 → Component not found
+```
+
+Fix at level 1 (your code), not framework code.
+
+#### Technique 3: Binary Search Debugging
+
+If complex form breaks:
+1. Comment out HALF of schema
+2. Test - still broken?
+3. Broken half? Comment out HALF of that
+4. Keep halving until you find the problematic component
+5. Fix that component's imports
+
+#### Technique 4: Fresh File Comparison
+
+Create minimal test:
+```php
+// TestResource.php
+public static function form(Schema $schema): Schema
+{
+    return $schema->schema([
+        Tabs::make()->tabs([
+            Tabs\Tab::make('Test')->schema([
+                TextInput::make('test'),
+            ]),
+        ]),
+    ]);
+}
+```
+
+If this works, compare imports with broken file.
+
+### IDE Configuration Tips
+
+**VS Code settings.json:**
+```json
+{
+    "php.suggest.basic": false,
+    "php.suggest.useAutocompletionNamespaces": false,
+    "intelephense.completion.insertUseDeclaration": false,
+    // Force manual import verification
+}
+```
+
+**PHPStorm:**
+```
+Settings → PHP → Code Style → Imports
+☐ Add use statements automatically
+☑ Ask before adding use statements
+```
+
+### Real-World Error Examples
+
+#### Example 1: After Upgrade
+
+```
+Error: Class "Filament\Forms\Form" not found
+```
+
+**Analysis:**
+- Project upgraded from v3 to v4
+- Old code still uses `Form`
+- Search all files: `findstr /s "use Filament\\Forms\\Form" *.php`
+- Replace with: `use Filament\Schemas\Schema`
+
+#### Example 2: Third-Party Package
+
+```
+Error: Argument #1 must be of type Schema, Form given
+```
+
+**Analysis:**
+- Using third-party Filament plugin
+- Plugin still uses v3 patterns
+- **Solution:** Update plugin or fork and fix namespaces
+
+#### Example 3: Custom Component
+
+```
+Error: Class "CustomSelect" not found
+```
+
+**Check:**
+1. Is CustomSelect in correct namespace?
+2. Does it extend correct base class?
+3. Is it registered in ServiceProvider?
+
+**Fix:**
+```php
+// app/Forms/Components/CustomSelect.php
+namespace App\Forms\Components;
+
+use Filament\Forms\Components\Select;
+
+class CustomSelect extends Select
+{
+    // Custom logic
+}
+
+// Usage
+use App\Forms\Components\CustomSelect;
+
+CustomSelect::make('field')...
+```
+
+---
+
+## Quick Reference Card
+
+Print this for your desk:
+
+```
+┌─────────────────────────────────────────────────┐
+│          FILAMENT 4.X NAMESPACE GUIDE           │
+├─────────────────────────────────────────────────┤
+│ LAYOUT (Structure)                              │
+│   Filament\Schemas\Components\                  │
+│   - Tabs, Grid, Section, Fieldset, Group        │
+│                                                 │
+│ FIELDS (Input)                                  │
+│   Filament\Forms\Components\                    │
+│   - TextInput, Select, Toggle, etc.             │
+│                                                 │
+│ UTILITIES                                       │
+│   Filament\Schemas\Components\Utilities\Get     │
+│                                                 │
+│ ACTIONS                                         │
+│   Filament\Actions\                             │
+│   - EditAction, DeleteAction, etc.              │
+│                                                 │
+│ ENUMS                                           │
+│   Filament\Support\Enums\                       │
+│   - GridDirection, Alignment, etc.              │
+│                                                 │
+│ SCHEMA TYPE                                     │
+│   form(Schema $schema): Schema                  │
+│   NOT form(Form $form): Form                    │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
 For related documentation:
 - Filament standards: `read .claude/skills/filament-rules/SKILL.md`
 - Resource generation: `read .claude/skills/filament-resource-generator/SKILL.md`

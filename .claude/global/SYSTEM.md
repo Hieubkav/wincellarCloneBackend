@@ -78,6 +78,30 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user</location>
 </skill>
 
+<skill>
+<name>backend-dev-guidelines</name>
+<description>Comprehensive backend development guide for Node.js/Express/TypeScript microservices. Use when creating routes, controllers, services, repositories, middleware, or working with Express APIs, Prisma database access, Sentry error tracking, Zod validation, unifiedConfig, dependency injection, or async patterns. Covers layered architecture (routes → controllers → services → repositories), BaseController pattern, error handling, performance monitoring, testing strategies, and migration from legacy patterns.</description>
+<location>user</location>
+</skill>
+
+<skill>
+<name>frontend-dev-guidelines</name>
+<description>Frontend development guidelines for React/TypeScript applications. Modern patterns including Suspense, lazy loading, useSuspenseQuery, file organization with features directory, MUI v7 styling, TanStack Router, performance optimization, and TypeScript best practices. Use when creating components, pages, features, fetching data, styling, routing, or working with frontend code.</description>
+<location>user</location>
+</skill>
+
+<skill>
+<name>ux-designer</name>
+<description>Expert UI/UX design guidance for building unique, accessible, and user-centered interfaces. Use when designing interfaces, making visual design decisions, choosing colors/typography, implementing responsive layouts, or when user mentions design, UI, UX, styling, or visual appearance. Always ask before making design decisions.</description>
+<location>user</location>
+</skill>
+
+<skill>
+<name>ui-styling</name>
+<description>Create beautiful, accessible user interfaces with shadcn/ui components (Radix UI + Tailwind CSS), canvas-based visual designs, and responsive layouts. USE WHEN building user interfaces, implementing design systems, adding accessible components (dialogs, dropdowns, forms, tables), customizing themes/colors, implementing dark mode, generating visual designs/posters, or establishing consistent styling patterns.</description>
+<location>user</location>
+</skill>
+
 </available_skills>
 
 ---
