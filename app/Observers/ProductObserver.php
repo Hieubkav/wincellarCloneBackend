@@ -3,10 +3,20 @@
 namespace App\Observers;
 
 use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ProductObserver
 {
+    /**
+     * Increment API cache version when product data changes
+     */
+    private function incrementCacheVersion(): void
+    {
+        $version = (int) Cache::get('api_cache_version', 0);
+        Cache::put('api_cache_version', $version + 1);
+        Cache::put('last_cache_clear', now()->toIso8601String());
+    }
     /**
      * Handle the Product "creating" event.
      * Tự động sinh slug từ tên sản phẩm khi tạo mới
@@ -75,5 +85,30 @@ class ProductObserver
         }
 
         return $query->exists();
+    }
+
+    public function created(Product $product): void
+    {
+        $this->incrementCacheVersion();
+    }
+
+    public function updated(Product $product): void
+    {
+        $this->incrementCacheVersion();
+    }
+
+    public function deleted(Product $product): void
+    {
+        $this->incrementCacheVersion();
+    }
+
+    public function restored(Product $product): void
+    {
+        $this->incrementCacheVersion();
+    }
+
+    public function forceDeleted(Product $product): void
+    {
+        $this->incrementCacheVersion();
     }
 }

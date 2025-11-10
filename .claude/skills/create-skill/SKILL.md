@@ -113,7 +113,9 @@ Bao gồm:
 
 ### Bước 6: Thêm vào Global Context
 
-Cập nhật `.claude/global/SYSTEM.md` trong phần `<available_skills>`:
+**File 1: `.claude/global/SYSTEM.md`**
+
+Cập nhật trong phần `<available_skills>`:
 
 ```xml
 <skill>
@@ -121,6 +123,26 @@ Cập nhật `.claude/global/SYSTEM.md` trong phần `<available_skills>`:
 <description>Your description here with USE WHEN triggers</description>
 <location>user</location>
 </skill>
+```
+
+**File 2: `AGENTS.md`**
+
+Cập nhật 2 sections:
+
+**Section 1: Skills Available**
+```markdown
+## 📚 Skills Available
+
+1. **existing-skill** - Description
+...
+8. **your-new-skill** - Short description
+
+**Chi tiết:** `.claude/skills/[skill-name]/SKILL.md`
+```
+
+**Section 2: Natural Language Examples**
+```markdown
+"Natural trigger phrase"              → your-new-skill
 ```
 
 ### Bước 7: Test Skill
@@ -244,7 +266,8 @@ Before declaring skill complete:
 - [ ] **Instructions** - Imperative form, actionable
 - [ ] **Examples** - Concrete usage scenarios
 - [ ] **References** - All paths work
-- [ ] **Integration** - Added to SYSTEM.md
+- [ ] **Integration SYSTEM.md** - Added to `<available_skills>`
+- [ ] **Integration AGENTS.md** - Added to Skills Available list + trigger examples
 - [ ] **Testing** - Validated with trigger phrases
 - [ ] **Documentation** - CLAUDE.md if complex
 - [ ] **Quality** - Reviewed against standards
@@ -277,7 +300,8 @@ User: "Tạo skill cho PDF extraction"
 → Ask purpose, tools, triggers
 → Create .claude/skills/pdf-extraction/
 → Write SKILL.md with examples
-→ Add to SYSTEM.md
+→ Add to SYSTEM.md <available_skills>
+→ Add to AGENTS.md (Skills Available + trigger)
 → Test with "extract PDF text"
 ```
 
@@ -288,7 +312,8 @@ User: "Tạo skill cho API testing workflow"
 → Create directory with SKILL.md + CLAUDE.md
 → Add subdirs for test-templates/
 → Write comprehensive methodology
-→ Add to SYSTEM.md
+→ Add to SYSTEM.md <available_skills>
+→ Add to AGENTS.md (Skills Available + trigger)
 → Test with realistic scenarios
 ```
 

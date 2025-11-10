@@ -109,6 +109,7 @@ read .claude/global/SYSTEM.md
 "Thêm gallery vào Article"           → image-management
 "Chạy migration"                      → database-backup
 "Tạo skill mới"                       → create-skill
+"Phải Ctrl+F5 mới thấy data mới"    → api-cache-invalidation
 ```
 
 **Skills tự động activate** - không cần gọi tên!
@@ -124,6 +125,7 @@ read .claude/global/SYSTEM.md
 5. **filament-resource-generator** - Auto scaffolding
 6. **filament-form-debugger** - Fix errors
 7. **api-design-principles** - REST/GraphQL API best practices
+8. **api-cache-invalidation** - Auto sync frontend-backend với Observer + ISR
 
 **Chi tiết:** `.claude/skills/[skill-name]/SKILL.md`
 

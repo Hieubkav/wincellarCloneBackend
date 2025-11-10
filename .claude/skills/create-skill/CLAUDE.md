@@ -401,7 +401,7 @@ E:\Laravel\Laravel12\wincellarClone\wincellarcloneBackend\.claude\skills\
 
 **Update global context:**
 
-Edit `.claude/global/SYSTEM.md`:
+**File 1: Edit `.claude/global/SYSTEM.md`:**
 
 ```markdown
 <available_skills>
@@ -459,7 +459,8 @@ ls .claude/skills/[name]/patterns/
 - [ ] Instructions in imperative form
 - [ ] Concrete examples included
 - [ ] All file references work
-- [ ] Added to SYSTEM.md
+- [ ] Added to SYSTEM.md `<available_skills>`
+- [ ] Added to AGENTS.md (Skills Available + trigger)
 - [ ] No duplication of global context
 - [ ] Tested with natural language
 
@@ -998,6 +999,7 @@ command phase1 --options
 ### Integration Quality
 
 - [ ] Added to `.claude/global/SYSTEM.md` available_skills
+- [ ] Added to `AGENTS.md` Skills Available list + trigger examples
 - [ ] All file references work correctly
 - [ ] Commands exist and are accessible
 - [ ] Tools available (Laravel, Filament, npm, etc.)
@@ -1267,9 +1269,10 @@ command --dir ./images/
 
 **Check:**
 1. Is it in SYSTEM.md `<available_skills>`?
-2. Does description have "USE WHEN" triggers?
-3. Are triggers specific enough?
-4. Test with exact trigger phrases
+2. Is it in AGENTS.md Skills Available list?
+3. Does description have "USE WHEN" triggers?
+4. Are triggers specific enough?
+5. Test with exact trigger phrases
 
 **Debug:**
 ```bash
@@ -1278,6 +1281,9 @@ ls .claude/skills/[skill-name]/SKILL.md
 
 # Check SYSTEM.md
 grep -A 3 "<name>[skill-name]</name>" .claude/global/SYSTEM.md
+
+# Check AGENTS.md
+grep "your-skill-name" AGENTS.md
 ```
 
 ### Instructions Don't Work
@@ -1334,7 +1340,8 @@ grep -A 3 "<name>[skill-name]</name>" .claude/global/SYSTEM.md
 - [ ] **Instructions** - Imperative form throughout
 - [ ] **Examples** - Concrete bash/code examples
 - [ ] **References** - All paths verified working
-- [ ] **Integration** - Added to SYSTEM.md available_skills
+- [ ] **Integration SYSTEM.md** - Added to available_skills
+- [ ] **Integration AGENTS.md** - Added to Skills Available + trigger examples
 - [ ] **Testing** - Validated with Vietnamese + English phrases
 - [ ] **Documentation** - CLAUDE.md if complex (500+ lines content)
 - [ ] **Patterns** - Subdirectories if multiple patterns

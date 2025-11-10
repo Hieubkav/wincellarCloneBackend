@@ -3,10 +3,20 @@
 namespace App\Observers;
 
 use App\Models\Article;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ArticleObserver
 {
+    /**
+     * Increment API cache version when article data changes
+     */
+    private function incrementCacheVersion(): void
+    {
+        $version = (int) Cache::get('api_cache_version', 0);
+        Cache::put('api_cache_version', $version + 1);
+        Cache::put('last_cache_clear', now()->toIso8601String());
+    }
     /**
      * Handle the Article "creating" event.
      * Tự động sinh slug và SEO fields khi tạo mới
@@ -75,5 +85,30 @@ class ArticleObserver
         }
 
         return $query->exists();
+    }
+
+    public function created(Article $article): void
+    {
+        $this->incrementCacheVersion();
+    }
+
+    public function updated(Article $article): void
+    {
+        $this->incrementCacheVersion();
+    }
+
+    public function deleted(Article $article): void
+    {
+        $this->incrementCacheVersion();
+    }
+
+    public function restored(Article $article): void
+    {
+        $this->incrementCacheVersion();
+    }
+
+    public function forceDeleted(Article $article): void
+    {
+        $this->incrementCacheVersion();
     }
 }

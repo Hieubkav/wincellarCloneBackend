@@ -60,6 +60,12 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user</location>
 </skill>
 
+<skill>
+<name>api-cache-invalidation</name>
+<description>Automatic cache invalidation system với Laravel Observers và Next.js On-Demand Revalidation. Tự động sync data real-time giữa backend và frontend khi admin update. USE WHEN user phàn nàn "phải Ctrl+F5 mới thấy data mới", cần setup cache management, sync frontend-backend, hoặc optimize API performance với ISR.</description>
+<location>user</location>
+</skill>
+
 </available_skills>
 
 ---

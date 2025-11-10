@@ -2,10 +2,10 @@
 
 namespace App\Observers;
 
-use App\Models\MenuBlock;
+use App\Models\MenuBlockItem;
 use Illuminate\Support\Facades\Cache;
 
-class MenuBlockObserver
+class MenuBlockItemObserver
 {
     /**
      * Increment API cache version when menu data changes
@@ -16,36 +16,28 @@ class MenuBlockObserver
         Cache::put('api_cache_version', $version + 1);
         Cache::put('last_cache_clear', now()->toIso8601String());
     }
-    public function creating(MenuBlock $menuBlock): void
-    {
-        if ($menuBlock->order === null) {
-            $maxOrder = MenuBlock::where('menu_id', $menuBlock->menu_id)
-                ->max('order') ?? -1;
-            $menuBlock->order = $maxOrder + 1;
-        }
-    }
 
-    public function created(MenuBlock $menuBlock): void
+    public function created(MenuBlockItem $menuBlockItem): void
     {
         $this->incrementCacheVersion();
     }
 
-    public function updated(MenuBlock $menuBlock): void
+    public function updated(MenuBlockItem $menuBlockItem): void
     {
         $this->incrementCacheVersion();
     }
 
-    public function deleted(MenuBlock $menuBlock): void
+    public function deleted(MenuBlockItem $menuBlockItem): void
     {
         $this->incrementCacheVersion();
     }
 
-    public function restored(MenuBlock $menuBlock): void
+    public function restored(MenuBlockItem $menuBlockItem): void
     {
         $this->incrementCacheVersion();
     }
 
-    public function forceDeleted(MenuBlock $menuBlock): void
+    public function forceDeleted(MenuBlockItem $menuBlockItem): void
     {
         $this->incrementCacheVersion();
     }

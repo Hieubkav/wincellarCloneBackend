@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HomeComponent;
 use App\Services\Api\V1\Home\HomeComponentAssembler;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
@@ -22,9 +23,15 @@ class HomeController extends Controller
             ->get();
 
         $payload = $this->assembler->build($components);
+        
+        // Include cache version for frontend cache invalidation
+        $cacheVersion = (int) Cache::get('api_cache_version', 0);
 
         return response()->json([
             'data' => $payload,
+            'meta' => [
+                'cache_version' => $cacheVersion,
+            ],
         ]);
     }
 }

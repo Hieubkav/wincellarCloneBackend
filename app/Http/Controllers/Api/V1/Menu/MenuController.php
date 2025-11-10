@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Services\Api\V1\Menu\MenuAssembler;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Cache;
 
 class MenuController extends Controller
 {
@@ -31,9 +32,15 @@ class MenuController extends Controller
             ->get();
 
         $payload = $this->assembler->build($menus);
+        
+        // Include cache version for frontend cache invalidation
+        $cacheVersion = (int) Cache::get('api_cache_version', 0);
 
         return response()->json([
             'data' => $payload,
+            'meta' => [
+                'cache_version' => $cacheVersion,
+            ],
         ]);
     }
 }

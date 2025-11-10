@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasMediaGallery;
+use App\Observers\MenuBlockItemObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy(MenuBlockItemObserver::class)]
 class MenuBlockItem extends Model
 {
     use HasFactory;
