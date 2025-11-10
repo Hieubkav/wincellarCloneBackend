@@ -37,6 +37,7 @@ Route::middleware(['api', 'throttle:api'])
         });
         
         require __DIR__.'/api/home.php';
+        require __DIR__.'/api/menus.php';
         require __DIR__.'/api/products.php';
         require __DIR__.'/api/articles.php';
     });
