@@ -132,6 +132,7 @@ class HomeComponentForm
             HomeComponentType::CollectionShowcase->value => self::collectionShowcaseFields(),
             HomeComponentType::EditorialSpotlight->value => self::editorialSpotlightFields(),
             HomeComponentType::Footer->value => self::footerFields(),
+            HomeComponentType::SpeedDial->value => self::speedDialFields(),
             default => [],
         };
     }
@@ -480,6 +481,57 @@ class HomeComponentForm
                 ->columnSpanFull()
                 ->collapsible()
                 ->itemLabel(fn (array $state): ?string => $state['platform'] ?? 'Link mới'),
+        ];
+    }
+
+    protected static function speedDialFields(): array
+    {
+        return [
+            Repeater::make('config.items')
+                ->label('Danh sách nút liên hệ')
+                ->schema([
+                    Select::make('icon_type')
+                        ->label('Loại icon')
+                        ->options([
+                            'home' => 'Trang chủ (Home)',
+                            'phone' => 'Điện thoại (Phone)',
+                            'zalo' => 'Zalo',
+                            'messenger' => 'Messenger',
+                            'custom' => 'Tùy chỉnh (Custom Icon)',
+                        ])
+                        ->required()
+                        ->default('home')
+                        ->live(),
+                    Select::make('icon_image_id')
+                        ->label('Icon tùy chỉnh')
+                        ->options(fn () => self::getImageOptionsWithPreview())
+                        ->allowHtml()
+                        ->searchable()
+                        ->preload()
+                        ->visible(fn (Get $get) => $get('icon_type') === 'custom')
+                        ->helperText('Chỉ sử dụng khi chọn "Tùy chỉnh"'),
+                    TextInput::make('label')
+                        ->label('Nhãn hiển thị')
+                        ->placeholder('Hotline')
+                        ->required(),
+                    TextInput::make('href')
+                        ->label('Link đến')
+                        ->placeholder('tel:0946698008 hoặc https://zalo.me/...')
+                        ->required()
+                        ->helperText('Dùng tel: cho số điện thoại, https:// cho link web'),
+                    Select::make('target')
+                        ->label('Cách mở link')
+                        ->options([
+                            '_self' => 'Cùng tab (_self)',
+                            '_blank' => 'Tab mới (_blank)',
+                        ])
+                        ->default('_self'),
+                ])
+                ->columnSpanFull()
+                ->defaultItems(1)
+                ->addActionLabel('Thêm nút liên hệ')
+                ->collapsible()
+                ->itemLabel(fn (array $state): ?string => $state['label'] ?? 'Nút liên hệ mới'),
         ];
     }
 }

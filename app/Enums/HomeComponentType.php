@@ -12,6 +12,7 @@ enum HomeComponentType: string
     case CollectionShowcase = 'collection_showcase';
     case EditorialSpotlight = 'editorial_spotlight';
     case Footer = 'footer';
+    case SpeedDial = 'speed_dial';
 
     public function getLabel(): string
     {
@@ -24,6 +25,7 @@ enum HomeComponentType: string
             self::CollectionShowcase => 'Collection Showcase - Bộ sưu tập sản phẩm',
             self::EditorialSpotlight => 'Editorial Spotlight - Bài viết nổi bật',
             self::Footer => 'Footer - Chân trang',
+            self::SpeedDial => 'Speed Dial - Liên hệ nhanh',
         };
     }
 
@@ -38,6 +40,7 @@ enum HomeComponentType: string
             self::CollectionShowcase => 'Bộ sưu tập sản phẩm theo chủ đề (Rượu Vang, Rượu Mạnh...)',
             self::EditorialSpotlight => 'Khu vực hiển thị các bài viết/blog nổi bật',
             self::Footer => 'Thông tin chân trang với links, thông tin liên hệ',
+            self::SpeedDial => 'Thanh liên hệ nhanh với các nút Hotline, Zalo, Messenger (góc phải màn hình)',
         };
     }
 
@@ -52,6 +55,7 @@ enum HomeComponentType: string
             self::CollectionShowcase => 'heroicon-o-rectangle-stack',
             self::EditorialSpotlight => 'heroicon-o-newspaper',
             self::Footer => 'heroicon-o-bars-3-bottom-left',
+            self::SpeedDial => 'heroicon-o-phone',
         };
     }
 

@@ -16,6 +16,7 @@ use App\Services\Api\V1\Home\Transformers\EditorialSpotlightTransformer;
 use App\Services\Api\V1\Home\Transformers\FavouriteProductsTransformer;
 use App\Services\Api\V1\Home\Transformers\FooterTransformer;
 use App\Services\Api\V1\Home\Transformers\HeroCarouselTransformer;
+use App\Services\Api\V1\Home\Transformers\SpeedDialTransformer;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -29,6 +30,7 @@ class HomeComponentAssembler
     private EditorialSpotlightTransformer $editorialSpotlight;
     private BrandShowcaseTransformer $brandShowcase;
     private FooterTransformer $footer;
+    private SpeedDialTransformer $speedDial;
     private DefaultComponentTransformer $defaultTransformer;
 
     public function __construct(
@@ -40,6 +42,7 @@ class HomeComponentAssembler
         ?EditorialSpotlightTransformer $editorialSpotlight = null,
         ?BrandShowcaseTransformer $brandShowcase = null,
         ?FooterTransformer $footer = null,
+        ?SpeedDialTransformer $speedDial = null,
         ?DefaultComponentTransformer $defaultTransformer = null,
     ) {
         $this->heroCarousel = $heroCarousel ?? new HeroCarouselTransformer();
@@ -50,6 +53,7 @@ class HomeComponentAssembler
         $this->editorialSpotlight = $editorialSpotlight ?? new EditorialSpotlightTransformer();
         $this->brandShowcase = $brandShowcase ?? new BrandShowcaseTransformer();
         $this->footer = $footer ?? new FooterTransformer();
+        $this->speedDial = $speedDial ?? new SpeedDialTransformer();
         $this->defaultTransformer = $defaultTransformer ?? new DefaultComponentTransformer();
     }
 
@@ -112,6 +116,7 @@ class HomeComponentAssembler
             $ids['products'] = array_merge($ids['products'], $this->extractIds($config, 'product_id'));
             $ids['articles'] = array_merge($ids['articles'], $this->extractIds($config, 'article_id'));
             $ids['images'] = array_merge($ids['images'], $this->extractIds($config, 'image_id'));
+            $ids['images'] = array_merge($ids['images'], $this->extractIds($config, 'icon_image_id'));
             $ids['terms'] = array_merge($ids['terms'], $this->extractIds($config, 'term_id'));
 
             // Also extract from simple format: ["126", "127", ...] used by Filament .simple()
@@ -263,6 +268,7 @@ class HomeComponentAssembler
             'editorial_spotlight', 'EditorialSpotlight' => $this->editorialSpotlight->transform($component, $resources),
             'brand_showcase', 'BrandShowcase' => $this->brandShowcase->transform($component, $resources),
             'footer', 'Footer' => $this->footer->transform($component, $resources),
+            'speed_dial', 'SpeedDial' => $this->speedDial->transform($component, $resources),
             default => $this->defaultTransformer->transform($component, $resources),
         };
     }
