@@ -77,11 +77,41 @@ class SettingsPage extends Page implements HasForms
                     ->schema([
                         Select::make('logo_image_id')
                             ->label('Logo')
-                            ->options(Image::where('active', true)->pluck('file_path', 'id'))
+                            ->options(
+                                Image::where('active', true)
+                                    ->get()
+                                    ->mapWithKeys(function ($image) {
+                                        $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
+                                        $fileName = basename($image->file_path);
+                                        
+                                        return [
+                                            $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                <span style="font-size: 0.875rem;">' . $fileName . '</span>
+                                            </div>'
+                                        ];
+                                    })
+                            )
+                            ->allowHtml()
                             ->searchable(),
                         Select::make('favicon_image_id')
                             ->label('Favicon')
-                            ->options(Image::where('active', true)->pluck('file_path', 'id'))
+                            ->options(
+                                Image::where('active', true)
+                                    ->get()
+                                    ->mapWithKeys(function ($image) {
+                                        $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
+                                        $fileName = basename($image->file_path);
+                                        
+                                        return [
+                                            $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                <span style="font-size: 0.875rem;">' . $fileName . '</span>
+                                            </div>'
+                                        ];
+                                    })
+                            )
+                            ->allowHtml()
                             ->searchable(),
                     ]),
                 Grid::make()

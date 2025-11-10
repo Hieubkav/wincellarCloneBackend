@@ -219,6 +219,73 @@ class SettingsPage extends Page implements HasForms
 
 ---
 
+## Select with allowHtml()
+
+**⚠️ CRITICAL: Tailwind classes NOT supported in allowHtml()!**
+
+When using `->allowHtml()` for custom HTML in Select options, **you MUST use inline CSS styles** instead of Tailwind classes.
+
+### Why This Happens
+
+Filament's `allowHtml()` renders dynamic HTML content that bypasses Tailwind's compilation process. Tailwind classes are only compiled at build time for static HTML in blade/vue files.
+
+### Correct Pattern
+
+```php
+Select::make('logo_image_id')
+    ->label('Logo')
+    ->options(
+        Image::where('active', true)
+            ->get()
+            ->mapWithKeys(function ($image) {
+                $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
+                $fileName = basename($image->file_path);
+                
+                // ✅ USE INLINE STYLES
+                return [
+                    $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                        <span style="font-size: 0.875rem;">' . $fileName . '</span>
+                    </div>'
+                ];
+            })
+    )
+    ->allowHtml()
+    ->searchable();
+```
+
+### Common Mistakes
+
+```php
+// ❌ WRONG - Tailwind classes won't work
+->options([
+    1 => '<div class="flex items-center gap-2">
+        <img src="..." class="w-10 h-10 object-cover rounded" />
+    </div>'
+])
+
+// ✅ CORRECT - Use inline styles
+->options([
+    1 => '<div style="display: flex; align-items: center; gap: 0.5rem;">
+        <img src="..." style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+    </div>'
+])
+```
+
+### Tailwind to Inline CSS Conversion
+
+| Tailwind Class | Inline CSS |
+|----------------|------------|
+| `flex` | `display: flex;` |
+| `items-center` | `align-items: center;` |
+| `gap-2` | `gap: 0.5rem;` |
+| `w-10 h-10` | `width: 40px; height: 40px;` |
+| `object-cover` | `object-fit: cover;` |
+| `rounded` | `border-radius: 0.25rem;` |
+| `text-sm` | `font-size: 0.875rem;` |
+
+---
+
 ## Complete Guide
 
 For comprehensive examples, advanced patterns, and detailed implementation:
