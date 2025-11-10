@@ -103,7 +103,24 @@ Skills **automatically activate** when you use natural language:
 
 ---
 
-**Version:** 3.0 (Ultra-Thin Entry Point) ✅  
-**Updated:** 2025-11-10
+---
+
+## 🔄 API Documentation Sync Rule
+
+**QUAN TRỌNG:** Khi cập nhật API backend (thêm endpoint, thay đổi parameters, sửa response format):
+
+1. **Cập nhật file tài liệu:** `docs/api/API_ENDPOINTS.md`
+2. **Cập nhật giao diện homepage:** `resources/views/api-documentation.blade.php`
+   - Thêm/sửa endpoint description
+   - Cập nhật parameters, query filters
+   - Cập nhật response examples
+3. **Kiểm tra:** Homepage tại `http://127.0.0.1:8000/` phải hiển thị API docs mới nhất
+
+**Tại sao?** Để developers luôn có tài liệu API mới nhất khi truy cập trang chủ backend.
+
+---
+
+**Version:** 3.1 (With API Sync Rule) ✅  
+**Updated:** 2025-11-11
 
 **🎯 Just ask naturally - skills auto-activate!**
