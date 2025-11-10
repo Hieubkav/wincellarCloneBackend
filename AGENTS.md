@@ -41,6 +41,9 @@ Skills **automatically activate** when you use natural language:
 "Tìm kiếm sản phẩm"                   → product-search-scoring
 "Thêm tính năng search"               → product-search-scoring
 "Optimize search algorithm"           → product-search-scoring
+"Viết document API"                   → api-documentation-writer
+"Tạo API docs"                        → api-documentation-writer
+"Generate API documentation"          → api-documentation-writer
 ```
 
 **You don't need to explicitly call skills** - just describe what you want!
@@ -61,6 +64,7 @@ Skills **automatically activate** when you use natural language:
 **Infrastructure:**
 - **api-design-principles** - REST/GraphQL best practices
 - **api-cache-invalidation** - Auto sync frontend-backend
+- **api-documentation-writer** - Generate comprehensive API documentation
 - **docs-seeker** - Find technical documentation
 
 **Development Guidelines:**

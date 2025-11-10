@@ -108,6 +108,12 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user</location>
 </skill>
 
+<skill>
+<name>api-documentation-writer</name>
+<description>Generate comprehensive API documentation for REST, GraphQL, WebSocket APIs with OpenAPI specs, endpoint descriptions, request/response examples, error codes, authentication guides, and SDKs. Developer-friendly reference materials. USE WHEN user says 'viết document API', 'tạo API docs', 'generate API documentation', 'document REST endpoints', hoặc cần tạo technical reference cho developers.</description>
+<location>user</location>
+</skill>
+
 </available_skills>
 
 ---
