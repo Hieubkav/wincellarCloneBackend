@@ -31,6 +31,8 @@ Skills **automatically activate** when you use natural language:
 "Tạo skill mới"                       → create-skill
 "Phải Ctrl+F5 mới thấy data mới"    → api-cache-invalidation
 "Tìm tài liệu cho Next.js"           → docs-seeker
+"Bug này không fix được"              → systematic-debugging
+"Test fail liên tục"                  → systematic-debugging
 ```
 
 **You don't need to explicitly call skills** - just describe what you want!
@@ -45,6 +47,7 @@ Skills **automatically activate** when you use natural language:
 - **filament-form-debugger** - Fix "Class not found" errors
 - **image-management** - Polymorphic image system
 - **database-backup** - Safe migration workflow
+- **systematic-debugging** - 4-phase debugging framework (root cause investigation)
 
 **Infrastructure:**
 - **api-design-principles** - REST/GraphQL best practices

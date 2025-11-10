@@ -72,6 +72,12 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user</location>
 </skill>
 
+<skill>
+<name>systematic-debugging</name>
+<description>Four-phase systematic debugging framework that mandates root cause investigation before fixes. STOP random fixes and symptom patches. USE WHEN encountering bugs, test failures, unexpected behavior, errors, or when fixes fail repeatedly. ESPECIALLY USE when under time pressure or tempted to 'quick fix'.</description>
+<location>user</location>
+</skill>
+
 </available_skills>
 
 ---
