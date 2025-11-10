@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\ProductCategory;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ProductCategoryObserver
@@ -18,11 +19,32 @@ class ProductCategoryObserver
         }
     }
 
+    public function created(ProductCategory $category): void
+    {
+        $this->clearFilterCache();
+    }
+
     public function updating(ProductCategory $category): void
     {
         if ($category->isDirty('name')) {
             $category->slug = $this->generateUniqueSlug($category->name, $category->id);
         }
+    }
+
+    public function updated(ProductCategory $category): void
+    {
+        $this->clearFilterCache();
+    }
+
+    public function deleted(ProductCategory $category): void
+    {
+        $this->clearFilterCache();
+    }
+
+    private function clearFilterCache(): void
+    {
+        Cache::forget('product_filter_options_v2');
+        Cache::forget('product_filter_options_v3');
     }
 
     private function generateUniqueSlug(string $name, ?int $ignoreId = null): string

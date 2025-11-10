@@ -20,10 +20,21 @@ class ProductFilters
     {
         $terms = Arr::get($filters, 'terms', []);
 
-        $this->applyTermFilter('brand', Arr::get($terms, 'brand', []));
-        $this->applyOriginCountryFilter(Arr::get($terms, 'origin.country', []));
-        $this->applyOriginRegionFilter(Arr::get($terms, 'origin.region', []));
-        $this->applyTermFilter('grape', Arr::get($terms, 'grape', []));
+        // Apply dynamic attribute filters for all term groups
+        // This handles: brand, grape, origin, flavor_profile, material, accessory_type, etc.
+        foreach ($terms as $groupCode => $termIds) {
+            // Handle nested arrays (e.g., terms[origin][country][] from old frontend)
+            if (is_array($termIds) && isset($termIds['country'])) {
+                // Legacy: terms[origin][country][]
+                $this->applyTermFilter($groupCode, Arr::get($termIds, 'country', []));
+            } elseif (is_array($termIds) && isset($termIds['region'])) {
+                // Legacy: terms[origin][region][]
+                $this->applyTermFilter($groupCode, Arr::get($termIds, 'region', []));
+            } else {
+                // Modern: terms[brand][], terms[grape][], terms[flavor_profile][], etc.
+                $this->applyTermFilter($groupCode, $termIds);
+            }
+        }
 
         $this->applyTypeFilter(Arr::get($filters, 'type', []));
         $this->applyCategoryFilter(Arr::get($filters, 'category', []));
@@ -55,36 +66,13 @@ class ProductFilters
             return;
         }
 
-        $this->query->whereIn('product_category_id', $ids);
-    }
-
-    private function applyOriginCountryFilter(array $termIds): void
-    {
-        $ids = $this->filterIds($termIds);
-
-        if (empty($ids)) {
-            return;
-        }
-
-        $this->query->whereHas('terms', function (Builder $query) use ($ids): void {
-            $query->whereIn('catalog_terms.id', $ids)
-                ->whereHas('group', fn (Builder $groupQuery) => $groupQuery->where('code', 'origin'));
+        // Use many-to-many relationship via product_category_product table
+        $this->query->whereHas('categories', function (Builder $query) use ($ids): void {
+            $query->whereIn('product_categories.id', $ids);
         });
     }
 
-    private function applyOriginRegionFilter(array $termIds): void
-    {
-        $ids = $this->filterIds($termIds);
 
-        if (empty($ids)) {
-            return;
-        }
-
-        $this->query->whereHas('terms', function (Builder $query) use ($ids): void {
-            $query->whereIn('catalog_terms.id', $ids)
-                ->whereHas('group', fn (Builder $groupQuery) => $groupQuery->where('code', 'origin'));
-        });
-    }
 
     private function applyTypeFilter(array $types): void
     {

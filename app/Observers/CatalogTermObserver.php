@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\CatalogTerm;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class CatalogTermObserver
@@ -18,11 +19,32 @@ class CatalogTermObserver
         }
     }
 
+    public function created(CatalogTerm $catalogTerm): void
+    {
+        $this->clearFilterCache();
+    }
+
     public function updating(CatalogTerm $catalogTerm): void
     {
         if ($catalogTerm->isDirty('name')) {
             $catalogTerm->slug = $this->generateUniqueSlug($catalogTerm->name, $catalogTerm->group_id, $catalogTerm->id);
         }
+    }
+
+    public function updated(CatalogTerm $catalogTerm): void
+    {
+        $this->clearFilterCache();
+    }
+
+    public function deleted(CatalogTerm $catalogTerm): void
+    {
+        $this->clearFilterCache();
+    }
+
+    private function clearFilterCache(): void
+    {
+        Cache::forget('product_filter_options_v2');
+        Cache::forget('product_filter_options_v3');
     }
 
     private function generateUniqueSlug(string $name, int $groupId, ?int $ignoreId = null): string

@@ -12,14 +12,14 @@ class ProductIndexRequest extends FormRequest
         return [
             'q' => ['nullable', 'string', 'min:1', 'max:120'],
             'terms' => ['sometimes', 'array'],
-            'terms.brand' => ['sometimes', 'array'],
-            'terms.brand.*' => ['integer', 'min:1'],
+            // Dynamic attribute filters - wildcard validation for all catalog_attribute_groups
+            'terms.*' => ['sometimes', 'array'],
+            'terms.*.*' => ['integer', 'min:1'],
+            // Legacy support for nested origin filters
             'terms.origin.country' => ['sometimes', 'array'],
             'terms.origin.country.*' => ['integer', 'min:1'],
             'terms.origin.region' => ['sometimes', 'array'],
             'terms.origin.region.*' => ['integer', 'min:1'],
-            'terms.grape' => ['sometimes', 'array'],
-            'terms.grape.*' => ['integer', 'min:1'],
             'type' => ['sometimes', 'array'],
             'type.*' => ['integer', 'min:1'],
             'category' => ['sometimes', 'array'],

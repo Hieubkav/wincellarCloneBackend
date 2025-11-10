@@ -54,16 +54,26 @@ class ProductSearchBuilder
             return;
         }
 
-        // Try full-text search first (if index exists)
-        $query->whereRaw("MATCH(products.name, products.description) AGAINST(? IN NATURAL LANGUAGE MODE)", [$keyword])
-            ->orWhere(function (Builder $searchQuery) use ($keyword): void {
-                // Fallback to LIKE search
-                $pattern = self::toLikePattern($keyword);
+        $pattern = self::toLikePattern($keyword);
 
+        // Wrap entire search logic in a where closure to maintain proper precedence with other filters
+        $query->where(function (Builder $searchQuery) use ($keyword, $pattern): void {
+            // MySQL fulltext has minimum word length = 4 (default for InnoDB)
+            // Skip MATCH AGAINST for short keywords as they won't match
+            if (mb_strlen($keyword) >= 4) {
+                // Try full-text search first (better relevance ranking)
+                $searchQuery->whereRaw("MATCH(products.name, products.description) AGAINST(? IN NATURAL LANGUAGE MODE)", [$keyword])
+                    ->orWhere(function (Builder $likeQuery) use ($pattern): void {
+                        // Fallback to LIKE search (only name and slug, skip description to avoid false matches)
+                        $likeQuery->where('products.name', 'like', $pattern)
+                            ->orWhere('products.slug', 'like', $pattern);
+                    });
+            } else {
+                // For short keywords, only use LIKE on name and slug
                 $searchQuery->where('products.name', 'like', $pattern)
-                    ->orWhere('products.slug', 'like', $pattern)
-                    ->orWhere('products.description', 'like', $pattern);
-            });
+                    ->orWhere('products.slug', 'like', $pattern);
+            }
+        });
     }
 
     private static function toLikePattern(string $value): string
