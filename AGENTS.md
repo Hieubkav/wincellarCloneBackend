@@ -40,6 +40,15 @@
 "Tạo Artisan command"                 → laravel-prompts
 "Interactive CLI prompt"              → laravel-prompts
 "Laravel console command"             → laravel-prompts
+"Optimize web performance"            → web-performance-audit
+"Đo page speed"                       → web-performance-audit
+"Core Web Vitals"                     → web-performance-audit
+"Google SEO"                          → google-official-seo-guide
+"Structured data VideoObject"         → google-official-seo-guide
+"Search Console"                      → google-official-seo-guide
+"Optimize content cho SEO"            → seo-content-optimizer
+"Keyword analysis"                    → seo-content-optimizer
+"Meta description optimization"       → seo-content-optimizer
 ```
 
 ```
@@ -64,6 +73,12 @@
 **meta/** - Skill Management
 - create-skill (init, validate, package, categorize)
 
+**optimize/** - Performance & SEO Optimization
+- web-performance-audit, google-official-seo-guide
+
+**marketing/** - Content & SEO Marketing
+- seo-content-optimizer
+
 **Access:** `read .claude/skills/[category]/[skill-name]/SKILL.md`
 **Details:** Each skill < 200 lines, references/ for deep dive, scripts/ for automation
 
@@ -83,8 +98,8 @@
 ---
 
 **Skills Architecture:**
-- Organized into 6 categories (filament, laravel, fullstack, workflows, api, meta)
+- Organized into 8 categories (filament, laravel, fullstack, workflows, api, meta, optimize, marketing)
 - Each skill < 200 lines (SKILL.md = essentials, references/ = details, scripts/ = tools)
 - Progressive disclosure for efficient context management
 
-v4.2 | Updated: 2025-11-11 | 19/19 skills categorized & optimized
+v4.3 | Updated: 2025-11-11 | 22/22 skills categorized & optimized

@@ -132,6 +132,24 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user/laravel</location>
 </skill>
 
+<skill>
+<name>web-performance-audit</name>
+<description>Conduct comprehensive web performance audits measuring Core Web Vitals (LCP, FID, CLS), page speed, bottleneck identification, and optimization recommendations. Includes performance metrics analysis, optimization strategies (quick wins, medium effort, long-term), monitoring setup, and performance budgets. USE WHEN optimizing web performance, improving page speed, analyzing Core Web Vitals, setting up performance monitoring, identifying performance bottlenecks, or implementing performance improvements.</description>
+<location>user/optimize</location>
+</skill>
+
+<skill>
+<name>google-official-seo-guide</name>
+<description>Official Google SEO guide covering search optimization, Search Console, crawling/indexing, structured data (VideoObject, BroadcastEvent, Clip), mobile-first indexing, internationalization, and search visibility improvements. Comprehensive reference files for appearance, crawling, fundamentals, guides, indexing, and specialty topics. USE WHEN implementing SEO best practices, adding structured data, optimizing for Google Search, fixing crawling/indexing issues, implementing schema.org markup, or improving search visibility.</description>
+<location>user/optimize</location>
+</skill>
+
+<skill>
+<name>seo-content-optimizer</name>
+<description>Optimize content for search engines with keyword analysis, readability scoring (Flesch Reading Ease), meta descriptions generation, content structure evaluation, and competitor comparison. Provides actionable SEO recommendations prioritized by impact. USE WHEN optimizing blog posts/articles for SEO, analyzing keyword density, improving content readability, generating meta tags, identifying content gaps, or improving search rankings.</description>
+<location>user/marketing</location>
+</skill>
+
 </available_skills>
 
 ---
