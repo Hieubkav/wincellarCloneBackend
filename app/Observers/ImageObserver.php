@@ -20,10 +20,17 @@ class ImageObserver
     }
     /**
      * Handle the Image "creating" event.
-     * Tự động set order và alt text cho ảnh mới
+     * Auto-set disk, order, và alt text cho ảnh mới
      */
     public function creating(Image $image): void
     {
+        // Force disk='public' for ALL images to ensure web accessibility
+        // This is intentional - do NOT make configurable per environment
+        // Reason: Images must be accessible via /storage/... URLs
+        if (empty($image->disk)) {
+            $image->disk = 'public';
+        }
+        
         // Auto-assign order if not set
         if ($image->order === null && $image->model_type && $image->model_id) {
             $image->order = $this->findNextAvailableOrder($image);

@@ -12,10 +12,16 @@ use App\Models\Image;
 use App\Models\SocialLink;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Actions\BulkActionGroup;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -61,28 +67,90 @@ class SocialLinkResource extends Resource
     {
         return $schema
             ->schema([
-                Grid::make()
+                Section::make('Thông tin cơ bản')
                     ->schema([
-                        TextInput::make('platform')
-                            ->label('Tên mạng xã hội')
-                            ->required()
-                            ->maxLength(255),
-                        TextInput::make('url')
-                            ->label('Đường dẫn')
-                            ->required()
-                            ->url()
-                            ->maxLength(255),
-                        Select::make('icon_image_id')
-                            ->label('Biểu tượng')
-                            ->relationship('iconImage', 'file_path')
-                            ->searchable()
-                            ->preload(),
-                        Toggle::make('active')
-                            ->label('Đang hiển thị')
-                            ->default(true)
-                            ->inline(false),
-                    ])
-                    ->columns(2),
+                        Grid::make()
+                            ->schema([
+                                TextInput::make('platform')
+                                    ->label('Tên mạng xã hội')
+                                    ->required()
+                                    ->maxLength(255),
+                                TextInput::make('url')
+                                    ->label('Đường dẫn')
+                                    ->required()
+                                    ->url()
+                                    ->maxLength(255),
+                                Toggle::make('active')
+                                    ->label('Đang hiển thị')
+                                    ->default(true)
+                                    ->inline(false),
+                            ])
+                            ->columns(2),
+                    ]),
+                    
+                Section::make('Biểu tượng')
+                    ->description('Chọn icon từ thư viện hoặc tải lên icon mới')
+                    ->schema([
+                        Tabs::make('IconSelection')
+                            ->tabs([
+                                Tabs\Tab::make('Chọn từ thư viện')
+                                    ->icon('heroicon-o-photo')
+                                    ->schema([
+                                        Select::make('icon_image_id')
+                                            ->label('Biểu tượng có sẵn')
+                                            ->relationship('iconImage', 'file_path', fn ($query) => $query->whereNull('model_id')->orWhereNull('model_type'))
+                                            ->searchable()
+                                            ->preload()
+                                            ->getOptionLabelFromRecordUsing(fn (Image $record) => basename($record->file_path))
+                                            ->helperText('Chọn icon có sẵn trong hệ thống'),
+                                    ]),
+                                Tabs\Tab::make('Tải lên mới')
+                                    ->icon('heroicon-o-arrow-up-tray')
+                                    ->schema([
+                                        FileUpload::make('new_icon')
+                                            ->label('Upload icon mới')
+                                            ->image()
+                                            ->disk('public')
+                                            ->directory('icons')
+                                            ->imageEditor()
+                                            ->maxSize(2048)
+                                            ->acceptedFileTypes(['image/*'])
+                                            ->saveUploadedFileUsing(function ($file, $set, $get) {
+                                                $filename = uniqid('icon_') . '.webp';
+                                                $path = 'icons/' . $filename;
+                                                $disk = 'public';
+
+                                                $manager = new ImageManager(new Driver());
+                                                $image = $manager->read($file->getRealPath());
+
+                                                if ($image->width() > 256 || $image->height() > 256) {
+                                                    $image->scale(width: 256);
+                                                }
+
+                                                $webp = $image->toWebp(quality: 90);
+                                                Storage::disk($disk)->put($path, $webp);
+
+                                                // Tạo Image record mới
+                                                $imageRecord = Image::create([
+                                                    'file_path' => $path,
+                                                    'disk' => $disk,
+                                                    'alt' => 'Social link icon',
+                                                    'mime' => 'image/webp',
+                                                    'active' => true,
+                                                ]);
+
+                                                // Set icon_image_id cho SocialLink
+                                                $set('icon_image_id', $imageRecord->id);
+
+                                                return $path;
+                                            })
+                                            ->dehydrated(false)
+                                            ->helperText('Tải lên icon mới (tự động convert sang WebP, tối đa 256px)'),
+                                    ]),
+                            ])
+                            ->contained(false)
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 

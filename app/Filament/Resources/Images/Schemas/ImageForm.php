@@ -5,13 +5,11 @@ namespace App\Filament\Resources\Images\Schemas;
 use App\Models\Article;
 use App\Models\Product;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\KeyValue;
-use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\MorphToSelect;
 use Filament\Forms\Components\MorphToSelect\Type;
-use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
@@ -30,13 +28,7 @@ class ImageForm
             ->columns(1)
             ->components([
                 Section::make('Tệp hình ảnh')
-                    ->columns(2)
                     ->schema([
-                        Select::make('disk')
-                            ->label('Nơi lưu trữ')
-                            ->required()
-                            ->options(self::diskOptions())
-                            ->default(config('filesystems.default')),
                         FileUpload::make('file_path')
                             ->label('Tải lên hình ảnh')
                             ->required(fn (string $operation): bool => $operation === 'create')
@@ -44,18 +36,16 @@ class ImageForm
                             ->imageEditor()
                             ->maxFiles(1)
                             ->maxSize(10240)
-                            ->disk(fn (Get $get): string => $get('disk') ?? config('filesystems.default'))
+                            ->disk('public')
                             ->directory('media/images')
                             ->saveUploadedFileUsing(function (TemporaryUploadedFile $file, Get $get) {
                                 $filename = 'img-' . Str::uuid() . '.webp';
-                                $disk = $get('disk') ?? config('filesystems.default');
+                                $disk = 'public';
                                 $path = 'media/images/' . $filename;
 
-                                // Convert to WebP with 85% quality
                                 $manager = new ImageManager(new Driver());
                                 $image = $manager->read($file->getRealPath());
 
-                                // Resize if too large
                                 if ($image->width() > 1920) {
                                     $image->scale(width: 1920);
                                 }
@@ -64,7 +54,29 @@ class ImageForm
                                 Storage::disk($disk)->put($path, $webp);
 
                                 return $path;
-                            }),
+                            })
+                            ->afterStateUpdated(function ($state, $set) {
+                                if (!$state) {
+                                    return;
+                                }
+
+                                try {
+                                    $disk = 'public';
+                                    $fullPath = Storage::disk($disk)->path($state);
+                                    
+                                    if (file_exists($fullPath)) {
+                                        [$width, $height] = getimagesize($fullPath);
+                                        $set('width', $width);
+                                        $set('height', $height);
+                                        $set('mime', 'image/webp');
+                                        $set('disk', $disk);
+                                    }
+                                } catch (\Throwable $e) {
+                                    // Observer sẽ handle metadata extraction
+                                }
+                            })
+                            ->columnSpanFull()
+                            ->helperText('Tải lên ảnh mới (tự động convert sang WebP, mặc định lưu vào local storage)'),
                     ]),
                 Section::make('Thông tin')
                     ->columns(2)
@@ -75,6 +87,7 @@ class ImageForm
                             ->inline(false),
                     ]),
                 Section::make('Gắn với')
+                    ->description('Tùy chọn - Có thể để trống để tạo ảnh độc lập (logo, favicon, icon...)')
                     ->schema([
                         MorphToSelect::make('model')
                             ->label('Thuộc về')
@@ -86,42 +99,18 @@ class ImageForm
                                     ->label('Bài viết')
                                     ->titleAttribute('title'),
                             ])
-                            ->required()
+                            ->required(false)
                             ->preload()
                             ->searchable(),
                     ]),
-                Section::make('Chi tiết kỹ thuật')
-                    ->description('Hệ thống tự động nhận diện')
-                    ->collapsed()
-                    ->columns(3)
-                    ->schema([
-                        TextInput::make('width')
-                            ->label('Chiều rộng (px)')
-                            ->numeric()
-                            ->dehydrated(false)
-                            ->disabled(),
-                        TextInput::make('height')
-                            ->label('Chiều cao (px)')
-                            ->numeric()
-                            ->dehydrated(false)
-                            ->disabled(),
-                        TextInput::make('mime')
-                            ->label('Định dạng')
-                            ->maxLength(191)
-                            ->dehydrated(false)
-                            ->disabled(),
-                        TextInput::make('alt')
-                            ->label('Mô tả ảnh (Alt text)')
-                            ->maxLength(255)
-                            ->dehydrated(false)
-                            ->disabled()
-                            ->columnSpanFull(),
-                        TextInput::make('order')
-                            ->label('Thứ tự hiển thị')
-                            ->numeric()
-                            ->dehydrated(false)
-                            ->disabled(),
-                    ]),
+                
+                // Hidden fields - sẽ được auto-fill bởi observer
+                Hidden::make('disk')
+                    ->default('public'),
+                Hidden::make('width'),
+                Hidden::make('height'),
+                Hidden::make('mime'),
+                
                 Section::make('Thuộc tính bổ sung')
                     ->collapsed()
                     ->description('Thông tin mở rộng, không bắt buộc')
@@ -135,13 +124,5 @@ class ImageForm
                             ->columnSpanFull(),
                     ]),
             ]);
-    }
-
-    protected static function diskOptions(): array
-    {
-        return collect(config('filesystems.disks', []))
-            ->keys()
-            ->mapWithKeys(fn (string $disk): array => [$disk => $disk])
-            ->all();
     }
 }

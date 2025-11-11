@@ -28,7 +28,7 @@ return new class extends Migration
             $table->unsignedInteger('width')->nullable();
             $table->unsignedInteger('height')->nullable();
             $table->string('mime', 191)->nullable();
-            $table->morphs('model');
+            $table->nullableMorphs('model');
             $table->unsignedInteger('order')->default(1);
             $table->boolean('active')->default(true);
             $table->json('extra_attributes')->nullable();
