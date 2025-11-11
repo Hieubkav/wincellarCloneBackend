@@ -44,6 +44,18 @@ class ArticleController extends Controller
             throw ApiException::notFound('Article', $slug);
         }
 
+        // Load related articles (3 most recent, excluding current)
+        $relatedArticles = Article::query()
+            ->select('articles.*')
+            ->with(['coverImage'])
+            ->active()
+            ->where('id', '!=', $article->id)
+            ->latest('created_at')
+            ->limit(3)
+            ->get();
+
+        $article->setRelation('relatedArticles', $relatedArticles);
+
         return new ArticleResource($article);
     }
 

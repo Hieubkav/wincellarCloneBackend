@@ -46,6 +46,23 @@ class ArticleResource extends JsonResource
                 'title' => $this->meta_title,
                 'description' => $this->meta_description,
             ]),
+
+            // Related articles (detail view only)
+            'related_articles' => $this->when(
+                $request->routeIs('api.v1.articles.show') && $this->relationLoaded('relatedArticles'),
+                function () {
+                    return $this->relatedArticles->map(function ($article) {
+                        return [
+                            'id' => $article->id,
+                            'title' => $article->title,
+                            'slug' => $article->slug,
+                            'excerpt' => $article->excerpt,
+                            'cover_image_url' => $article->cover_image_url ?: '/placeholder/article.svg',
+                            'published_at' => $article->created_at?->toIso8601String(),
+                        ];
+                    });
+                }
+            ),
             
             // HATEOAS links
             '_links' => [
