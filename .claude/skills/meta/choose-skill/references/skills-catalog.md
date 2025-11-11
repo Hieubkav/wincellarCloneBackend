@@ -1,6 +1,6 @@
 # Skills Catalog - Complete Reference
 
-**Total Skills:** 34 skills across 9 categories  
+**Total Skills:** 37 skills across 9 categories  
 **Last Updated:** 2025-11-11
 
 ## Quick Navigation
@@ -8,7 +8,7 @@
 - [Filament (4 skills)](#filament---filament-4x-laravel-12)
 - [Laravel (3 skills)](#laravel---laravel-framework--tools)
 - [Fullstack (4 skills)](#fullstack---full-stack-development)
-- [Workflows (4 skills)](#workflows---development-workflows)
+- [Workflows (7 skills)](#workflows---development-workflows)
 - [API (3 skills)](#api---api-design--documentation)
 - [Meta (2 skills)](#meta---skill-management)
 - [Optimize (2 skills)](#optimize---performance--seo)
@@ -346,9 +346,77 @@ Searching internet for technical documentation using llms.txt standard, GitHub r
 
 ---
 
+### 16. brainstorming
+**Path:** `.claude/skills/workflows/brainstorming/SKILL.md`
+
+**Description:**  
+Use when creating or developing ideas, before writing code or implementation plans - refines rough ideas into fully-formed designs through collaborative questioning, alternative exploration, and incremental validation.
+
+**When to Use:**
+- "Brainstorm ý tưởng"
+- "Thiết kế feature mới"
+- Turning rough ideas into designs
+- Planning new features
+- Exploring architecture options
+- Before implementation
+
+**Key Features:**
+- One question at a time approach
+- Multiple choice preferred
+- Explore 2-3 alternatives
+- Incremental validation
+- Document validated designs
+
+---
+
+### 17. sequential-thinking
+**Path:** `.claude/skills/workflows/sequential-thinking/SKILL.md`
+
+**Description:**  
+Use when complex problems require systematic step-by-step reasoning with ability to revise thoughts, branch into alternative approaches, or dynamically adjust scope.
+
+**When to Use:**
+- "Giải quyết vấn đề phức tạp"
+- "Step-by-step reasoning"
+- Multi-stage analysis
+- Problem decomposition
+- Tasks with unclear scope
+- Need to backtrack or revise
+
+**Key Features:**
+- Iterative reasoning
+- Revision tracking
+- Branch exploration
+- Dynamic scope adjustment
+- Maintained context
+
+---
+
+### 18. writing-plans
+**Path:** `.claude/skills/workflows/writing-plans/SKILL.md`
+
+**Description:**  
+Use when design is complete and you need detailed implementation tasks for engineers with zero codebase context - creates comprehensive implementation plans with exact file paths, complete code examples, and verification steps.
+
+**When to Use:**
+- "Viết implementation plan"
+- "Tạo task breakdown"
+- Creating step-by-step guides
+- After brainstorming phase
+- Breaking features into tasks
+
+**Key Features:**
+- Bite-sized tasks (2-5 min each)
+- Exact file paths
+- Complete code examples
+- TDD/DRY/YAGNI principles
+- Execution handoff options
+
+---
+
 ## API - API Design & Documentation
 
-### 16. api-design-principles
+### 19. api-design-principles
 **Path:** `.claude/skills/api/api-design-principles/SKILL.md`
 
 **Description:**  
@@ -371,7 +439,7 @@ Master REST and GraphQL API design principles to build intuitive, scalable, and 
 
 ---
 
-### 17. api-cache-invalidation
+### 20. api-cache-invalidation
 **Path:** `.claude/skills/api/api-cache-invalidation/SKILL.md`
 
 **Description:**  
@@ -393,7 +461,7 @@ Automatic cache invalidation system with Laravel Observers and Next.js On-Demand
 
 ---
 
-### 18. api-documentation-writer
+### 21. api-documentation-writer
 **Path:** `.claude/skills/api/api-documentation-writer/SKILL.md`
 
 **Description:**  
@@ -418,7 +486,7 @@ Generate comprehensive API documentation for REST, GraphQL, WebSocket APIs with 
 
 ## Meta - Skill Management
 
-### 19. create-skill
+### 22. create-skill
 **Path:** `.claude/skills/meta/create-skill/SKILL.md`
 
 **Description:**  
@@ -442,7 +510,7 @@ Guide for creating effective skills. Extends Claude's capabilities with speciali
 
 ---
 
-### 20. choose-skill
+### 23. choose-skill
 **Path:** `.claude/skills/meta/choose-skill/SKILL.md`
 
 **Description:**  
@@ -467,7 +535,7 @@ Meta-agent that analyzes tasks and recommends optimal skill combinations with Fe
 
 ## Optimize - Performance & SEO
 
-### 21. web-performance-audit
+### 24. web-performance-audit
 **Path:** `.claude/skills/optimize/web-performance-audit/SKILL.md`
 
 **Description:**  
@@ -490,7 +558,7 @@ Conduct comprehensive web performance audits. Measure page speed, identify bottl
 
 ---
 
-### 22. google-official-seo-guide
+### 25. google-official-seo-guide
 **Path:** `.claude/skills/optimize/google-official-seo-guide/SKILL.md`
 
 **Description:**  
@@ -516,7 +584,7 @@ Official Google SEO guide covering search optimization, best practices, Search C
 
 ## Marketing - Content & SEO Marketing
 
-### 23. seo-content-optimizer
+### 26. seo-content-optimizer
 **Path:** `.claude/skills/marketing/seo-content-optimizer/SKILL.md`
 
 **Description:**  
@@ -541,7 +609,7 @@ Optimize content for search engines with keyword analysis, readability scoring, 
 
 ## Database - Database Management & Optimization
 
-### 24. databases
+### 27. databases
 **Path:** `.claude/skills/database/databases/SKILL.md`
 
 **Description:**  
@@ -567,7 +635,7 @@ Work with MongoDB (document database, BSON documents, aggregation pipelines, Atl
 
 ---
 
-### 25. analyzing-database-indexes
+### 28. analyzing-database-indexes
 **Path:** `.claude/skills/database/analyzing-database-indexes/SKILL.md`
 
 **Description:**  
@@ -589,7 +657,7 @@ Analyze database indexes for performance optimization, identify missing indexes,
 
 ---
 
-### 26. analyzing-query-performance
+### 29. analyzing-query-performance
 **Path:** `.claude/skills/database/analyzing-query-performance/SKILL.md`
 
 **Description:**  
@@ -610,7 +678,7 @@ Analyze slow queries, use EXPLAIN plans, identify bottlenecks, and optimize data
 
 ---
 
-### 27. comparing-database-schemas
+### 30. comparing-database-schemas
 **Path:** `.claude/skills/database/comparing-database-schemas/SKILL.md`
 
 **Description:**  
@@ -630,7 +698,7 @@ Compare database schemas between environments, generate migration scripts, ident
 
 ---
 
-### 28. designing-database-schemas
+### 31. designing-database-schemas
 **Path:** `.claude/skills/database/designing-database-schemas/SKILL.md`
 
 **Description:**  
@@ -652,7 +720,7 @@ Design optimal database schemas, normalization, relationships, constraints, and 
 
 ---
 
-### 29. generating-database-documentation
+### 32. generating-database-documentation
 **Path:** `.claude/skills/database/generating-database-documentation/SKILL.md`
 
 **Description:**  
@@ -673,7 +741,7 @@ Generate comprehensive database documentation including schema diagrams, table d
 
 ---
 
-### 30. generating-database-seed-data
+### 33. generating-database-seed-data
 **Path:** `.claude/skills/database/generating-database-seed-data/SKILL.md`
 
 **Description:**  
@@ -694,7 +762,7 @@ Generate realistic seed data for database testing, development environments, and
 
 ---
 
-### 31. generating-orm-code
+### 34. generating-orm-code
 **Path:** `.claude/skills/database/generating-orm-code/SKILL.md`
 
 **Description:**  
@@ -715,7 +783,7 @@ Generate ORM models, entities, and relationships from database schemas for Eloqu
 
 ---
 
-### 32. generating-test-data
+### 35. generating-test-data
 **Path:** `.claude/skills/database/generating-test-data/SKILL.md`
 
 **Description:**  
@@ -736,7 +804,7 @@ Generate test data for unit tests, integration tests, and end-to-end tests with 
 
 ---
 
-### 33. scanning-database-security
+### 36. scanning-database-security
 **Path:** `.claude/skills/database/scanning-database-security/SKILL.md`
 
 **Description:**  
@@ -757,7 +825,7 @@ Scan database for security vulnerabilities, SQL injection risks, permission issu
 
 ---
 
-### 34. validating-database-integrity
+### 37. validating-database-integrity
 **Path:** `.claude/skills/database/validating-database-integrity/SKILL.md`
 
 **Description:**  
@@ -778,7 +846,7 @@ Validate database integrity with constraint checks, referential integrity valida
 
 ---
 
-### 35. sql-optimization-patterns
+### 38. sql-optimization-patterns
 **Path:** `.claude/skills/database/sql-optimization-patterns/SKILL.md`
 
 **Description:**  

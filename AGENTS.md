@@ -16,6 +16,10 @@
 "Tạo skill mới"                       → create-skill
 "Package skill"                       → create-skill
 "Validate skill"                      → create-skill
+"Suggest category for skill"          → create-skill (intelligent grouping)
+"Check skill organization"            → create-skill (refactor analysis)
+"Skill này nên ở category nào?"      → create-skill (intelligent grouping)
+"Refactor categories"                 → create-skill (refactor analysis)
 "Skill nào phù hợp cho task này?"    → choose-skill
 "Không biết dùng skill nào"          → choose-skill
 "Recommend skills for X"              → choose-skill
@@ -23,6 +27,15 @@
 "Tìm tài liệu cho Next.js"           → docs-seeker
 "Bug này không fix được"              → systematic-debugging
 "Test fail liên tục"                  → systematic-debugging
+"Brainstorm ý tưởng"                  → brainstorming
+"Thiết kế feature mới"                → brainstorming
+"Refine requirements"                 → brainstorming
+"Giải quyết vấn đề phức tạp"         → sequential-thinking
+"Step-by-step reasoning"              → sequential-thinking
+"Multi-stage analysis"                → sequential-thinking
+"Viết implementation plan"            → writing-plans
+"Tạo task breakdown"                  → writing-plans
+"Create step-by-step guide"           → writing-plans
 "Tạo controller mới"                  → backend-dev-guidelines
 "Tạo component React"                 → frontend-dev-guidelines
 "Thiết kế giao diện"                  → ux-designer
@@ -68,6 +81,34 @@
 "SQL optimization"                    → sql-optimization-patterns
 "PostgreSQL queries"                  → databases
 "MongoDB aggregation"                 → databases
+"Tạo component React"                 → frontend-components
+"Responsive design"                   → frontend-responsive
+"Mobile-first layout"                 → frontend-responsive
+"Tạo landing page"                    → landing-page-guide
+"Next.js App Router"                  → nextjs
+"Server Components"                   → nextjs
+"React hooks pattern"                 → react-component-architecture
+"Tailwind styling"                    → tailwind-css
+"Dark mode Tailwind"                  → tailwind-css
+"Design tokens"                       → ui-design-system
+"Zustand state"                       → zustand-state-management
+"Cache optimization"                  → cache-optimization
+"E2E testing"                         → e2e-testing-patterns
+"Playwright test"                     → playwright-automation
+"Browser automation"                  → playwright-automation
+"Quality verification"                → qa-verification
+"API design patterns"                 → api-best-practices
+"REST API best practices"             → api-best-practices
+"Authentication patterns"             → auth-implementation-patterns
+"JWT implementation"                  → auth-implementation-patterns
+"Better Auth setup"                   → better-auth
+"Cloudflare D1 auth"                  → better-auth
+"FastAPI template"                    → fastapi-templates
+"Code review"                         → code-review-excellence
+"Git commit message"                  → git-commit-helper
+"Package repository"                  → repomix
+"Repomix analysis"                    → repomix
+"Skill template"                      → skill-skeleton
 ```
 
 ```
@@ -80,17 +121,23 @@
 **laravel/** - Laravel Framework & Tools
 - laravel, laravel-dusk, laravel-prompts
 
+**frontend/** - Frontend Development (NEW!)
+- frontend-components, frontend-responsive, landing-page-guide, nextjs, react-component-architecture, tailwind-css, ui-design-system, zustand-state-management, cache-optimization
+
+**testing/** - Testing & QA (NEW!)
+- e2e-testing-patterns, playwright-automation, qa-verification
+
 **fullstack/** - Full-Stack Development
-- backend-dev-guidelines, frontend-dev-guidelines, ux-designer, ui-styling
+- backend-dev-guidelines, frontend-dev-guidelines, ux-designer, ui-styling, auth-implementation-patterns, better-auth, fastapi-templates
 
 **workflows/** - Development Workflows
-- database-backup, systematic-debugging, product-search-scoring, docs-seeker
+- database-backup, systematic-debugging, product-search-scoring, docs-seeker, brainstorming, sequential-thinking, writing-plans, code-review-excellence, git-commit-helper, repomix
 
 **api/** - API Design & Documentation
-- api-design-principles, api-cache-invalidation, api-documentation-writer
+- api-design-principles, api-cache-invalidation, api-documentation-writer, api-best-practices
 
 **meta/** - Skill Management
-- create-skill (init, validate, package, categorize), choose-skill
+- create-skill (init, validate, package, intelligent grouping, refactor analysis), choose-skill, skill-skeleton
 
 **optimize/** - Performance & SEO Optimization
 - web-performance-audit, google-official-seo-guide
@@ -120,8 +167,8 @@
 ---
 
 **Skills Architecture:**
-- Organized into 9 categories (filament, laravel, fullstack, workflows, api, meta, optimize, marketing, database)
+- Organized into 11 categories (filament, laravel, frontend, testing, fullstack, workflows, api, meta, optimize, marketing, database)
 - Each skill < 200 lines (SKILL.md = essentials, references/ = details, scripts/ = tools)
 - Progressive disclosure for efficient context management
 
-v5.1 | Updated: 2025-11-11 | 35/35 skills categorized & optimized
+v6.0 | Updated: 2025-11-11 | 55/55 skills categorized & optimized | NEW: frontend/ (9 skills) + testing/ (3 skills)

@@ -1,5 +1,10 @@
 # Skills Categories Structure
 
+> ⚠️ **DEPRECATED:** This file is outdated and no longer maintained.  
+> **Use instead:** `.claude/global/SKILLS_CONTEXT.md` (single source of truth)
+
+---
+
 ## Proposed Structure
 
 ```

@@ -1,20 +1,20 @@
 ---
 name: choose-skill
-description: Meta-agent that analyzes tasks and recommends optimal skill combinations with Feynman-style explanations. USE WHEN feeling overwhelmed by 34+ skills, uncertain which skills to apply, need guidance on skill orchestration, or want to understand skill synergies. This is a READ-ONLY analyzer - recommends but never modifies code.
+description: Meta-agent that analyzes tasks and recommends optimal skill combinations with Feynman-style explanations. USE WHEN feeling overwhelmed by 37+ skills, uncertain which skills to apply, need guidance on skill orchestration, or want to understand skill synergies. This is a READ-ONLY analyzer - recommends but never modifies code.
 ---
 
 # Choose Skill - Your Skill Recommendation Agent
 
 ## About
 
-A meta-agent that acts as your **skill advisor** in a 34-skill ecosystem. When you're unsure which skills to use or how to combine them, this agent analyzes your task and recommends 1-3 optimal skill combos with clear, simple explanations.
+A meta-agent that acts as your **skill advisor** in a 37-skill ecosystem (9 categories). When you're unsure which skills to use or how to combine them, this agent analyzes your task and recommends 1-3 optimal skill combos with clear, simple explanations.
 
 **Critical:** This is a **READ-ONLY analyzer**. It ONLY recommends skills, NEVER modifies code.
 
 ## When to Activate
 
 Use `choose-skill` when you:
-- Feel lost among 34+ available skills
+- Feel lost among 37+ available skills
 - Don't know which skill fits your task
 - Need multiple skills but unsure of the order
 - Want to understand WHY a skill is recommended
@@ -200,11 +200,19 @@ Như khi xe bị chậm, bạn phải:
 
 ## References
 
-**Full Skills Catalog:**
+**Quick Context (Start Here):**
+`read .claude/global/SKILLS_CONTEXT.md`
+- Quick reference table (37 skills, 9 categories)
+- Category descriptions and health status
+- Refactor opportunities
+- **Use this first** for fast context loading
+
+**Full Skills Catalog (Detailed):**
 `read .claude/skills/meta/choose-skill/references/skills-catalog.md`
-- Complete list of all 34 skills
-- Category breakdown
+- Complete details of all 37 skills
+- Full descriptions and examples
 - When to use each skill
+- Key features breakdown
 
 **Recommendation Patterns:**
 `read .claude/skills/meta/choose-skill/references/recommendation-patterns.md`

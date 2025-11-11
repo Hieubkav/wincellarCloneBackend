@@ -20,7 +20,7 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 
 <skill>
 <name>create-skill</name>
-<description>Guide for creating effective skills with automation tools (init_skill.py, package_skill.py, quick_validate.py) and bundled resources (scripts/, references/, assets/). Includes distribution via .zip files and progressive disclosure principles. USE WHEN user says 'tạo skill mới', 'create new skill', 'add skill for', 'package skill', 'validate skill', or wants to extend capabilities with specialized workflows, tool integrations, or bundled resources.</description>
+<description>Guide for creating effective skills with intelligent category placement, automation tools (init_skill.py, suggest_skill_group.py, sync_to_choose_skill.py), and bundled resources (scripts/, references/, assets/). NEW: AI-powered grouping intelligence analyzes skill domains, suggests optimal categories with confidence scores, detects new category opportunities (3+ related skills), and identifies refactor needs (overcrowded/underutilized categories). Prevents category sprawl and maintains optimal organization. USE WHEN user says 'tạo skill mới', 'suggest category for skill', 'check skill organization', 'refactor categories', or wants to extend capabilities with specialized workflows.</description>
 <location>user/meta</location>
 </skill>
 
@@ -111,6 +111,24 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <skill>
 <name>product-search-scoring</name>
 <description>Advanced product search system with keyword scoring, Vietnamese text normalization, multi-field matching, and search result ranking. Multi-layer system: text normalization (Vietnamese accents), keyword processing (stop word filtering), query building with filters, and caching strategy. USE WHEN implementing search functionality, adding keyword scoring to products, optimizing search algorithm, improving search relevance, handling Vietnamese text with accents, or building e-commerce search features.</description>
+<location>user/workflows</location>
+</skill>
+
+<skill>
+<name>brainstorming</name>
+<description>Use when creating or developing ideas, before writing code or implementation plans - refines rough ideas into fully-formed designs through collaborative questioning, alternative exploration, and incremental validation. Ask questions one at a time, explore 2-3 approaches with trade-offs, present design in sections (200-300 words), and validate incrementally. Document validated designs to docs/plans/. USE WHEN turning rough ideas into designs, planning new features, exploring architecture options, before implementation, or when user needs help refining requirements. Don't use during clear mechanical processes.</description>
+<location>user/workflows</location>
+</skill>
+
+<skill>
+<name>sequential-thinking</name>
+<description>Use when complex problems require systematic step-by-step reasoning with ability to revise thoughts, branch into alternative approaches, or dynamically adjust scope. Enables iterative reasoning, revision tracking, branch exploration, and maintained context throughout analysis. Ideal for multi-stage analysis, design planning, problem decomposition, or tasks with initially unclear scope. USE WHEN problem requires multiple interconnected reasoning steps, initial scope is uncertain, need to filter through complexity, may need to backtrack or revise conclusions, or want to explore alternative solution paths. Don't use for simple queries or single-step tasks.</description>
+<location>user/workflows</location>
+</skill>
+
+<skill>
+<name>writing-plans</name>
+<description>Use when design is complete and you need detailed implementation tasks for engineers with zero codebase context - creates comprehensive implementation plans with exact file paths, complete code examples, and verification steps assuming engineer has minimal domain knowledge. Write bite-sized tasks (2-5 min each), include exact commands with expected output, follow TDD/DRY/YAGNI principles, and save plans to docs/plans/. USE WHEN creating implementation plans, breaking down features into tasks, documenting step-by-step instructions, after design/brainstorming phase, or when user needs detailed execution guide. Offer execution choice: subagent-driven or parallel session.</description>
 <location>user/workflows</location>
 </skill>
 
@@ -226,6 +244,138 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <name>validating-database-integrity</name>
 <description>Ensure database integrity using data-validation-engine plugin. Automatically validates data types, ranges, formats, referential integrity, and business rules. Supports multi-database environments and production-ready implementations. USE WHEN implementing data validation, enforcing constraints, improving data quality, or validating data input within applications.</description>
 <location>user/database</location>
+</skill>
+
+<!-- NEW FRONTEND SKILLS -->
+
+<skill>
+<name>frontend-components</name>
+<description>Design reusable, composable UI components following single responsibility principle with clear interfaces, encapsulation, and minimal props. USE WHEN creating or modifying component files (.jsx, .tsx, .vue, .svelte), defining component props/interfaces, implementing composition patterns, managing component-level state, creating reusable UI elements (buttons, forms, cards, modals), documenting component APIs, or refactoring components for better reusability.</description>
+<location>user/frontend</location>
+</skill>
+
+<skill>
+<name>frontend-responsive</name>
+<description>Build responsive, mobile-first layouts using fluid containers, flexible units, media queries, and touch-friendly design. USE WHEN creating layouts for mobile/tablet/desktop, implementing mobile-first design, writing media queries/breakpoints, using flexible units (rem, em, %), implementing fluid layouts with flexbox/grid, ensuring touch targets meet 44x44px minimum, optimizing images for different screens, or testing UI across multiple device sizes.</description>
+<location>user/frontend</location>
+</skill>
+
+<skill>
+<name>landing-page-guide</name>
+<description>Create high-converting landing pages with Next.js 14+ and ShadCN UI following 11 essential elements framework: SEO-optimized URL, company logo, title/subtitle, primary CTA, social proof, images/videos, core benefits, testimonials, FAQ, final CTA, contact/legal. USE WHEN creating landing pages, marketing pages, product pages, or promotional websites with Next.js and React.</description>
+<location>user/frontend</location>
+</skill>
+
+<skill>
+<name>nextjs</name>
+<description>Next.js 16 App Router patterns: Server Components, Server Actions, Cache Components with "use cache", async params/searchParams, proxy.ts (replaces middleware.ts), React 19.2, Metadata API, Turbopack. Covers breaking changes, hydration fixes, performance optimization, TypeScript configuration. USE WHEN building Next.js apps, implementing Server Components/Actions, handling SSR/hydration, using App Router, or troubleshooting Next.js 16 issues.</description>
+<location>user/frontend</location>
+</skill>
+
+<skill>
+<name>react-component-architecture</name>
+<description>Design scalable React components using functional components, hooks, composition patterns, and TypeScript. Covers custom hooks, HOCs, render props, compound components, and performance optimization. USE WHEN building component libraries, designing reusable UI patterns, creating custom hooks, implementing component composition, or optimizing React performance.</description>
+<location>user/frontend</location>
+</skill>
+
+<skill>
+<name>tailwind-css</name>
+<description>Utility-first CSS framework for rapid UI development with responsive design, dark mode, component patterns, and production optimization. Covers core utilities, breakpoints, state variants, theme customization, and best practices. USE WHEN styling with Tailwind, implementing responsive designs, customizing themes, extracting components, or optimizing Tailwind for production.</description>
+<location>user/frontend</location>
+</skill>
+
+<skill>
+<name>ui-design-system</name>
+<description>UI design system toolkit for generating design tokens (colors, typography, spacing), component documentation, responsive calculations, and developer handoff. Includes design_token_generator.py script. USE WHEN creating design systems, maintaining visual consistency, generating design tokens, or facilitating design-dev collaboration.</description>
+<location>user/frontend</location>
+</skill>
+
+<skill>
+<name>zustand-state-management</name>
+<description>Production-ready Zustand state management for React with TypeScript, persist middleware, devtools, slices pattern, and Next.js SSR hydration. Prevents 5 documented issues: hydration mismatches, TypeScript errors, infinite renders, persist middleware problems, slices type inference. USE WHEN setting up global state, implementing persist with localStorage, handling Next.js hydration, or migrating from Redux/Context API.</description>
+<location>user/frontend</location>
+</skill>
+
+<skill>
+<name>cache-optimization</name>
+<description>Analyze and improve application caching strategies: cache hit rates, TTL configurations, cache key design, invalidation strategies. USE WHEN optimizing cache performance, improving caching strategy, analyzing cache hit rate, designing cache keys, optimizing TTL, or resolving cache-related bottlenecks.</description>
+<location>user/frontend</location>
+</skill>
+
+<!-- NEW TESTING SKILLS -->
+
+<skill>
+<name>e2e-testing-patterns</name>
+<description>Master end-to-end testing with Playwright and Cypress: Page Object Model, fixtures, waiting strategies, network mocking, visual regression, accessibility testing. USE WHEN implementing E2E tests, debugging flaky tests, testing critical user workflows, setting up CI/CD test pipelines, testing across browsers, or establishing E2E testing standards.</description>
+<location>user/testing</location>
+</skill>
+
+<skill>
+<name>playwright-automation</name>
+<description>Complete browser automation with Playwright: auto-detects dev servers, writes clean test scripts to /tmp, tests pages/forms/responsiveness, takes screenshots, validates UX. USE WHEN testing websites, automating browser interactions, validating web functionality, performing any browser-based testing, or automating UI tasks.</description>
+<location>user/testing</location>
+</skill>
+
+<skill>
+<name>qa-verification</name>
+<description>Comprehensive truth scoring (0.0-1.0 scale), code quality verification, and automatic rollback system with 0.95 accuracy threshold. Real-time reliability metrics for code, agents, tasks. Automated correctness, security, best practices validation. USE WHEN ensuring code quality, implementing verification checks, tracking quality metrics, setting up automatic rollback, or integrating quality gates into CI/CD.</description>
+<location>user/testing</location>
+</skill>
+
+<!-- NEW API SKILL -->
+
+<skill>
+<name>api-best-practices</name>
+<description>REST API design patterns: resource-oriented design, HTTP methods/status codes, versioning strategies (URL, header), authentication (JWT, OAuth2, API keys), error handling, pagination (offset, cursor, page-number), rate limiting, security best practices, OpenAPI/Swagger documentation. USE WHEN designing APIs, creating endpoints, documenting APIs, implementing backend services exposing HTTP APIs, or reviewing API architecture.</description>
+<location>user/api</location>
+</skill>
+
+<!-- NEW FULLSTACK SKILLS -->
+
+<skill>
+<name>auth-implementation-patterns</name>
+<description>Master authentication/authorization patterns: JWT (access/refresh tokens), session-based auth, OAuth2/social login, RBAC, permission-based access control, resource ownership, password security (bcrypt), rate limiting. USE WHEN implementing auth systems, securing APIs, adding OAuth2/social login, implementing RBAC, designing session management, migrating auth systems, or debugging security issues.</description>
+<location>user/fullstack</location>
+</skill>
+
+<skill>
+<name>better-auth</name>
+<description>Production-ready authentication framework for TypeScript with Cloudflare D1 support via Drizzle ORM or Kysely. Self-hosted alternative to Clerk/Auth.js. Supports social providers (Google, GitHub, Microsoft, Apple), email/password, magic links, 2FA, passkeys, organizations, RBAC. CRITICAL: Requires Drizzle ORM or Kysely (NO direct D1 adapter). Prevents 12 common auth errors. USE WHEN building auth for Cloudflare Workers + D1, need self-hosted auth solution, migrating from Clerk, implementing multi-tenant SaaS, or requiring advanced features (2FA, organizations, RBAC).</description>
+<location>user/fullstack</location>
+</skill>
+
+<skill>
+<name>fastapi-templates</name>
+<description>Create production-ready FastAPI projects with async patterns, dependency injection, comprehensive error handling. Project structure: api/routes, core/config, models, schemas, services, repositories. Includes CRUD repository pattern, service layer, async database operations. USE WHEN starting FastAPI projects, building async REST APIs, creating high-performance web services, setting up API projects with proper structure/testing.</description>
+<location>user/fullstack</location>
+</skill>
+
+<!-- NEW WORKFLOWS SKILLS -->
+
+<skill>
+<name>code-review-excellence</name>
+<description>Master effective code review practices: constructive feedback, bug catching, knowledge sharing, team morale maintenance. Four-phase process (context gathering, high-level review, line-by-line, summary). Covers feedback techniques, severity differentiation, language-specific patterns, architectural review, test quality, security review. USE WHEN reviewing pull requests, establishing review standards, mentoring developers, conducting architecture reviews, creating review checklists, or improving team collaboration.</description>
+<location>user/workflows</location>
+</skill>
+
+<skill>
+<name>git-commit-helper</name>
+<description>Generate descriptive commit messages by analyzing git diffs following conventional commits format: type(scope): description. Types: feat, fix, docs, style, refactor, test, chore. Covers multi-file commits, breaking changes, scope examples, validation checklist. USE WHEN writing commit messages, reviewing staged changes, analyzing git diff, or standardizing commit message format.</description>
+<location>user/workflows</location>
+</skill>
+
+<skill>
+<name>repomix</name>
+<description>Package entire code repositories into single AI-friendly files using Repomix. Capabilities: pack codebases with include/exclude patterns, generate XML/Markdown/JSON/plain text formats, preserve file structure/context, optimize for AI consumption with token counting, filter by file types/directories. USE WHEN packaging codebases for AI analysis, creating repository snapshots for LLM context, analyzing third-party libraries, preparing for security audits, generating documentation context, or evaluating unfamiliar codebases.</description>
+<location>user/workflows</location>
+</skill>
+
+<!-- NEW META SKILL -->
+
+<skill>
+<name>skill-skeleton</name>
+<description>Template skill providing basic structure and examples for creating new skills. USE WHEN creating new skill from scratch, need skill structure reference, or want skill creation template.</description>
+<location>user/meta</location>
 </skill>
 
 </available_skills>
