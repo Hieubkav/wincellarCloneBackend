@@ -1,27 +1,12 @@
-# 🤖 Coding Agent Guidelines - Wincellar Clone
+# 🤖 Agent Guidelines - Wincellar Clone
 
 **Trả lời bằng tiếng việt**
 
----
+## 🎯 System & Skills
 
-## 🎯 START HERE
+**Foundation:** `read .claude/global/SYSTEM.md` - All project standards
 
-**First time?** Read the system foundation:
-```
-read .claude/global/SYSTEM.md
-```
-
-**Contains:**
-- Available skills (auto-activate)
-- Project structure & core principles
-- Coding standards & critical rules
-- Quick reference commands
-
----
-
-## 🚀 How to Work with Skills
-
-Skills **automatically activate** when you use natural language:
+**Skills auto-activate** via natural language (no explicit calls needed):
 
 ```
 "Tạo resource mới cho Product"       → filament-resource-generator
@@ -48,81 +33,46 @@ Skills **automatically activate** when you use natural language:
 "Generate API documentation"          → api-documentation-writer
 ```
 
-**You don't need to explicitly call skills** - just describe what you want!
-
----
-
-## 📚 Available Skills
-
-**Core Development:**
-- **filament-rules** - Filament 4.x standards (Schema namespace, Vietnamese UI)
-- **filament-resource-generator** - Auto scaffolding resources
-- **filament-form-debugger** - Fix "Class not found" errors
-- **image-management** - Polymorphic image system
-- **database-backup** - Safe migration workflow
-- **systematic-debugging** - 4-phase debugging framework (root cause investigation)
-- **product-search-scoring** - Advanced product search with keyword scoring & Vietnamese text normalization
-
-**Infrastructure:**
-- **api-design-principles** - REST/GraphQL best practices
-- **api-cache-invalidation** - Auto sync frontend-backend
-- **api-documentation-writer** - Generate comprehensive API documentation
-- **docs-seeker** - Find technical documentation
-
-**Development Guidelines:**
-- **backend-dev-guidelines** - Node.js/Express/TypeScript microservices patterns
-- **frontend-dev-guidelines** - React/TypeScript with Suspense and modern patterns
-- **ux-designer** - UI/UX design guidance for unique, accessible interfaces
-- **ui-styling** - shadcn/ui + Tailwind CSS component library and styling system
-
-**Meta:**
-- **create-skill** - Create new skills with automation (init, validate, package)
-
-**Details:** `read .claude/skills/[skill-name]/SKILL.md`
-
----
-
-## 🎓 Learning Path
-
-```
-1. read .claude/global/SYSTEM.md        (foundation)
-2. Natural language requests             (skills auto-activate)
-3. read .claude/skills/[name]/SKILL.md  (when you need depth)
 ```
 
+## 📚 Skills (Organized by Category)
+
+**filament/** - Filament 4.x (Laravel 12)
+- filament-rules, filament-resource-generator, filament-form-debugger, image-management
+
+**fullstack/** - Full-Stack Development
+- backend-dev-guidelines, frontend-dev-guidelines, ux-designer, ui-styling
+
+**workflows/** - Development Workflows
+- database-backup, systematic-debugging, product-search-scoring, docs-seeker
+
+**api/** - API Design & Documentation
+- api-design-principles, api-cache-invalidation, api-documentation-writer
+
+**meta/** - Skill Management
+- create-skill (init, validate, package, categorize)
+
+**Access:** `read .claude/skills/[category]/[skill-name]/SKILL.md`
+**Details:** Each skill < 200 lines, references/ for deep dive, scripts/ for automation
+
+## ⚠️ Critical Rules
+
+**API Changes:** Always update `docs/api/API_ENDPOINTS.md` + `resources/views/api-documentation.blade.php`
+
+**Database:** Backup before migrate (`database-backup` skill)
+
+**Filament:** Use `Schema` namespace NOT `Form` (`filament-rules` skill)
+
+**Resources:**
+- `PLAN.md` - Architecture decisions
+- `mermaid.rb` - Database schema
+- `.claude/global/SYSTEM.md` - All project standards
+
 ---
 
-## 📖 Additional Resources
+**Skills Architecture:**
+- Organized into 5 categories (filament, fullstack, workflows, api, meta)
+- Each skill < 200 lines (SKILL.md = essentials, references/ = details, scripts/ = tools)
+- Progressive disclosure for efficient context management
 
-**Project-specific:**
-- `PLAN.md` - Project roadmap and architecture decisions
-- `mermaid.rb` - Database schema diagram
-- `docs/` - Detailed documentation by topic
-
-**Critical standards:**
-- All project rules are in `.claude/global/SYSTEM.md`
-- No need to memorize - skills load context as needed
-
----
-
----
-
-## 🔄 API Documentation Sync Rule
-
-**QUAN TRỌNG:** Khi cập nhật API backend (thêm endpoint, thay đổi parameters, sửa response format):
-
-1. **Cập nhật file tài liệu:** `docs/api/API_ENDPOINTS.md`
-2. **Cập nhật giao diện homepage:** `resources/views/api-documentation.blade.php`
-   - Thêm/sửa endpoint description
-   - Cập nhật parameters, query filters
-   - Cập nhật response examples
-3. **Kiểm tra:** Homepage tại `http://127.0.0.1:8000/` phải hiển thị API docs mới nhất
-
-**Tại sao?** Để developers luôn có tài liệu API mới nhất khi truy cập trang chủ backend.
-
----
-
-**Version:** 3.1 (With API Sync Rule) ✅  
-**Updated:** 2025-11-11
-
-**🎯 Just ask naturally - skills auto-activate!**
+v4.1 | Updated: 2025-11-11 | 16/16 skills categorized & optimized

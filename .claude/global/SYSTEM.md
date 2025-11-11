@@ -21,97 +21,97 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <skill>
 <name>create-skill</name>
 <description>Guide for creating effective skills with automation tools (init_skill.py, package_skill.py, quick_validate.py) and bundled resources (scripts/, references/, assets/). Includes distribution via .zip files and progressive disclosure principles. USE WHEN user says 'tạo skill mới', 'create new skill', 'add skill for', 'package skill', 'validate skill', or wants to extend capabilities with specialized workflows, tool integrations, or bundled resources.</description>
-<location>user</location>
+<location>user/meta</location>
 </skill>
 
 <skill>
 <name>filament-rules</name>
 <description>Filament 4.x coding standards for Laravel 12 project with custom Schema namespace (not Form), Vietnamese UI, Observer patterns, Image management. USE WHEN creating Filament resources, fixing namespace errors (Class not found), implementing forms, RelationManagers, or any Filament development task.</description>
-<location>user</location>
+<location>user/filament</location>
 </skill>
 
 <skill>
 <name>image-management</name>
 <description>Centralized polymorphic image management system with CheckboxList picker, WebP auto-conversion, order management, soft deletes. USE WHEN adding images/gallery to models, implementing image upload, working with ImagesRelationManager, or troubleshooting image-related issues.</description>
-<location>user</location>
+<location>user/filament</location>
 </skill>
 
 <skill>
 <name>database-backup</name>
 <description>Safe database migration workflow with Spatie backup integration. Always backup before migration, update mermaid.rb schema. USE WHEN creating migrations, running migrations, restoring database, or managing database schema changes.</description>
-<location>user</location>
+<location>user/workflows</location>
 </skill>
 
 <skill>
 <name>filament-resource-generator</name>
 <description>Automated Filament resource generation with correct namespace imports, Vietnamese labels, standard structure, and best practices. USE WHEN user says 'tạo resource mới', 'create new resource', 'generate Filament resource', 'scaffold admin resource'.</description>
-<location>user</location>
+<location>user/filament</location>
 </skill>
 
 <skill>
 <name>filament-form-debugger</name>
 <description>Diagnose and fix common Filament form errors (namespace issues, class not found, type mismatch, argument errors). USE WHEN encountering 'Class not found', 'Argument must be of type', 'Trait not found', or any Filament-related errors.</description>
-<location>user</location>
+<location>user/filament</location>
 </skill>
 
 <skill>
 <name>api-design-principles</name>
 <description>Master REST and GraphQL API design principles to build intuitive, scalable, and maintainable APIs that delight developers. USE WHEN designing new APIs, reviewing API specifications, establishing API design standards, implementing RESTful endpoints, or working with API architecture.</description>
-<location>user</location>
+<location>user/api</location>
 </skill>
 
 <skill>
 <name>api-cache-invalidation</name>
 <description>Automatic cache invalidation system với Laravel Observers và Next.js On-Demand Revalidation. Tự động sync data real-time giữa backend và frontend khi admin update. USE WHEN user phàn nàn "phải Ctrl+F5 mới thấy data mới", cần setup cache management, sync frontend-backend, hoặc optimize API performance với ISR.</description>
-<location>user</location>
+<location>user/api</location>
 </skill>
 
 <skill>
 <name>docs-seeker</name>
 <description>Searching internet for technical documentation using llms.txt standard, GitHub repositories via Repomix, and parallel exploration. USE WHEN user needs latest documentation for libraries/frameworks, documentation in llms.txt format, GitHub repository analysis, or comprehensive documentation discovery across multiple sources.</description>
-<location>user</location>
+<location>user/workflows</location>
 </skill>
 
 <skill>
 <name>systematic-debugging</name>
 <description>Four-phase systematic debugging framework that mandates root cause investigation before fixes. STOP random fixes and symptom patches. USE WHEN encountering bugs, test failures, unexpected behavior, errors, or when fixes fail repeatedly. ESPECIALLY USE when under time pressure or tempted to 'quick fix'.</description>
-<location>user</location>
+<location>user/workflows</location>
 </skill>
 
 <skill>
 <name>backend-dev-guidelines</name>
 <description>Comprehensive backend development guide for Node.js/Express/TypeScript microservices. Use when creating routes, controllers, services, repositories, middleware, or working with Express APIs, Prisma database access, Sentry error tracking, Zod validation, unifiedConfig, dependency injection, or async patterns. Covers layered architecture (routes → controllers → services → repositories), BaseController pattern, error handling, performance monitoring, testing strategies, and migration from legacy patterns.</description>
-<location>user</location>
+<location>user/fullstack</location>
 </skill>
 
 <skill>
 <name>frontend-dev-guidelines</name>
 <description>Frontend development guidelines for React/TypeScript applications. Modern patterns including Suspense, lazy loading, useSuspenseQuery, file organization with features directory, MUI v7 styling, TanStack Router, performance optimization, and TypeScript best practices. Use when creating components, pages, features, fetching data, styling, routing, or working with frontend code.</description>
-<location>user</location>
+<location>user/fullstack</location>
 </skill>
 
 <skill>
 <name>ux-designer</name>
 <description>Expert UI/UX design guidance for building unique, accessible, and user-centered interfaces. Use when designing interfaces, making visual design decisions, choosing colors/typography, implementing responsive layouts, or when user mentions design, UI, UX, styling, or visual appearance. Always ask before making design decisions.</description>
-<location>user</location>
+<location>user/fullstack</location>
 </skill>
 
 <skill>
 <name>ui-styling</name>
 <description>Create beautiful, accessible user interfaces with shadcn/ui components (Radix UI + Tailwind CSS), canvas-based visual designs, and responsive layouts. USE WHEN building user interfaces, implementing design systems, adding accessible components (dialogs, dropdowns, forms, tables), customizing themes/colors, implementing dark mode, generating visual designs/posters, or establishing consistent styling patterns.</description>
-<location>user</location>
+<location>user/fullstack</location>
 </skill>
 
 <skill>
 <name>product-search-scoring</name>
 <description>Advanced product search system with keyword scoring, Vietnamese text normalization, multi-field matching, and search result ranking. Multi-layer system: text normalization (Vietnamese accents), keyword processing (stop word filtering), query building with filters, and caching strategy. USE WHEN implementing search functionality, adding keyword scoring to products, optimizing search algorithm, improving search relevance, handling Vietnamese text with accents, or building e-commerce search features.</description>
-<location>user</location>
+<location>user/workflows</location>
 </skill>
 
 <skill>
 <name>api-documentation-writer</name>
 <description>Generate comprehensive API documentation for REST, GraphQL, WebSocket APIs with OpenAPI specs, endpoint descriptions, request/response examples, error codes, authentication guides, and SDKs. Developer-friendly reference materials. USE WHEN user says 'viết document API', 'tạo API docs', 'generate API documentation', 'document REST endpoints', hoặc cần tạo technical reference cho developers.</description>
-<location>user</location>
+<location>user/api</location>
 </skill>
 
 </available_skills>
