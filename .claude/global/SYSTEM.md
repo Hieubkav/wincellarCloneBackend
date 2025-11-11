@@ -114,6 +114,24 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user/api</location>
 </skill>
 
+<skill>
+<name>laravel</name>
+<description>Laravel v12 - The PHP Framework For Web Artisans. Comprehensive assistance with routing, Eloquent ORM, migrations, authentication, API development, modern PHP patterns, relationships, middleware, service providers, queues, cache, validation, Laravel Sanctum/Passport. USE WHEN building Laravel applications/APIs, working with Eloquent models, creating migrations/seeders/factories, implementing authentication/authorization, troubleshooting Laravel errors, or following Laravel best practices.</description>
+<location>user/laravel</location>
+</skill>
+
+<skill>
+<name>laravel-dusk</name>
+<description>Laravel Dusk - Browser automation and testing API for Laravel applications. Comprehensive assistance with writing browser tests, automating UI testing, testing JavaScript interactions, implementing end-to-end tests, using Page Object pattern, configuring ChromeDriver, waiting for JavaScript events. USE WHEN writing/debugging browser tests, testing user interfaces, implementing E2E testing workflows, working with form submissions/authentication flows, or troubleshooting browser test failures/timing issues.</description>
+<location>user/laravel</location>
+</skill>
+
+<skill>
+<name>laravel-prompts</name>
+<description>Laravel Prompts - Beautiful and user-friendly forms for command-line applications with browser-like features including placeholder text and validation. Comprehensive assistance with building interactive Artisan commands, text input, select menus, confirmation dialogs, progress bars, loading spinners, tables in CLI. USE WHEN building Laravel Artisan commands with interactive prompts, creating CLI applications in PHP, implementing form validation in command-line tools, or testing console commands with prompts.</description>
+<location>user/laravel</location>
+</skill>
+
 </available_skills>
 
 ---

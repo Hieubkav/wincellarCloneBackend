@@ -109,9 +109,28 @@ Skills use a three-level loading system to manage context efficiently:
 
 ---
 
+## Skill Creation Workflow
+
+**Full Process (7 Steps):**
+1. Understand the skill with concrete examples
+2. Plan reusable skill contents (scripts, references, assets)
+3. Initialize skill using `scripts/init_skill.py`
+4. Edit SKILL.md and bundled resources
+5. **Register skill in SYSTEM.md and AGENTS.md** ⚠️ CRITICAL
+6. Package skill using `scripts/package_skill.py`
+7. Iterate based on testing feedback
+
+**⚠️ CRITICAL Step 5 - Skill Registration:**
+Every new skill MUST be registered in two places:
+- **SYSTEM.md** - Add `<skill>` block with name, description, and location
+- **AGENTS.md** - Add trigger examples and update category list
+
+Without registration, Claude cannot discover or activate the skill!
+
 ## References
 
 **Skill Creation Process:** `read .claude/skills/meta/create-skill/references/skill-creation-process.md`
+- **Step 5 details:** How to register skills in SYSTEM.md and AGENTS.md
 
 **Optimization & Refactoring:**
 - `read .claude/skills/meta/create-skill/references/optimization-report.md` - Complete optimization results (16/16 skills)

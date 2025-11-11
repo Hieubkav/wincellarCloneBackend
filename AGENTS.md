@@ -31,6 +31,15 @@
 "Viết document API"                   → api-documentation-writer
 "Tạo API docs"                        → api-documentation-writer
 "Generate API documentation"          → api-documentation-writer
+"Tạo route mới"                       → laravel
+"Eloquent relationship"               → laravel
+"Laravel authentication"              → laravel
+"Viết browser test"                   → laravel-dusk
+"Test UI với Dusk"                    → laravel-dusk
+"E2E testing"                         → laravel-dusk
+"Tạo Artisan command"                 → laravel-prompts
+"Interactive CLI prompt"              → laravel-prompts
+"Laravel console command"             → laravel-prompts
 ```
 
 ```
@@ -39,6 +48,9 @@
 
 **filament/** - Filament 4.x (Laravel 12)
 - filament-rules, filament-resource-generator, filament-form-debugger, image-management
+
+**laravel/** - Laravel Framework & Tools
+- laravel, laravel-dusk, laravel-prompts
 
 **fullstack/** - Full-Stack Development
 - backend-dev-guidelines, frontend-dev-guidelines, ux-designer, ui-styling
@@ -71,8 +83,8 @@
 ---
 
 **Skills Architecture:**
-- Organized into 5 categories (filament, fullstack, workflows, api, meta)
+- Organized into 6 categories (filament, laravel, fullstack, workflows, api, meta)
 - Each skill < 200 lines (SKILL.md = essentials, references/ = details, scripts/ = tools)
 - Progressive disclosure for efficient context management
 
-v4.1 | Updated: 2025-11-11 | 16/16 skills categorized & optimized
+v4.2 | Updated: 2025-11-11 | 19/19 skills categorized & optimized

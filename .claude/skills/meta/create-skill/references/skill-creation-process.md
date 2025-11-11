@@ -86,9 +86,54 @@ To complete SKILL.md, answer the following questions:
 2. When should the skill be used?
 3. In practice, how should Claude use the skill? All reusable skill contents developed above should be referenced so that Claude knows how to use them.
 
-### Step 5: Packaging a Skill
+### Step 5: Register the Skill in Project Configuration
 
-Once the skill is ready, it should be packaged into a distributable zip file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
+Before packaging, the skill must be registered in the project's configuration files so Claude can discover and activate it:
+
+#### Update SYSTEM.md
+
+Add a new `<skill>` block to `.claude/global/SYSTEM.md` in the `<available_skills>` section:
+
+```xml
+<skill>
+<name>skill-name</name>
+<description>Comprehensive description of what the skill does and when to use it. Include keywords that would trigger the skill. USE WHEN user says 'trigger phrase', needs specific functionality, or encounters specific scenarios.</description>
+<location>user/category</location>
+</skill>
+```
+
+**Tips for writing effective descriptions:**
+- Start with a clear summary of the skill's purpose
+- List key functionality and use cases
+- Include specific trigger phrases that should activate the skill
+- End with "USE WHEN" followed by concrete activation scenarios
+- Use keywords that users are likely to mention
+
+#### Update AGENTS.md
+
+1. **Add trigger examples** to the auto-activation list:
+```
+"User phrase in quotes"              → skill-name
+"Another trigger phrase"             → skill-name
+"Related scenario"                   → skill-name
+```
+
+2. **Add skill to category list:**
+```
+**category/** - Category Description
+- existing-skill, another-skill, new-skill-name
+```
+
+3. **Update skill count** at the bottom:
+```
+v4.x | Updated: YYYY-MM-DD | XX/XX skills categorized & optimized
+```
+
+**Note:** Both SYSTEM.md and AGENTS.md are critical for skill discovery. SYSTEM.md provides detailed context for Claude, while AGENTS.md helps users understand available skills and their triggers.
+
+### Step 6: Packaging a Skill
+
+Once the skill is ready and registered, it should be packaged into a distributable zip file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
 
 ```bash
 scripts/package_skill.py <path/to/skill-folder>
@@ -112,7 +157,7 @@ The packaging script will:
 
 If validation fails, the script will report the errors and exit without creating a package. Fix any validation errors and run the packaging command again.
 
-### Step 6: Iterate
+### Step 7: Iterate
 
 After testing the skill, users may request improvements. Often this happens right after using the skill, with fresh context of how the skill performed.
 
@@ -121,3 +166,5 @@ After testing the skill, users may request improvements. Often this happens righ
 2. Notice struggles or inefficiencies
 3. Identify how SKILL.md or bundled resources should be updated
 4. Implement changes and test again
+5. Update SYSTEM.md description if triggers or use cases change
+6. Update AGENTS.md if new trigger phrases are discovered
