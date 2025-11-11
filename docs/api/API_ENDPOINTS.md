@@ -2,7 +2,7 @@
 
 **Base URL:** `http://localhost:8000/api/v1`  
 **Version:** v1  
-**Last Updated:** 2025-11-09
+**Last Updated:** 2025-11-11
 
 ---
 
@@ -346,6 +346,66 @@ GET /api/v1/bai-viet/{slug}
     }
   }
 }
+```
+
+---
+
+### ⚙️ Settings (Cài Đặt)
+
+#### Get Application Settings
+```
+GET /api/v1/settings
+```
+**Mô tả:** Lấy thông tin cài đặt ứng dụng (logo, thông tin liên hệ, meta defaults)  
+**Auth:** No  
+**Rate Limit:** 60 requests/minute  
+**Cache:** 1 hour (auto-invalidate khi admin update)
+
+**Response 200:**
+```json
+{
+  "data": {
+    "id": 1,
+    "site_name": "Wincellar Clone",
+    "hotline": "0123 456 789",
+    "address": "123 Đường ABC, Quận 1, TP.HCM",
+    "hours": "8:00 - 22:00 hàng ngày",
+    "email": "contact@wincellar.com",
+    "logo_url": "/storage/images/logo.png",
+    "favicon_url": "/storage/images/favicon.ico",
+    "meta_defaults": {
+      "title": "Wincellar - Cửa hàng rượu vang uy tín",
+      "description": "Chuyên cung cấp rượu vang nhập khẩu chính hãng",
+      "keywords": "rượu vang, wine, bordeaux"
+    },
+    "extra": {
+      "facebook": "https://facebook.com/wincellar",
+      "instagram": "https://instagram.com/wincellar"
+    },
+    "_links": {
+      "self": {
+        "href": "http://localhost:8000/api/v1/settings",
+        "method": "GET"
+      }
+    }
+  },
+  "meta": {
+    "api_version": "v1",
+    "timestamp": "2025-11-11T10:30:00Z"
+  }
+}
+```
+
+**Usage Notes:**
+- Settings được cache 1 giờ để tối ưu performance
+- Cache tự động invalidate khi admin update settings trong Filament
+- Nếu chưa có settings, API trả về default values
+- Không trả về sensitive data (email passwords, API keys, etc.)
+- Frontend nên call endpoint này 1 lần khi app init và lưu vào global state
+
+**Example Request:**
+```bash
+curl http://localhost:8000/api/v1/settings
 ```
 
 ---

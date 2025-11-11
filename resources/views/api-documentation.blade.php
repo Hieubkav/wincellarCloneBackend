@@ -400,6 +400,7 @@
                 <li><a href="#health">Health Check</a></li>
                 <li><a href="#products">Sản phẩm</a></li>
                 <li><a href="#home">Trang chủ</a></li>
+                <li><a href="#settings">Cài đặt</a></li>
                 <li><a href="#docs">Tài liệu</a></li>
             </ul>
         </div>
@@ -443,6 +444,7 @@
                 <ul style="margin: 1rem 0 0 2rem;">
                     <li>Quản lý sản phẩm rượu vang với filter nâng cao</li>
                     <li>Lấy dữ liệu trang chủ (banners, featured products)</li>
+                    <li>Lấy thông tin cài đặt ứng dụng (logo, contact info, meta defaults)</li>
                     <li>Kiểm tra tính khỏe mạnh của hệ thống</li>
                     <li>Tìm kiếm sản phẩm theo tên, giá, thương hiệu, xuất xứ...</li>
                 </ul>
@@ -637,6 +639,65 @@
 
                     <div class="info-box">
                         <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings -->
+            <section id="settings">
+                <h2>⚙️ Cài đặt</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <div class="endpoint-path">/settings</div>
+                    </div>
+                    <p class="endpoint-description">Lấy thông tin cài đặt ứng dụng (logo, thông tin liên hệ, meta defaults)</p>
+
+                    <h4>Tham số</h4>
+                    <p>Không có</p>
+
+                    <h4>Phản hồi thành công (200)</h4>
+                    <pre>{
+  "data": {
+    "id": 1,
+    "site_name": "Wincellar Clone",
+    "hotline": "0123 456 789",
+    "address": "123 Đường ABC, Quận 1, TP.HCM",
+    "hours": "8:00 - 22:00 hàng ngày",
+    "email": "contact@wincellar.com",
+    "logo_url": "/storage/images/logo.png",
+    "favicon_url": "/storage/images/favicon.ico",
+    "meta_defaults": {
+      "title": "Wincellar - Cửa hàng rượu vang uy tín",
+      "description": "Chuyên cung cấp rượu vang nhập khẩu chính hãng",
+      "keywords": "rượu vang, wine, bordeaux"
+    },
+    "_links": {
+      "self": {
+        "href": "http://localhost:8000/api/v1/settings",
+        "method": "GET"
+      }
+    }
+  },
+  "meta": {
+    "api_version": "v1",
+    "timestamp": "2025-11-11T10:30:00Z"
+  }
+}</pre>
+
+                    <div class="info-box">
+                        <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu | <strong>Cache:</strong> 1 giờ (auto-invalidate khi admin update)
+                    </div>
+
+                    <div class="auth-card">
+                        <h4>💡 Cách sử dụng</h4>
+                        <ul style="margin: 0.5rem 0 0 1.5rem;">
+                            <li>Settings được cache 1 giờ để tối ưu performance</li>
+                            <li>Cache tự động invalidate khi admin update trong Filament</li>
+                            <li>Frontend nên call endpoint này 1 lần khi app init và lưu vào global state</li>
+                            <li>Không trả về sensitive data (passwords, API keys, etc.)</li>
+                        </ul>
                     </div>
                 </div>
             </section>
