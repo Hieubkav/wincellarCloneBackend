@@ -1,12 +1,12 @@
-# 🤖 Agent Guidelines - Wincellar Clone
+# 🤖 Hướng Dẫn Agent - Wincellar Clone
 
-**Trả lời bằng tiếng việt**
+**Trả lời bằng tiếng Việt**
 
-## 🎯 System & Skills
+## 🎯 Hệ Thống & Skills
 
-**Foundation:** `read .claude/global/SYSTEM.md` - All project standards
+**Nền tảng:** `read .claude/global/SYSTEM.md` - Tất cả các tiêu chuẩn dự án
 
-**Skills auto-activate** via natural language (no explicit calls needed):
+**Skills tự động kích hoạt** qua ngôn ngữ tự nhiên (không cần gọi rõ ràng):
 
 ```
 "Tạo resource mới cho Product"       → filament-resource-generator
@@ -16,26 +16,26 @@
 "Tạo skill mới"                       → create-skill
 "Package skill"                       → create-skill
 "Validate skill"                      → create-skill
-"Suggest category for skill"          → create-skill (intelligent grouping)
-"Check skill organization"            → create-skill (refactor analysis)
-"Skill này nên ở category nào?"      → create-skill (intelligent grouping)
-"Refactor categories"                 → create-skill (refactor analysis)
+"Gợi ý category cho skill"            → create-skill (phân loại thông minh)
+"Kiểm tra tổ chức skill"              → create-skill (phân tích tái cấu trúc)
+"Skill này nên ở category nào?"      → create-skill (phân loại thông minh)
+"Tái cấu trúc categories"             → create-skill (phân tích tái cấu trúc)
 "Skill nào phù hợp cho task này?"    → choose-skill
 "Không biết dùng skill nào"          → choose-skill
-"Recommend skills for X"              → choose-skill
+"Gợi ý skills cho X"                  → choose-skill
 "Phải Ctrl+F5 mới thấy data mới"    → api-cache-invalidation
 "Tìm tài liệu cho Next.js"           → docs-seeker
 "Bug này không fix được"              → systematic-debugging
 "Test fail liên tục"                  → systematic-debugging
 "Brainstorm ý tưởng"                  → brainstorming
 "Thiết kế feature mới"                → brainstorming
-"Refine requirements"                 → brainstorming
+"Uốn nắn requirements"                → brainstorming
 "Giải quyết vấn đề phức tạp"         → sequential-thinking
-"Step-by-step reasoning"              → sequential-thinking
-"Multi-stage analysis"                → sequential-thinking
+"Suy luận từng bước"                  → sequential-thinking
+"Phân tích đa giai đoạn"              → sequential-thinking
 "Viết implementation plan"            → writing-plans
 "Tạo task breakdown"                  → writing-plans
-"Create step-by-step guide"           → writing-plans
+"Tạo hướng dẫn từng bước"             → writing-plans
 "Tạo controller mới"                  → backend-dev-guidelines
 "Tạo component React"                 → frontend-dev-guidelines
 "Thiết kế giao diện"                  → ux-designer
@@ -43,47 +43,47 @@
 "Tạo design system"                   → ui-styling
 "Tìm kiếm sản phẩm"                   → product-search-scoring
 "Thêm tính năng search"               → product-search-scoring
-"Optimize search algorithm"           → product-search-scoring
+"Tối ưu thuật toán search"            → product-search-scoring
 "Viết document API"                   → api-documentation-writer
 "Tạo API docs"                        → api-documentation-writer
-"Generate API documentation"          → api-documentation-writer
+"Tạo tài liệu API"                    → api-documentation-writer
 "Tạo route mới"                       → laravel
 "Eloquent relationship"               → laravel
-"Laravel authentication"              → laravel
+"Xác thực Laravel"                    → laravel
 "Viết browser test"                   → laravel-dusk
 "Test UI với Dusk"                    → laravel-dusk
 "E2E testing"                         → laravel-dusk
 "Tạo Artisan command"                 → laravel-prompts
-"Interactive CLI prompt"              → laravel-prompts
-"Laravel console command"             → laravel-prompts
-"Optimize web performance"            → web-performance-audit
+"Tương tác CLI prompt"                → laravel-prompts
+"Lệnh console Laravel"                → laravel-prompts
+"Tối ưu web performance"              → web-performance-audit
 "Đo page speed"                       → web-performance-audit
 "Core Web Vitals"                     → web-performance-audit
 "Google SEO"                          → google-official-seo-guide
 "Structured data VideoObject"         → google-official-seo-guide
 "Search Console"                      → google-official-seo-guide
-"Optimize content cho SEO"            → seo-content-optimizer
-"Keyword analysis"                    → seo-content-optimizer
-"Meta description optimization"       → seo-content-optimizer
-"Design database schema"              → designing-database-schemas
-"Generate ERD diagram"                → designing-database-schemas
-"Document database schema"            → designing-database-schemas
-"Optimize slow query"                 → database-performance
-"Analyze database indexes"            → database-performance
+"Tối ưu nội dung cho SEO"             → seo-content-optimizer
+"Phân tích từ khóa"                   → seo-content-optimizer
+"Tối ưu meta description"             → seo-content-optimizer
+"Thiết kế database schema"            → designing-database-schemas
+"Tạo biểu đồ ERD"                     → designing-database-schemas
+"Tài liệu database schema"            → designing-database-schemas
+"Tối ưu slow query"                   → database-performance
+"Phân tích database indexes"           → database-performance
 "Query profiling"                     → database-performance
-"Compare database schemas"            → comparing-database-schemas
-"Generate migration script"           → comparing-database-schemas
-"Generate ORM models"                 → generating-orm-code
-"Create TypeORM entities"             → generating-orm-code
+"So sánh database schemas"            → comparing-database-schemas
+"Tạo migration script"                → comparing-database-schemas
+"Tạo ORM models"                      → generating-orm-code
+"Tạo TypeORM entities"                → generating-orm-code
 "Seed database"                       → database-data-generation
-"Generate test data"                  → database-data-generation
-"Database security scan"              → database-validation
-"Validate database integrity"         → database-validation
-"SQL optimization"                    → sql-optimization-patterns
+"Tạo test data"                       → database-data-generation
+"Quét bảo mật database"               → database-validation
+"Kiểm tra tính toàn vẹn database"     → database-validation
+"Tối ưu SQL"                          → sql-optimization-patterns
 "PostgreSQL queries"                  → databases
 "MongoDB aggregation"                 → databases
 "Tạo component React"                 → frontend-components
-"Responsive design"                   → frontend-responsive
+"Thiết kế responsive"                 → frontend-responsive
 "Mobile-first layout"                 → frontend-responsive
 "Next.js App Router"                  → nextjs
 "Server Components"                   → nextjs
@@ -92,11 +92,11 @@
 "Dark mode Tailwind"                  → tailwind-css
 "Design tokens"                       → ui-design-system
 "Zustand state"                       → zustand-state-management
-"Cache optimization"                  → cache-optimization
+"Tối ưu cache"                        → cache-optimization
 "E2E testing"                         → e2e-testing-patterns
 "Playwright test"                     → playwright-automation
 "Browser automation"                  → playwright-automation
-"Quality verification"                → qa-verification
+"Kiểm tra chất lượng"                 → qa-verification
 "API design patterns"                 → api-design-patterns
 "REST API best practices"             → api-design-patterns
 "GraphQL schema design"               → api-design-patterns
@@ -114,18 +114,18 @@
 
 ```
 
-## 📚 Skills (Organized by Category)
+## 📚 Skills (Tổ chức theo Danh Mục)
 
 **filament/** - Filament 4.x (Laravel 12)
 - filament-rules, filament-resource-generator, filament-form-debugger, image-management
 
-**laravel/** - Laravel Framework & Tools
+**laravel/** - Laravel Framework & Công Cụ
 - laravel, laravel-dusk, laravel-prompts
 
-**frontend/** - Frontend Development (NEW!)
+**frontend/** - Frontend Development (MỚI!)
 - frontend-components, frontend-responsive, landing-page-guide, nextjs, react-component-architecture, tailwind-css, ui-design-system, zustand-state-management, cache-optimization
 
-**testing/** - Testing & QA (NEW!)
+**testing/** - Testing & QA (MỚI!)
 - e2e-testing-patterns, playwright-automation, qa-verification
 
 **fullstack/** - Full-Stack Development
@@ -134,45 +134,45 @@
 **workflows/** - Development Workflows
 - database-backup, systematic-debugging, product-search-scoring, docs-seeker, brainstorming, sequential-thinking, writing-plans, code-review-excellence, git-commit-helper, repomix
 
-**api/** - API Design & Documentation
+**api/** - API Design & Tài Liệu
 - api-design-patterns, api-cache-invalidation, api-documentation-writer
 
-**meta/** - Skill Management
+**meta/** - Quản Lý Skills
 - create-skill (init, validate, package, intelligent grouping, refactor analysis), choose-skill
 
-**optimize/** - Performance & SEO Optimization
+**optimize/** - Tối Ưu Hiệu Suất & SEO
 - web-performance-audit, google-official-seo-guide
 
 **marketing/** - Content & SEO Marketing
 - seo-content-optimizer
 
-**database/** - Database Management & Optimization
+**database/** - Quản Lý & Tối Ưu Database
 - databases, database-performance, database-data-generation, database-validation, designing-database-schemas, comparing-database-schemas, generating-orm-code, sql-optimization-patterns
 
-**Access:** `read .claude/skills/[category]/[skill-name]/SKILL.md`
-**Details:** Each skill < 200 lines, references/ for deep dive, scripts/ for automation
+**Truy cập:** `read .claude/skills/[category]/[skill-name]/SKILL.md`
+**Chi tiết:** Mỗi skill < 200 dòng, references/ cho deep dive, scripts/ cho automation
 
-## ⚠️ Critical Rules
+## ⚠️ Quy Tắc Quan Trọng
 
-**API Changes:** Always update `docs/api/API_ENDPOINTS.md` + `resources/views/api-documentation.blade.php`
+**API Changes:** Luôn cập nhật `docs/api/API_ENDPOINTS.md` + `resources/views/api-documentation.blade.php`
 
-**Database:** Backup before migrate (`database-backup` skill)
+**Database:** Backup trước khi chạy migration (`database-backup` skill)
 
-**Filament:** Use `Schema` namespace NOT `Form` (`filament-rules` skill)
+**Filament:** Dùng namespace `Schema` KHÔNG PHẢI `Form` (`filament-rules` skill)
 
-**Skills Changes:** ⚠️ **AUTO-SYNC REQUIRED!** After ANY skills changes (add/merge/remove):
-1. Update `.claude/global/SKILLS_CONTEXT.md` (single source of truth)
+**Skills Changes:** ⚠️ **AUTO-SYNC BẮT BUỘC!** Sau BẤT KỲ thay đổi skills nào (add/merge/remove):
+1. Cập nhật `.claude/global/SKILLS_CONTEXT.md` (single source of truth)
 2. **AUTO-RUN:** `python .claude/skills/meta/choose-skill/scripts/sync_choose_skill.py`
-3. Verify `skills-catalog.md` updated
-4. Commit ALL changes together
+3. Kiểm tra `skills-catalog.md` đã cập nhật
+4. Commit TẤT CẢ changes cùng lúc
 
-**Why?** Choose-skill meta-agent needs latest skills info to recommend correctly.
+**Tại sao?** Meta-agent choose-skill cần thông tin skills mới nhất để gợi ý đúng.
 
-**Resources:**
-- `PLAN.md` - Architecture decisions
-- `mermaid.rb` - Database schema
-- `.claude/global/SYSTEM.md` - All project standards
-- `.claude/global/SKILLS_CONTEXT.md` - Skills catalog (single source of truth)
+**Tài liệu tham khảo:**
+- `PLAN.md` - Quyết định kiến trúc
+- `mermaid.rb` - Sơ đồ database
+- `.claude/global/SYSTEM.md` - Tất cả tiêu chuẩn dự án
+- `.claude/global/SKILLS_CONTEXT.md` - Danh mục skills (single source of truth)
 
 ---
 
