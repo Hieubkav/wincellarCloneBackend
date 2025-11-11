@@ -49,6 +49,22 @@
 "Optimize content cho SEO"            → seo-content-optimizer
 "Keyword analysis"                    → seo-content-optimizer
 "Meta description optimization"       → seo-content-optimizer
+"Design database schema"              → designing-database-schemas
+"Generate ERD diagram"                → designing-database-schemas
+"Optimize slow query"                 → analyzing-query-performance
+"Analyze database indexes"            → analyzing-database-indexes
+"Compare database schemas"            → comparing-database-schemas
+"Generate migration script"           → comparing-database-schemas
+"Generate ORM models"                 → generating-orm-code
+"Create TypeORM entities"             → generating-orm-code
+"Seed database"                       → generating-database-seed-data
+"Generate test data"                  → generating-test-data
+"Database security scan"              → scanning-database-security
+"Validate database integrity"         → validating-database-integrity
+"Document database schema"            → generating-database-documentation
+"SQL optimization"                    → sql-optimization-patterns
+"PostgreSQL queries"                  → databases
+"MongoDB aggregation"                 → databases
 ```
 
 ```
@@ -79,6 +95,9 @@
 **marketing/** - Content & SEO Marketing
 - seo-content-optimizer
 
+**database/** - Database Management & Optimization
+- databases, analyzing-database-indexes, analyzing-query-performance, comparing-database-schemas, designing-database-schemas, generating-database-documentation, generating-database-seed-data, generating-orm-code, generating-test-data, scanning-database-security, sql-optimization-patterns, validating-database-integrity
+
 **Access:** `read .claude/skills/[category]/[skill-name]/SKILL.md`
 **Details:** Each skill < 200 lines, references/ for deep dive, scripts/ for automation
 
@@ -98,8 +117,8 @@
 ---
 
 **Skills Architecture:**
-- Organized into 8 categories (filament, laravel, fullstack, workflows, api, meta, optimize, marketing)
+- Organized into 9 categories (filament, laravel, fullstack, workflows, api, meta, optimize, marketing, database)
 - Each skill < 200 lines (SKILL.md = essentials, references/ = details, scripts/ = tools)
 - Progressive disclosure for efficient context management
 
-v4.3 | Updated: 2025-11-11 | 22/22 skills categorized & optimized
+v5.0 | Updated: 2025-11-11 | 34/34 skills categorized & optimized

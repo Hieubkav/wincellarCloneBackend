@@ -150,6 +150,78 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user/marketing</location>
 </skill>
 
+<skill>
+<name>databases</name>
+<description>Work with MongoDB (document database, BSON documents, aggregation pipelines, Atlas cloud) and PostgreSQL (relational database, SQL queries, psql CLI, pgAdmin). USE WHEN designing database schemas, writing queries and aggregations, optimizing indexes for performance, performing database migrations, configuring replication and sharding, implementing backup and restore strategies, managing database users and permissions, analyzing query performance, or administering production databases.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>analyzing-database-indexes</name>
+<description>Analyze query patterns and recommend optimal database indexes using database-index-advisor plugin. Identifies missing indexes to improve query performance and unused indexes for removal. USE WHEN optimizing slow queries, finding missing indexes, removing unused indexes, or implementing database index optimization strategies.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>analyzing-query-performance</name>
+<description>Analyze and optimize database query performance using query-performance-analyzer plugin. Interprets EXPLAIN plans, identifies performance bottlenecks (slow queries, missing indexes), and suggests specific optimization strategies. USE WHEN analyzing EXPLAIN plans, debugging slow queries, identifying performance bottlenecks, or improving database query execution speed and resource utilization.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>comparing-database-schemas</name>
+<description>Compare database schemas, generate migration scripts, and provide rollback procedures using database-diff-tool plugin. Supports PostgreSQL and MySQL. USE WHEN comparing database schemas across environments, generating migration scripts, creating rollback procedures, synchronizing database schemas, or validating changes before deployment.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>designing-database-schemas</name>
+<description>Design and visualize database schemas with normalization guidance (1NF through BCNF), relationship mapping, and ERD generation. USE WHEN designing new database schemas, creating database models, generating ERD diagrams, normalizing databases, or implementing database design best practices.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>generating-database-documentation</name>
+<description>Automatically generate comprehensive documentation for existing database schemas using database-documentation-gen plugin. Includes ERD diagrams, table relationships, column descriptions, indexes, triggers, stored procedures, and interactive HTML documentation. USE WHEN documenting database schemas for team onboarding, architectural reviews, data governance, or creating data dictionaries.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>generating-database-seed-data</name>
+<description>Generate realistic test data and database seed scripts using Faker libraries. Maintains relational integrity and allows configurable data volumes. USE WHEN seeding databases, generating test data, creating seed scripts, populating databases with realistic data for development, testing, or demonstration purposes.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>generating-orm-code</name>
+<description>Generate ORM models and database schemas for various ORMs (TypeORM, Prisma, Sequelize, SQLAlchemy, Django ORM, Entity Framework, Hibernate). Supports both database-to-code and code-to-database schema generation. USE WHEN creating ORM models, generating database schemas, creating entities, generating migrations, or working with specific ORM frameworks.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>generating-test-data</name>
+<description>Generate realistic test data using test-data-generator plugin for users, products, orders, and custom schemas. Useful for populating testing environments or creating sample data for demonstrations. USE WHEN generating test data, creating fake users, populating databases, generating product/order data, or generating data based on custom schemas.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>scanning-database-security</name>
+<description>Perform comprehensive database security scans using database-security-scanner plugin with OWASP guidelines. Identifies vulnerabilities like weak passwords, SQL injection risks, and insecure configurations. Supports PostgreSQL and MySQL. USE WHEN assessing database security, checking for vulnerabilities, performing OWASP compliance checks, or improving database security posture.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>sql-optimization-patterns</name>
+<description>Master SQL query optimization, indexing strategies, and EXPLAIN analysis to dramatically improve database performance and eliminate slow queries. USE WHEN debugging slow queries, designing database schemas, optimizing application performance, or implementing SQL optimization best practices.</description>
+<location>user/database</location>
+</skill>
+
+<skill>
+<name>validating-database-integrity</name>
+<description>Ensure database integrity using data-validation-engine plugin. Automatically validates data types, ranges, formats, referential integrity, and business rules. Supports multi-database environments and production-ready implementations. USE WHEN implementing data validation, enforcing constraints, improving data quality, or validating data input within applications.</description>
+<location>user/database</location>
+</skill>
+
 </available_skills>
 
 ---
