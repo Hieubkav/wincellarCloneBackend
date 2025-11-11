@@ -3,8 +3,8 @@
 > **Single Source of Truth** for skills organization and structure.  
 > Auto-synced by `sync_skills_context.py` - DO NOT edit manually.
 
-**Total Skills:** 37 skills across 9 categories  
-**Last Updated:** 2025-11-11 10:45 AM
+**Total Skills:** 51 skills across 11 categories  
+**Last Updated:** 2025-11-11 (Optimized - merged 10 duplicate/small skills)
 
 ---
 
@@ -12,15 +12,17 @@
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| **filament/** | 4 | Filament 4.x (Laravel 12) |
-| **laravel/** | 3 | Laravel Framework & Tools |
-| **fullstack/** | 4 | Full-Stack Development |
-| **workflows/** | 7 | Development Workflows |
 | **api/** | 3 | API Design & Documentation |
+| **database/** | 8 | Database Management & Optimization |
+| **filament/** | 4 | Filament 4.x (Laravel 12) |
+| **frontend/** | 8 | Frontend Development |
+| **fullstack/** | 7 | Full-Stack Development |
+| **laravel/** | 3 | Laravel Framework & Tools |
+| **marketing/** | 1 | Content & SEO Marketing |
 | **meta/** | 2 | Skill Management |
 | **optimize/** | 2 | Performance & SEO |
-| **marketing/** | 1 | Content & SEO Marketing |
-| **database/** | 12 | Database Management & Optimization |
+| **testing/** | 3 | Testing & QA |
+| **workflows/** | 10 | Development Workflows |
 
 ---
 
@@ -100,14 +102,18 @@
 **Description:** API design, caching, and documentation.
 
 **Skills:**
-- `api-design-principles` - REST & GraphQL best practices
+- `api-design-patterns` - REST & GraphQL design patterns, best practices, versioning, auth (merged from api-design-principles + api-best-practices)
 - `api-cache-invalidation` - Automatic cache invalidation with Laravel Observers
 - `api-documentation-writer` - Comprehensive API documentation generation
 
 **Key Features:**
-- REST/GraphQL best practices
+- REST/GraphQL design patterns
+- API versioning strategies
+- Authentication patterns (JWT, OAuth, API Keys)
 - Cache invalidation strategies
 - OpenAPI/Swagger documentation
+
+**✨ Optimized:** Merged 2 duplicate skills into 1 comprehensive guide
 
 ---
 
@@ -123,6 +129,8 @@
 - AI-powered category suggestions
 - Refactor opportunity detection
 - Skill recommendation engine
+
+**✨ Optimized:** Removed skill-skeleton (empty template, functionality in create-skill)
 
 ---
 
@@ -156,34 +164,27 @@
 
 ---
 
-### database/ (12 skills)
+### database/ (8 skills)
 **Description:** Database management, optimization, and code generation.
 
 **Skills:**
 - `databases` - PostgreSQL, MySQL, MongoDB queries and patterns
-- `analyzing-database-indexes` - Index analysis and optimization
-- `analyzing-query-performance` - Query performance profiling
+- `database-performance` - Index analysis + query profiling optimization (merged from analyzing-database-indexes + analyzing-query-performance)
+- `database-data-generation` - Seed data + test fixtures generation (merged from generating-database-seed-data + generating-test-data)
+- `database-validation` - Security scanning + integrity validation (merged from scanning-database-security + validating-database-integrity)
+- `designing-database-schemas` - ERD generation + schema design + documentation (merged with generating-database-documentation)
 - `comparing-database-schemas` - Schema comparison and migration generation
-- `designing-database-schemas` - ERD generation and schema design
-- `generating-database-documentation` - Auto-generate database docs
-- `generating-database-seed-data` - Production-like seed data
 - `generating-orm-code` - ORM model generation (Prisma, TypeORM, Eloquent)
-- `generating-test-data` - Test fixtures and mock data
-- `scanning-database-security` - Security vulnerability scanning
-- `validating-database-integrity` - Referential integrity validation
 - `sql-optimization-patterns` - SQL query optimization patterns
 
 **Key Features:**
 - Multi-database support (PostgreSQL, MySQL, MongoDB)
-- Query optimization and analysis
-- Schema design and comparison
-- Code generation (ORM, seeds, tests)
-- Security scanning
+- Comprehensive performance optimization (indexes + queries)
+- Complete data generation (seeds + test data)
+- Full validation suite (security + integrity)
+- Schema design with auto-documentation
 
-**⚠️ Status:** Overcrowded (12 skills) - Consider splitting into sub-categories:
-- `database-design/` - Schema design, ERD, comparison
-- `database-performance/` - Indexes, query optimization
-- `database-tooling/` - Seed data, ORM generation, testing
+**✨ Optimized:** Merged 8 small/duplicate skills into 3 comprehensive guides (12 → 8 skills)
 
 ---
 
@@ -261,4 +262,23 @@
 
 **Maintained by:** `sync_skills_context.py`  
 **Source Repository:** `.claude/skills/`  
-**Last Sync:** 2025-11-11 10:45 AM
+**Last Sync:** 2025-11-11 (Manual optimization - merged duplicate skills)
+
+---
+
+## Optimization Summary (v6.1)
+
+**Before:** 57 skills  
+**After:** 51 skills  
+**Removed:** 10 duplicate/small skills merged into comprehensive guides
+
+**Merged Skills:**
+1. `api-design-principles` + `api-best-practices` → `api-design-patterns`
+2. `analyzing-database-indexes` + `analyzing-query-performance` → `database-performance`
+3. `generating-database-seed-data` + `generating-test-data` → `database-data-generation`
+4. `scanning-database-security` + `validating-database-integrity` → `database-validation`
+5. `generating-database-documentation` merged into `designing-database-schemas`
+
+**Removed Skills:**
+- `landing-page-guide` (too specific, not reusable)
+- `skill-skeleton` (empty template, redundant)

@@ -44,7 +44,7 @@ Combo: filament-resource-generator → image-management → filament-rules
 ### Pattern 2: REST API Endpoint
 **Trigger:** "Tạo API endpoint", "New REST API for X"
 
-**Combo:** `api-design-principles` → `backend-dev-guidelines` → `api-documentation-writer`
+**Combo:** `api-design-patterns` → `backend-dev-guidelines` → `api-documentation-writer`
 
 **Decision Tree:**
 ```
@@ -53,14 +53,14 @@ Need caching?
   └─ No  → Standard combo
 
 GraphQL instead?
-  ├─ Yes → Use api-design-principles (GraphQL section)
+  ├─ Yes → Use api-design-patterns (GraphQL section)
   └─ No  → REST patterns
 ```
 
 **Example:**
 ```
 Task: "Tạo API lấy danh sách products với cache"
-Combo: api-design-principles → backend-dev-guidelines → api-cache-invalidation → api-documentation-writer
+Combo: api-design-patterns → backend-dev-guidelines → api-cache-invalidation → api-documentation-writer
 ```
 
 ---
@@ -97,7 +97,7 @@ Combo: ux-designer → frontend-dev-guidelines → ui-styling
 **Decision Tree:**
 ```
 Need seed data?
-  ├─ Yes → Add generating-database-seed-data
+  ├─ Yes → Add database-data-generation
   └─ No  → Skip
 
 Complex relationships?
@@ -108,7 +108,7 @@ Complex relationships?
 **Example:**
 ```
 Task: "Design schema cho e-commerce với orders, products, users"
-Combo: designing-database-schemas → generating-orm-code → generating-database-seed-data → database-backup
+Combo: designing-database-schemas → generating-orm-code → database-data-generation → database-backup
 ```
 
 ---
@@ -124,7 +124,7 @@ Combo: designing-database-schemas → generating-orm-code → generating-databas
 ```
 Bug type?
   ├─ Filament error → systematic-debugging → filament-form-debugger
-  ├─ Database issue → systematic-debugging → analyzing-query-performance
+  ├─ Database issue → systematic-debugging → database-performance
   ├─ API issue → systematic-debugging → backend-dev-guidelines
   └─ Frontend → systematic-debugging → frontend-dev-guidelines
 
@@ -149,8 +149,8 @@ Combo: systematic-debugging → filament-form-debugger
 **Decision Tree:**
 ```
 Problem area?
-  ├─ Database queries → analyzing-query-performance → sql-optimization-patterns
-  ├─ API response → api-cache-invalidation OR analyzing-query-performance
+  ├─ Database queries → database-performance → sql-optimization-patterns
+  ├─ API response → api-cache-invalidation OR database-performance
   ├─ Web page load → web-performance-audit
   └─ Unknown → systematic-debugging first!
 ```
@@ -158,7 +158,7 @@ Problem area?
 **Example:**
 ```
 Task: "API /products chậm, mất 5 giây"
-Combo: systematic-debugging → analyzing-query-performance → api-cache-invalidation
+Combo: systematic-debugging → database-performance → api-cache-invalidation
 ```
 
 ---
@@ -168,23 +168,23 @@ Combo: systematic-debugging → analyzing-query-performance → api-cache-invali
 ### Pattern 7: Database Query Optimization
 **Trigger:** "Query chậm", "Optimize database", "N+1 problem"
 
-**Combo:** `analyzing-query-performance` → `analyzing-database-indexes` → `sql-optimization-patterns`
+**Combo:** `database-performance` → `database-performance` → `sql-optimization-patterns`
 
 **Decision Tree:**
 ```
 Have slow query log?
-  ├─ Yes → analyzing-query-performance (EXPLAIN)
+  ├─ Yes → database-performance (EXPLAIN)
   └─ No  → Enable slow query log first
 
 Missing indexes?
-  ├─ Yes → analyzing-database-indexes
+  ├─ Yes → database-performance
   └─ No  → Query rewrite needed (sql-optimization-patterns)
 ```
 
 **Example:**
 ```
 Task: "Query products với nhiều joins chậm"
-Combo: analyzing-query-performance → analyzing-database-indexes → sql-optimization-patterns
+Combo: database-performance → database-performance → sql-optimization-patterns
 ```
 
 ---
@@ -216,7 +216,7 @@ Combo: web-performance-audit → frontend-dev-guidelines → api-cache-invalidat
 ### Pattern 9: Complete API Development
 **Trigger:** "Develop API for X", "Build REST API", "Create GraphQL schema"
 
-**Combo:** `api-design-principles` → `backend-dev-guidelines` → `api-documentation-writer` → `api-cache-invalidation`
+**Combo:** `api-design-patterns` → `backend-dev-guidelines` → `api-documentation-writer` → `api-cache-invalidation`
 
 **Decision Tree:**
 ```
@@ -236,7 +236,7 @@ Real-time updates needed?
 **Example:**
 ```
 Task: "Tạo public API cho products với documentation và caching"
-Combo: api-design-principles → backend-dev-guidelines → api-cache-invalidation → api-documentation-writer
+Combo: api-design-patterns → backend-dev-guidelines → api-cache-invalidation → api-documentation-writer
 ```
 
 ---
@@ -283,7 +283,7 @@ Schema changes complex?
   └─ No  → Standard migration
 
 Data migration needed?
-  ├─ Yes → Add generating-database-seed-data patterns
+  ├─ Yes → Add database-data-generation patterns
   └─ No  → Schema only
 ```
 
@@ -298,23 +298,23 @@ Combo: database-backup → comparing-database-schemas → designing-database-sch
 ### Pattern 12: Database Health Check
 **Trigger:** "Check database", "Database audit", "Data integrity"
 
-**Combo:** `validating-database-integrity` → `scanning-database-security` → `analyzing-database-indexes`
+**Combo:** `database-validation` → `database-validation` → `database-performance`
 
 **Decision Tree:**
 ```
 Security concern?
-  ├─ Yes → scanning-database-security first
+  ├─ Yes → database-validation first
   └─ No  → Start with integrity check
 
 Performance issues?
-  ├─ Yes → Add analyzing-query-performance
+  ├─ Yes → Add database-performance
   └─ No  → Focus on integrity and security
 ```
 
 **Example:**
 ```
 Task: "Full database audit trước khi launch production"
-Combo: scanning-database-security → validating-database-integrity → analyzing-database-indexes → analyzing-query-performance
+Combo: database-validation → database-validation → database-performance → database-performance
 ```
 
 ---
@@ -398,13 +398,13 @@ Combo: laravel-dusk → systematic-debugging (if issues arise)
 ### Pattern 16: Test Data Generation
 **Trigger:** "Generate test data", "Need fixtures", "Factory patterns"
 
-**Combo:** `generating-test-data` → `generating-database-seed-data`
+**Combo:** `database-data-generation` → `database-data-generation`
 
 **Decision Tree:**
 ```
 Unit tests?
-  ├─ Yes → generating-test-data (factories, fixtures)
-  └─ No  → generating-database-seed-data (seeders)
+  ├─ Yes → database-data-generation (factories, fixtures)
+  └─ No  → database-data-generation (seeders)
 
 Complex relationships?
   ├─ Yes → Review relationship handling in both skills
@@ -414,7 +414,7 @@ Complex relationships?
 **Example:**
 ```
 Task: "Tạo test data cho order system với users, products, payments"
-Combo: generating-test-data → generating-database-seed-data
+Combo: database-data-generation → database-data-generation
 ```
 
 ---
@@ -424,13 +424,13 @@ Combo: generating-test-data → generating-database-seed-data
 ### Pattern 17: API Documentation
 **Trigger:** "Document API", "Create API docs", "OpenAPI spec"
 
-**Combo:** `api-documentation-writer` → `api-design-principles` (review)
+**Combo:** `api-documentation-writer` → `api-design-patterns` (review)
 
 **Decision Tree:**
 ```
 Existing API?
   ├─ Yes → api-documentation-writer (document as-is)
-  └─ No  → api-design-principles → api-documentation-writer
+  └─ No  → api-design-patterns → api-documentation-writer
 
 Need SDK?
   ├─ Yes → api-documentation-writer (SDK generation)
@@ -440,7 +440,7 @@ Need SDK?
 **Example:**
 ```
 Task: "Document existing REST API với OpenAPI và generate SDK"
-Combo: api-documentation-writer → api-design-principles
+Combo: api-documentation-writer → api-design-patterns
 ```
 
 ---
@@ -448,13 +448,13 @@ Combo: api-documentation-writer → api-design-principles
 ### Pattern 18: Database Documentation
 **Trigger:** "Document database", "ERD", "Data dictionary"
 
-**Combo:** `generating-database-documentation` → `designing-database-schemas` (ERD)
+**Combo:** `designing-database-schemas` → `designing-database-schemas` (ERD)
 
 **Decision Tree:**
 ```
 Need ERD?
   ├─ Yes → designing-database-schemas (generate ERD)
-  └─ No  → generating-database-documentation only
+  └─ No  → designing-database-schemas only
 
 Team onboarding?
   ├─ Yes → Full documentation with examples
@@ -464,7 +464,7 @@ Team onboarding?
 **Example:**
 ```
 Task: "Tạo documentation cho database để onboard team mới"
-Combo: designing-database-schemas → generating-database-documentation
+Combo: designing-database-schemas → designing-database-schemas
 ```
 
 ---
@@ -474,9 +474,9 @@ Combo: designing-database-schemas → generating-database-documentation
 | Task Type | First Skill | Add If... | Always Include |
 |-----------|-------------|-----------|----------------|
 | **New Filament Resource** | filament-resource-generator | Has images → image-management | filament-rules |
-| **New API** | api-design-principles | Public → api-documentation-writer | backend-dev-guidelines |
+| **New API** | api-design-patterns | Public → api-documentation-writer | backend-dev-guidelines |
 | **Bug Fix** | systematic-debugging | Domain-specific skill after Phase 1 | - |
-| **Performance** | systematic-debugging | DB → analyzing-query-performance | - |
+| **Performance** | systematic-debugging | DB → database-performance | - |
 | **Database Change** | database-backup | Complex → comparing-database-schemas | designing-database-schemas |
 | **SEO** | google-official-seo-guide | Content → seo-content-optimizer | web-performance-audit |
 
@@ -487,14 +487,14 @@ Combo: designing-database-schemas → generating-database-documentation
 ❌ **Don't:**
 1. **Skip systematic-debugging** when bug cause is unclear
 2. **Skip database-backup** before production migrations
-3. **Skip api-design-principles** when creating new APIs
-4. **Jump to optimization** before profiling (use web-performance-audit or analyzing-query-performance first)
+3. **Skip api-design-patterns** when creating new APIs
+4. **Jump to optimization** before profiling (use web-performance-audit or database-performance first)
 5. **Recommend 4+ skills** in one combo (too complex)
 
 ✅ **Do:**
 1. **Always debug first** before optimizing
 2. **Always backup** before risky operations
-3. **Start with design** (api-design-principles, designing-database-schemas) before implementation
+3. **Start with design** (api-design-patterns, designing-database-schemas) before implementation
 4. **Measure first** (audits, profiling) before optimizing
 5. **Keep combos simple** (1-3 skills max)
 

@@ -1,7 +1,6 @@
 ---
-name: Designing Database Schemas
-description: |
-  This skill enables Claude to design and visualize database schemas. It leverages normalization guidance (1NF through BCNF), relationship mapping, and ERD generation to create efficient and well-structured databases. Use this skill when the user requests to "design a database schema", "create a database model", "generate an ERD", "normalize a database", or needs help with "database design best practices". The skill is triggered by terms like "database schema", "ERD diagram", "database normalization", and "relational database design".
+name: designing-database-schemas
+description: Design, visualize, and document database schemas with ERD generation, normalization guidance (1NF-BCNF), relationship mapping, and automated documentation. Create efficient database structures, generate SQL statements, produce interactive HTML docs, and maintain data dictionaries. Use for schema design, database modeling, ERD diagrams, normalization, and documentation generation.
 ---
 
 ## Overview
@@ -54,3 +53,239 @@ The skill will:
 ## Integration
 
 This skill can be integrated with other Claude Code plugins, such as a SQL execution plugin, to automatically create the database schema in a database server. It can also work with a documentation plugin to generate documentation for the database schema.
+
+---
+
+## Part 2: Generating Database Documentation
+
+### How Documentation Generation Works
+
+1. **Schema Analysis**: Connect to existing database and analyze schema structure
+2. **Extract Metadata**: Gather information about tables, columns, relationships, indexes, triggers, stored procedures
+3. **Generate ERD**: Create visual ERD diagrams showing entity relationships
+4. **Create Documentation**: Produce data dictionaries, HTML docs, and markdown files
+
+### When to Use Documentation Generation
+
+- Document existing databases for team onboarding
+- Create ERD diagrams for architectural reviews
+- Produce data dictionaries for data governance
+- Generate API documentation for database access
+- Maintain up-to-date schema reference docs
+
+### Documentation Examples
+
+#### Example 1: Auto-Documenting Existing Database
+
+**User request**: "Generate database documentation for the 'ecommerce' database."
+
+**Generated Documentation**:
+
+**HTML Index (index.html)**:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>E-Commerce Database Documentation</title>
+</head>
+<body>
+  <h1>E-Commerce Database Schema</h1>
+  <nav>
+    <a href="#tables">Tables</a> |
+    <a href="#erd">ERD Diagram</a> |
+    <a href="#relationships">Relationships</a>
+  </nav>
+  
+  <section id="overview">
+    <h2>Database Overview</h2>
+    <ul>
+      <li>Database: ecommerce</li>
+      <li>Engine: PostgreSQL 14</li>
+      <li>Tables: 12</li>
+      <li>Views: 3</li>
+      <li>Stored Procedures: 5</li>
+    </ul>
+  </section>
+</body>
+</html>
+```
+
+**Data Dictionary (data_dictionary.md)**:
+```markdown
+# E-Commerce Database - Data Dictionary
+
+## Table: users
+
+**Description**: Stores customer account information
+
+| Column | Type | Nullable | Default | Description |
+|--------|------|----------|---------|-------------|
+| id | INTEGER | NO | AUTO_INCREMENT | Primary key |
+| email | VARCHAR(255) | NO | - | User email (unique) |
+| password_hash | VARCHAR(255) | NO | - | Bcrypt hashed password |
+| first_name | VARCHAR(100) | YES | NULL | User first name |
+| last_name | VARCHAR(100) | YES | NULL | User last name |
+| created_at | TIMESTAMP | NO | CURRENT_TIMESTAMP | Account creation date |
+| updated_at | TIMESTAMP | NO | CURRENT_TIMESTAMP | Last update timestamp |
+
+**Indexes**:
+- PRIMARY KEY (id)
+- UNIQUE INDEX idx_users_email (email)
+- INDEX idx_users_created (created_at)
+
+**Foreign Keys**:
+- None (root table)
+
+**Referenced By**:
+- orders.user_id → users.id
+- reviews.user_id → users.id
+- cart.user_id → users.id
+
+---
+
+## Table: orders
+
+**Description**: Customer purchase orders
+
+| Column | Type | Nullable | Default | Description |
+|--------|------|----------|---------|-------------|
+| id | INTEGER | NO | AUTO_INCREMENT | Primary key |
+| user_id | INTEGER | NO | - | Reference to users table |
+| status | ENUM | NO | 'pending' | Order status |
+| total | DECIMAL(10,2) | NO | - | Total order amount |
+| shipping_address | TEXT | NO | - | Full shipping address |
+| created_at | TIMESTAMP | NO | CURRENT_TIMESTAMP | Order placement date |
+
+**Indexes**:
+- PRIMARY KEY (id)
+- INDEX idx_orders_user (user_id)
+- INDEX idx_orders_status (status)
+- INDEX idx_orders_created (created_at)
+
+**Foreign Keys**:
+- user_id → users(id) ON DELETE RESTRICT
+
+**Referenced By**:
+- order_items.order_id → orders.id
+- payments.order_id → orders.id
+```
+
+**ERD Diagram (erd.mermaid)**:
+```mermaid
+erDiagram
+    USERS ||--o{ ORDERS : places
+    USERS ||--o{ REVIEWS : writes
+    USERS ||--|| CART : has
+    
+    ORDERS ||--|{ ORDER_ITEMS : contains
+    ORDERS ||--|| PAYMENTS : has
+    
+    PRODUCTS ||--o{ ORDER_ITEMS : "ordered in"
+    PRODUCTS ||--o{ REVIEWS : "reviewed in"
+    PRODUCTS }o--|| CATEGORIES : "belongs to"
+    
+    CART ||--|{ CART_ITEMS : contains
+    CART_ITEMS }o--|| PRODUCTS : references
+    
+    USERS {
+        int id PK
+        string email UK
+        string password_hash
+        string first_name
+        string last_name
+        timestamp created_at
+    }
+    
+    ORDERS {
+        int id PK
+        int user_id FK
+        enum status
+        decimal total
+        text shipping_address
+        timestamp created_at
+    }
+    
+    PRODUCTS {
+        int id PK
+        int category_id FK
+        string name
+        text description
+        decimal price
+        int stock
+    }
+    
+    ORDER_ITEMS {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+        decimal price_at_purchase
+    }
+```
+
+#### Example 2: Focused ERD for Specific Tables
+
+**User request**: "Create an ERD diagram for just the orders-related tables."
+
+**Generated ERD**:
+```mermaid
+erDiagram
+    USERS ||--o{ ORDERS : "places"
+    ORDERS ||--|{ ORDER_ITEMS : "contains"
+    ORDERS ||--|| PAYMENTS : "paid via"
+    ORDERS ||--|| SHIPMENTS : "ships as"
+    PRODUCTS ||--o{ ORDER_ITEMS : "appears in"
+    
+    USERS {
+        int id PK
+        string email
+    }
+    
+    ORDERS {
+        int id PK
+        int user_id FK
+        enum status
+        decimal total
+    }
+    
+    ORDER_ITEMS {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+        decimal price
+    }
+    
+    PAYMENTS {
+        int id PK
+        int order_id FK
+        enum method
+        decimal amount
+        enum status
+    }
+    
+    SHIPMENTS {
+        int id PK
+        int order_id FK
+        string tracking_number
+        enum status
+    }
+    
+    PRODUCTS {
+        int id PK
+        string name
+        decimal price
+    }
+```
+
+### Documentation Best Practices
+
+- **Keep Updated**: Regenerate docs after schema changes
+- **Version Control**: Store documentation in git alongside code
+- **Include Examples**: Add sample queries and use cases
+- **Describe Business Logic**: Explain constraints and triggers
+- **Document Assumptions**: Note design decisions and trade-offs
+
+---
+
+**Combined Skill**: This skill now handles both schema design (creating new databases) and documentation generation (documenting existing databases).

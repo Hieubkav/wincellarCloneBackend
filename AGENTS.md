@@ -67,24 +67,24 @@
 "Meta description optimization"       → seo-content-optimizer
 "Design database schema"              → designing-database-schemas
 "Generate ERD diagram"                → designing-database-schemas
-"Optimize slow query"                 → analyzing-query-performance
-"Analyze database indexes"            → analyzing-database-indexes
+"Document database schema"            → designing-database-schemas
+"Optimize slow query"                 → database-performance
+"Analyze database indexes"            → database-performance
+"Query profiling"                     → database-performance
 "Compare database schemas"            → comparing-database-schemas
 "Generate migration script"           → comparing-database-schemas
 "Generate ORM models"                 → generating-orm-code
 "Create TypeORM entities"             → generating-orm-code
-"Seed database"                       → generating-database-seed-data
-"Generate test data"                  → generating-test-data
-"Database security scan"              → scanning-database-security
-"Validate database integrity"         → validating-database-integrity
-"Document database schema"            → generating-database-documentation
+"Seed database"                       → database-data-generation
+"Generate test data"                  → database-data-generation
+"Database security scan"              → database-validation
+"Validate database integrity"         → database-validation
 "SQL optimization"                    → sql-optimization-patterns
 "PostgreSQL queries"                  → databases
 "MongoDB aggregation"                 → databases
 "Tạo component React"                 → frontend-components
 "Responsive design"                   → frontend-responsive
 "Mobile-first layout"                 → frontend-responsive
-"Tạo landing page"                    → landing-page-guide
 "Next.js App Router"                  → nextjs
 "Server Components"                   → nextjs
 "React hooks pattern"                 → react-component-architecture
@@ -97,8 +97,9 @@
 "Playwright test"                     → playwright-automation
 "Browser automation"                  → playwright-automation
 "Quality verification"                → qa-verification
-"API design patterns"                 → api-best-practices
-"REST API best practices"             → api-best-practices
+"API design patterns"                 → api-design-patterns
+"REST API best practices"             → api-design-patterns
+"GraphQL schema design"               → api-design-patterns
 "Authentication patterns"             → auth-implementation-patterns
 "JWT implementation"                  → auth-implementation-patterns
 "Better Auth setup"                   → better-auth
@@ -134,10 +135,10 @@
 - database-backup, systematic-debugging, product-search-scoring, docs-seeker, brainstorming, sequential-thinking, writing-plans, code-review-excellence, git-commit-helper, repomix
 
 **api/** - API Design & Documentation
-- api-design-principles, api-cache-invalidation, api-documentation-writer, api-best-practices
+- api-design-patterns, api-cache-invalidation, api-documentation-writer
 
 **meta/** - Skill Management
-- create-skill (init, validate, package, intelligent grouping, refactor analysis), choose-skill, skill-skeleton
+- create-skill (init, validate, package, intelligent grouping, refactor analysis), choose-skill
 
 **optimize/** - Performance & SEO Optimization
 - web-performance-audit, google-official-seo-guide
@@ -146,7 +147,7 @@
 - seo-content-optimizer
 
 **database/** - Database Management & Optimization
-- databases, analyzing-database-indexes, analyzing-query-performance, comparing-database-schemas, designing-database-schemas, generating-database-documentation, generating-database-seed-data, generating-orm-code, generating-test-data, scanning-database-security, sql-optimization-patterns, validating-database-integrity
+- databases, database-performance, database-data-generation, database-validation, designing-database-schemas, comparing-database-schemas, generating-orm-code, sql-optimization-patterns
 
 **Access:** `read .claude/skills/[category]/[skill-name]/SKILL.md`
 **Details:** Each skill < 200 lines, references/ for deep dive, scripts/ for automation
@@ -159,10 +160,63 @@
 
 **Filament:** Use `Schema` namespace NOT `Form` (`filament-rules` skill)
 
+**Skills Changes:** ⚠️ **AUTO-SYNC REQUIRED!** After ANY skills changes (add/merge/remove):
+1. Update `.claude/global/SKILLS_CONTEXT.md` (single source of truth)
+2. **AUTO-RUN:** `python .claude/skills/meta/choose-skill/scripts/sync_choose_skill.py`
+3. Verify `skills-catalog.md` updated
+4. Commit ALL changes together
+
+**Why?** Choose-skill meta-agent needs latest skills info to recommend correctly.
+
 **Resources:**
 - `PLAN.md` - Architecture decisions
 - `mermaid.rb` - Database schema
 - `.claude/global/SYSTEM.md` - All project standards
+- `.claude/global/SKILLS_CONTEXT.md` - Skills catalog (single source of truth)
+
+---
+
+## 🔄 Auto-Sync Workflow for Skills Changes
+
+**IMPORTANT:** When you (AI agent) make ANY skills changes:
+
+### Step 1: Detect Skills Changes
+```python
+# If you just did:
+- Created new skill folder
+- Merged/deleted skills
+- Updated SKILLS_CONTEXT.md
+# → THEN auto-trigger sync!
+```
+
+### Step 2: Auto-Run Sync Script
+```bash
+# AI agent should AUTOMATICALLY run:
+python .claude/skills/meta/choose-skill/scripts/sync_choose_skill.py
+```
+
+### Step 3: Verify & Report
+```
+✅ Check output shows:
+   - Updated skills-catalog.md
+   - Updated recommendation-patterns.md
+   - Summary matches expected counts
+```
+
+### Example Workflow:
+```
+User: "Gộp skill A và B thành skill C"
+
+AI Agent actions:
+1. Create new skill C (merge A+B content)
+2. Delete skills A and B
+3. Update SKILLS_CONTEXT.md
+4. **AUTO-RUN:** sync_choose_skill.py  ← KEY!
+5. Verify output
+6. Report completion to user
+```
+
+**Why critical?** Choose-skill meta-agent reads `skills-catalog.md` to recommend skills. Without sync, it recommends outdated/deleted skills!
 
 ---
 
@@ -170,5 +224,6 @@
 - Organized into 11 categories (filament, laravel, frontend, testing, fullstack, workflows, api, meta, optimize, marketing, database)
 - Each skill < 200 lines (SKILL.md = essentials, references/ = details, scripts/ = tools)
 - Progressive disclosure for efficient context management
+- **Auto-sync:** skills-catalog.md synced via `sync_choose_skill.py` after ANY skills changes
 
-v6.0 | Updated: 2025-11-11 | 55/55 skills categorized & optimized | NEW: frontend/ (9 skills) + testing/ (3 skills)
+v6.1 | Updated: 2025-11-11 | 51/51 skills optimized & merged | OPTIMIZED: Merged 10 duplicate/small skills

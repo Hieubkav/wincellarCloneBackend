@@ -12,6 +12,42 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 **Stack:** Laravel 12.x, Filament 4.x, MySQL/MariaDB
 **Location:** E:\Laravel\Laravel12\wincellarClone\wincellarcloneBackend
 
+**⚠️ CRITICAL PROTOCOLS:** `read .claude/global/AI_AGENT_REMINDERS.md` before making skills changes!
+
+---
+
+## ⚠️ CRITICAL: Skills Auto-Sync Protocol
+
+**FOR AI AGENTS:** After ANY skills changes, you MUST auto-run sync script!
+
+### When to Auto-Sync:
+```
+IF you just did ANY of these:
+  ✓ Created new skill (e.g., new folder in .claude/skills/)
+  ✓ Merged skills (deleted old, created new merged skill)
+  ✓ Deleted/removed skills
+  ✓ Updated SKILLS_CONTEXT.md
+THEN:
+  → IMMEDIATELY run: python .claude/skills/meta/choose-skill/scripts/sync_choose_skill.py
+  → Verify output shows updated counts
+  → Include sync results in your response to user
+```
+
+### Why Critical?
+- `choose-skill` meta-agent reads `skills-catalog.md` for recommendations
+- Without sync → recommends deleted/outdated skills → BREAKS workflow
+- Sync keeps choose-skill intelligent and accurate
+
+### Example:
+```
+User: "Gộp skill A và B"
+AI: 
+1. Merge skills ✓
+2. Update SKILLS_CONTEXT.md ✓
+3. AUTO-RUN sync script ✓  ← DON'T FORGET!
+4. Report: "Đã gộp và sync choose-skill"
+```
+
 ---
 
 ## 📚 Available Skills
@@ -61,8 +97,8 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 </skill>
 
 <skill>
-<name>api-design-principles</name>
-<description>Master REST and GraphQL API design principles to build intuitive, scalable, and maintainable APIs that delight developers. USE WHEN designing new APIs, reviewing API specifications, establishing API design standards, implementing RESTful endpoints, or working with API architecture.</description>
+<name>api-design-patterns</name>
+<description>Comprehensive REST and GraphQL API design patterns, best practices, OpenAPI specifications, versioning, authentication, error handling, pagination, rate limiting, and security. USE WHEN designing APIs, creating endpoints, reviewing specifications, implementing authentication, building scalable backend services, or establishing API standards. (Merged from api-design-principles + api-best-practices)</description>
 <location>user/api</location>
 </skill>
 
@@ -181,14 +217,8 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 </skill>
 
 <skill>
-<name>analyzing-database-indexes</name>
-<description>Analyze query patterns and recommend optimal database indexes using database-index-advisor plugin. Identifies missing indexes to improve query performance and unused indexes for removal. USE WHEN optimizing slow queries, finding missing indexes, removing unused indexes, or implementing database index optimization strategies.</description>
-<location>user/database</location>
-</skill>
-
-<skill>
-<name>analyzing-query-performance</name>
-<description>Analyze and optimize database query performance using query-performance-analyzer plugin. Interprets EXPLAIN plans, identifies performance bottlenecks (slow queries, missing indexes), and suggests specific optimization strategies. USE WHEN analyzing EXPLAIN plans, debugging slow queries, identifying performance bottlenecks, or improving database query execution speed and resource utilization.</description>
+<name>database-performance</name>
+<description>Analyze and optimize database performance through index analysis and query profiling. Identify missing/unused indexes, interpret EXPLAIN plans, find bottlenecks, and recommend optimization strategies. USE WHEN optimizing slow queries, analyzing database workloads, improving query execution speed, or managing database indexes. (Merged from analyzing-database-indexes + analyzing-query-performance)</description>
 <location>user/database</location>
 </skill>
 
@@ -200,19 +230,19 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 
 <skill>
 <name>designing-database-schemas</name>
-<description>Design and visualize database schemas with normalization guidance (1NF through BCNF), relationship mapping, and ERD generation. USE WHEN designing new database schemas, creating database models, generating ERD diagrams, normalizing databases, or implementing database design best practices.</description>
+<description>Design, visualize, and document database schemas with ERD generation, normalization guidance (1NF-BCNF), relationship mapping, and automated documentation. Create efficient database structures, generate SQL statements, produce interactive HTML docs, and maintain data dictionaries. USE WHEN designing schemas, creating database models, generating ERD diagrams, normalizing databases, or documenting existing databases. (Includes database documentation generation)</description>
 <location>user/database</location>
 </skill>
 
 <skill>
-<name>generating-database-documentation</name>
-<description>Automatically generate comprehensive documentation for existing database schemas using database-documentation-gen plugin. Includes ERD diagrams, table relationships, column descriptions, indexes, triggers, stored procedures, and interactive HTML documentation. USE WHEN documenting database schemas for team onboarding, architectural reviews, data governance, or creating data dictionaries.</description>
+<name>database-data-generation</name>
+<description>Generate realistic database seed data and test fixtures for development, testing, and demonstrations. Creates realistic users, products, orders, and custom schemas using Faker libraries while maintaining relational integrity and data consistency. USE WHEN populating databases, creating test fixtures, seeding development environments, or generating demo data. (Merged from generating-database-seed-data + generating-test-data)</description>
 <location>user/database</location>
 </skill>
 
 <skill>
-<name>generating-database-seed-data</name>
-<description>Generate realistic test data and database seed scripts using Faker libraries. Maintains relational integrity and allows configurable data volumes. USE WHEN seeding databases, generating test data, creating seed scripts, populating databases with realistic data for development, testing, or demonstration purposes.</description>
+<name>database-validation</name>
+<description>Comprehensive database security scanning and data integrity validation. Identify security vulnerabilities, enforce OWASP compliance, validate data types/formats/ranges, ensure referential integrity, and implement business rules. USE WHEN assessing database security, checking compliance, validating data integrity, or enforcing constraints. (Merged from scanning-database-security + validating-database-integrity)</description>
 <location>user/database</location>
 </skill>
 
@@ -223,28 +253,12 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 </skill>
 
 <skill>
-<name>generating-test-data</name>
-<description>Generate realistic test data using test-data-generator plugin for users, products, orders, and custom schemas. Useful for populating testing environments or creating sample data for demonstrations. USE WHEN generating test data, creating fake users, populating databases, generating product/order data, or generating data based on custom schemas.</description>
-<location>user/database</location>
-</skill>
-
-<skill>
-<name>scanning-database-security</name>
-<description>Perform comprehensive database security scans using database-security-scanner plugin with OWASP guidelines. Identifies vulnerabilities like weak passwords, SQL injection risks, and insecure configurations. Supports PostgreSQL and MySQL. USE WHEN assessing database security, checking for vulnerabilities, performing OWASP compliance checks, or improving database security posture.</description>
-<location>user/database</location>
-</skill>
-
-<skill>
 <name>sql-optimization-patterns</name>
 <description>Master SQL query optimization, indexing strategies, and EXPLAIN analysis to dramatically improve database performance and eliminate slow queries. USE WHEN debugging slow queries, designing database schemas, optimizing application performance, or implementing SQL optimization best practices.</description>
 <location>user/database</location>
 </skill>
 
-<skill>
-<name>validating-database-integrity</name>
-<description>Ensure database integrity using data-validation-engine plugin. Automatically validates data types, ranges, formats, referential integrity, and business rules. Supports multi-database environments and production-ready implementations. USE WHEN implementing data validation, enforcing constraints, improving data quality, or validating data input within applications.</description>
-<location>user/database</location>
-</skill>
+
 
 <!-- NEW FRONTEND SKILLS -->
 
@@ -260,11 +274,7 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 <location>user/frontend</location>
 </skill>
 
-<skill>
-<name>landing-page-guide</name>
-<description>Create high-converting landing pages with Next.js 14+ and ShadCN UI following 11 essential elements framework: SEO-optimized URL, company logo, title/subtitle, primary CTA, social proof, images/videos, core benefits, testimonials, FAQ, final CTA, contact/legal. USE WHEN creating landing pages, marketing pages, product pages, or promotional websites with Next.js and React.</description>
-<location>user/frontend</location>
-</skill>
+
 
 <skill>
 <name>nextjs</name>
@@ -324,11 +334,7 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 
 <!-- NEW API SKILL -->
 
-<skill>
-<name>api-best-practices</name>
-<description>REST API design patterns: resource-oriented design, HTTP methods/status codes, versioning strategies (URL, header), authentication (JWT, OAuth2, API keys), error handling, pagination (offset, cursor, page-number), rate limiting, security best practices, OpenAPI/Swagger documentation. USE WHEN designing APIs, creating endpoints, documenting APIs, implementing backend services exposing HTTP APIs, or reviewing API architecture.</description>
-<location>user/api</location>
-</skill>
+
 
 <!-- NEW FULLSTACK SKILLS -->
 
@@ -372,11 +378,7 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 
 <!-- NEW META SKILL -->
 
-<skill>
-<name>skill-skeleton</name>
-<description>Template skill providing basic structure and examples for creating new skills. USE WHEN creating new skill from scratch, need skill structure reference, or want skill creation template.</description>
-<location>user/meta</location>
-</skill>
+
 
 </available_skills>
 
