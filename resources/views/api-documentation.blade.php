@@ -399,6 +399,7 @@
                 <li><a href="#auth">Xác thực</a></li>
                 <li><a href="#health">Health Check</a></li>
                 <li><a href="#products">Sản phẩm</a></li>
+                <li><a href="#articles">Bài viết</a></li>
                 <li><a href="#home">Trang chủ</a></li>
                 <li><a href="#settings">Cài đặt</a></li>
                 <li><a href="#docs">Tài liệu</a></li>
@@ -604,6 +605,204 @@
                     <div class="info-box">
                         <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu
                     </div>
+                </div>
+            </section>
+
+            <!-- Articles -->
+            <section id="articles">
+                <h2>📰 Bài viết</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <div class="endpoint-path">/bai-viet</div>
+                    </div>
+                    <p class="endpoint-description">Danh sách bài viết với pagination và sorting</p>
+
+                    <h4>Query Parameters</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tham số</th>
+                                <th>Kiểu</th>
+                                <th>Mô tả</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>page</code></td>
+                                <td>integer</td>
+                                <td>Trang hiện tại (default: 1)</td>
+                            </tr>
+                            <tr>
+                                <td><code>per_page</code></td>
+                                <td>integer</td>
+                                <td>Số items per page (max: 50, default: 12)</td>
+                            </tr>
+                            <tr>
+                                <td><code>sort</code></td>
+                                <td>string</td>
+                                <td>Sắp xếp: <code>-created_at</code>, <code>created_at</code>, <code>title</code>, <code>-title</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Ví dụ Request</h4>
+                    <pre>GET /api/v1/bai-viet?page=1&per_page=12&sort=-created_at</pre>
+
+                    <h4>Phản hồi thành công (200)</h4>
+                    <pre>{
+  "data": [
+    {
+      "id": 1,
+      "title": "Cách Chọn Rượu Vang Phù Hợp",
+      "slug": "cach-chon-ruou-vang-phu-hop",
+      "excerpt": "Hướng dẫn chi tiết cách chọn rượu vang...",
+      "cover_image_url": "/storage/articles/cover-1.jpg",
+      "published_at": "2025-11-09T15:30:00Z",
+      "_links": {
+        "self": {
+          "href": "http://localhost:8000/api/v1/bai-viet/cach-chon-ruou-vang-phu-hop",
+          "method": "GET"
+        }
+      }
+    }
+  ],
+  "meta": {
+    "pagination": {
+      "page": 1,
+      "per_page": 12,
+      "total": 25,
+      "last_page": 3,
+      "has_more": true
+    },
+    "api_version": "v1"
+  },
+  "_links": {
+    "self": {"href": "http://localhost:8000/api/v1/bai-viet?page=1"},
+    "next": {"href": "http://localhost:8000/api/v1/bai-viet?page=2"},
+    "last": {"href": "http://localhost:8000/api/v1/bai-viet?page=3"}
+  }
+}</pre>
+
+                    <div class="info-box">
+                        <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu
+                    </div>
+                </div>
+
+                <!-- Get Article Detail -->
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method get">GET</span>
+                        <div class="endpoint-path">/bai-viet/{slug}</div>
+                    </div>
+                    <p class="endpoint-description">Chi tiết bài viết theo slug với full content, gallery, và thông tin tác giả</p>
+
+                    <h4>Path Parameters</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tham số</th>
+                                <th>Kiểu</th>
+                                <th>Mô tả</th>
+                                <th>Ví dụ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>slug</code></td>
+                                <td>string</td>
+                                <td>URL-friendly identifier của bài viết</td>
+                                <td><code>cach-chon-ruou-vang-phu-hop</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Ví dụ Request</h4>
+                    <pre>GET /api/v1/bai-viet/cach-chon-ruou-vang-phu-hop</pre>
+
+                    <h4>Phản hồi thành công (200)</h4>
+                    <pre>{
+  "data": {
+    "id": 1,
+    "title": "Cách Chọn Rượu Vang Phù Hợp",
+    "slug": "cach-chon-ruou-vang-phu-hop",
+    "excerpt": "Hướng dẫn chi tiết...",
+    "content": "&lt;p&gt;Nội dung đầy đủ của bài viết...&lt;/p&gt;",
+    "cover_image_url": "/storage/articles/cover-1.jpg",
+    "gallery": [
+      {
+        "id": 1,
+        "url": "/storage/articles/gallery-1.jpg",
+        "alt": "Rượu vang đỏ",
+        "order": 1
+      }
+    ],
+    "author": {
+      "id": 1,
+      "name": "Admin",
+      "email": "admin@wincellar.com"
+    },
+    "published_at": "2025-11-09T15:30:00Z",
+    "meta": {
+      "title": "Cách Chọn Rượu Vang Phù Hợp - Wincellar",
+      "description": "Hướng dẫn chi tiết cách chọn rượu vang phù hợp...",
+      "keywords": "rượu vang, chọn rượu, wine guide"
+    },
+    "_links": {
+      "self": {
+        "href": "http://localhost:8000/api/v1/bai-viet/cach-chon-ruou-vang-phu-hop",
+        "method": "GET"
+      },
+      "collection": {
+        "href": "http://localhost:8000/api/v1/bai-viet",
+        "method": "GET"
+      }
+    }
+  },
+  "meta": {
+    "api_version": "v1",
+    "timestamp": "2025-11-11T10:30:00Z"
+  }
+}</pre>
+
+                    <h4>Phản hồi lỗi (404)</h4>
+                    <pre>{
+  "error": "NotFound",
+  "message": "Article not found",
+  "timestamp": "2025-11-11T10:30:00Z",
+  "correlation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "details": {
+    "identifier": "non-existent-slug"
+  }
+}</pre>
+
+                    <div class="info-box">
+                        <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu
+                    </div>
+
+                    <div class="auth-card">
+                        <h4>💡 Response Fields</h4>
+                        <ul style="margin: 0.5rem 0 0 1.5rem;">
+                            <li><strong>excerpt:</strong> Tóm tắt ngắn gọn cho list view</li>
+                            <li><strong>content:</strong> Nội dung HTML đầy đủ (chỉ có trong detail view)</li>
+                            <li><strong>gallery:</strong> Mảng ảnh đính kèm (chỉ có trong detail view)</li>
+                            <li><strong>author:</strong> Thông tin tác giả (chỉ có trong detail view)</li>
+                            <li><strong>meta:</strong> SEO metadata cho dynamic rendering</li>
+                            <li><strong>_links:</strong> HATEOAS links để navigate giữa resources</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="auth-card" style="background: rgba(155, 44, 59, 0.05); border-left-color: var(--wine);">
+                    <h4>📌 Use Cases</h4>
+                    <ul style="margin: 0.5rem 0 0 1.5rem; line-height: 1.8;">
+                        <li><strong>Blog/News listing:</strong> Dùng <code>GET /bai-viet</code> với pagination</li>
+                        <li><strong>Article detail page:</strong> Dùng <code>GET /bai-viet/{slug}</code></li>
+                        <li><strong>SEO optimization:</strong> Sử dụng <code>meta</code> fields cho dynamic meta tags</li>
+                        <li><strong>Image gallery:</strong> Render <code>gallery</code> array trong lightbox/carousel</li>
+                        <li><strong>Author attribution:</strong> Display author info từ <code>author</code> object</li>
+                    </ul>
                 </div>
             </section>
 
