@@ -21,6 +21,7 @@ class SettingResource extends JsonResource
             'address' => $this->address,
             'hours' => $this->hours,
             'email' => $this->email,
+            'google_map_embed' => $this->google_map_embed,
             
             // Logo and favicon URLs
             'logo_url' => $this->logoImage?->url ?? '/placeholder/logo.svg',

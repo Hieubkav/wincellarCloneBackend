@@ -71,6 +71,11 @@ class SettingsPage extends Page implements HasForms
                             ->label('Giờ làm việc')
                             ->rows(3)
                             ->columnSpanFull(),
+                        Textarea::make('google_map_embed')
+                            ->label('Google Map nhúng (iframe code)')
+                            ->placeholder('<iframe src="https://www.google.com/maps/embed?..." width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>')
+                            ->rows(4)
+                            ->columnSpanFull(),
                     ]),
                 Grid::make()
                     ->columns(2)

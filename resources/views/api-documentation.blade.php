@@ -865,6 +865,7 @@
     "address": "123 Đường ABC, Quận 1, TP.HCM",
     "hours": "8:00 - 22:00 hàng ngày",
     "email": "contact@wincellar.com",
+    "google_map_embed": "<iframe src=\"https://www.google.com/maps/embed?...\" width=\"600\" height=\"450\"></iframe>",
     "logo_url": "/storage/images/logo.png",
     "favicon_url": "/storage/images/favicon.ico",
     "meta_defaults": {

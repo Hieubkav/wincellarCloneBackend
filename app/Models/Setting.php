@@ -25,6 +25,7 @@ class Setting extends Model
         'address',
         'hours',
         'email',
+        'google_map_embed',
         'meta_default_title',
         'meta_default_description',
         'meta_default_keywords',

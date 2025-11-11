@@ -200,6 +200,11 @@ class SettingResource extends Resource
                             ->label('Địa chỉ')
                             ->rows(3)
                             ->maxLength(500),
+                        Textarea::make('extra->google_map_embed')
+                            ->label('Google Map Embed URL')
+                            ->rows(3)
+                            ->helperText('Nhập URL Google Maps embed (ví dụ: https://www.google.com/maps/embed?pb=...)')
+                            ->placeholder('https://www.google.com/maps/embed?pb=...'),
                     ]),
 
                 Section::make('SEO mặc định')

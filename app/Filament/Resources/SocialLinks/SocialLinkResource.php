@@ -71,15 +71,29 @@ class SocialLinkResource extends Resource
                     ->schema([
                         Grid::make()
                             ->schema([
-                                TextInput::make('platform')
-                                    ->label('Tên mạng xã hội')
+                                Select::make('platform')
+                                    ->label('Mạng xã hội')
                                     ->required()
-                                    ->maxLength(255),
+                                    ->options([
+                                        'Facebook' => 'Facebook',
+                                        'Instagram' => 'Instagram',
+                                        'YouTube' => 'YouTube',
+                                        'LinkedIn' => 'LinkedIn',
+                                        'Twitter' => 'Twitter (X)',
+                                        'TikTok' => 'TikTok',
+                                        'Zalo' => 'Zalo',
+                                        'Telegram' => 'Telegram',
+                                        'WhatsApp' => 'WhatsApp',
+                                        'Pinterest' => 'Pinterest',
+                                    ])
+                                    ->searchable()
+                                    ->helperText('Chọn platform để tự động hiển thị icon. Nếu không upload custom icon, hệ thống sẽ dùng icon mặc định.'),
                                 TextInput::make('url')
                                     ->label('Đường dẫn')
                                     ->required()
                                     ->url()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->placeholder('https://facebook.com/yourpage'),
                                 Toggle::make('active')
                                     ->label('Đang hiển thị')
                                     ->default(true)
