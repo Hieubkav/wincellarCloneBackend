@@ -16,6 +16,9 @@
 "Tạo skill mới"                       → create-skill
 "Package skill"                       → create-skill
 "Validate skill"                      → create-skill
+"Skill nào phù hợp cho task này?"    → choose-skill
+"Không biết dùng skill nào"          → choose-skill
+"Recommend skills for X"              → choose-skill
 "Phải Ctrl+F5 mới thấy data mới"    → api-cache-invalidation
 "Tìm tài liệu cho Next.js"           → docs-seeker
 "Bug này không fix được"              → systematic-debugging
@@ -87,7 +90,7 @@
 - api-design-principles, api-cache-invalidation, api-documentation-writer
 
 **meta/** - Skill Management
-- create-skill (init, validate, package, categorize)
+- create-skill (init, validate, package, categorize), choose-skill
 
 **optimize/** - Performance & SEO Optimization
 - web-performance-audit, google-official-seo-guide
@@ -121,4 +124,4 @@
 - Each skill < 200 lines (SKILL.md = essentials, references/ = details, scripts/ = tools)
 - Progressive disclosure for efficient context management
 
-v5.0 | Updated: 2025-11-11 | 34/34 skills categorized & optimized
+v5.1 | Updated: 2025-11-11 | 35/35 skills categorized & optimized

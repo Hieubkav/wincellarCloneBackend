@@ -25,6 +25,12 @@ Trả lời bằng tiếng việt (Always respond in Vietnamese)
 </skill>
 
 <skill>
+<name>choose-skill</name>
+<description>Meta-agent that analyzes tasks and recommends optimal skill combinations with Feynman-style explanations. READ-ONLY analyzer that NEVER modifies code, only provides recommendations. USE WHEN feeling overwhelmed by 34+ skills, uncertain which skills to apply, need guidance on skill orchestration patterns (sequential/parallel/conditional), want to understand skill synergies, or need help choosing the right skills for a task. Returns 1-3 combo recommendations with simple Vietnamese explanations.</description>
+<location>user/meta</location>
+</skill>
+
+<skill>
 <name>filament-rules</name>
 <description>Filament 4.x coding standards for Laravel 12 project with custom Schema namespace (not Form), Vietnamese UI, Observer patterns, Image management. USE WHEN creating Filament resources, fixing namespace errors (Class not found), implementing forms, RelationManagers, or any Filament development task.</description>
 <location>user/filament</location>

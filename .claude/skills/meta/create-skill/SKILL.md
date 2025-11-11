@@ -111,14 +111,15 @@ Skills use a three-level loading system to manage context efficiently:
 
 ## Skill Creation Workflow
 
-**Full Process (7 Steps):**
+**Full Process (8 Steps):**
 1. Understand the skill with concrete examples
 2. Plan reusable skill contents (scripts, references, assets)
 3. Initialize skill using `scripts/init_skill.py`
 4. Edit SKILL.md and bundled resources
 5. **Register skill in SYSTEM.md and AGENTS.md** ⚠️ CRITICAL
-6. Package skill using `scripts/package_skill.py`
-7. Iterate based on testing feedback
+6. **Sync to choose-skill** ⚠️ CRITICAL (NEW)
+7. Package skill using `scripts/package_skill.py`
+8. Iterate based on testing feedback
 
 **⚠️ CRITICAL Step 5 - Skill Registration:**
 Every new skill MUST be registered in two places:
@@ -127,10 +128,24 @@ Every new skill MUST be registered in two places:
 
 Without registration, Claude cannot discover or activate the skill!
 
+**⚠️ CRITICAL Step 6 - Sync to choose-skill:**
+Run `scripts/sync_to_choose_skill.py` to update choose-skill's catalog:
+```bash
+python scripts/sync_to_choose_skill.py path/to/your/skill
+```
+
+This ensures choose-skill can recommend your new skill! Script will:
+- Parse skill metadata and category
+- Update choose-skill/references/skills-catalog.md
+- Show diff and ask for confirmation
+
+Skip ONLY if skill is internal/private and shouldn't be recommended.
+
 ## References
 
 **Skill Creation Process:** `read .claude/skills/meta/create-skill/references/skill-creation-process.md`
 - **Step 5 details:** How to register skills in SYSTEM.md and AGENTS.md
+- **Step 6 details:** How to sync to choose-skill catalog
 
 **Optimization & Refactoring:**
 - `read .claude/skills/meta/create-skill/references/optimization-report.md` - Complete optimization results (16/16 skills)
@@ -143,6 +158,7 @@ Without registration, Claude cannot discover or activate the skill!
 **Automation Tools:**
 - `scripts/init_skill.py` - Initialize new skill with template
 - `scripts/quick_validate.py` - Validate skill structure
+- `scripts/sync_to_choose_skill.py` - Sync skill to choose-skill catalog ⚠️ NEW
 - `scripts/package_skill.py` - Package skill as .zip
 - `scripts/smart_refactor.py` - Auto-refactor skills to <200 lines (supports categories)
 - `scripts/auto_refactor_skills.py` - Batch validation (supports categories)

@@ -131,9 +131,44 @@ v4.x | Updated: YYYY-MM-DD | XX/XX skills categorized & optimized
 
 **Note:** Both SYSTEM.md and AGENTS.md are critical for skill discovery. SYSTEM.md provides detailed context for Claude, while AGENTS.md helps users understand available skills and their triggers.
 
-### Step 6: Packaging a Skill
+### Step 6: Sync to choose-skill
 
-Once the skill is ready and registered, it should be packaged into a distributable zip file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
+After registering the skill in SYSTEM.md and AGENTS.md, sync it to the choose-skill catalog so the skill recommendation agent knows about it:
+
+```bash
+python scripts/sync_to_choose_skill.py path/to/your/skill
+```
+
+For example:
+```bash
+# From create-skill directory
+python scripts/sync_to_choose_skill.py ../../filament/my-new-skill
+
+# Or with absolute path
+python scripts/sync_to_choose_skill.py E:\path\to\skills\api\my-api-skill
+```
+
+The script will:
+
+1. **Parse** the skill's SKILL.md (name, description, when to use, key features)
+2. **Detect category** from the path (filament/laravel/fullstack/workflows/api/meta/optimize/marketing/database)
+3. **Update** choose-skill/references/skills-catalog.md with the new entry
+4. **Show diff** of changes and ask for confirmation
+5. **Update counts** (total skills, last updated date)
+
+**When to skip this step:**
+- Internal/private skills that shouldn't be recommended to users
+- Experimental skills still in development
+- Skills that are deprecated or being phased out
+
+**Why this is critical:**
+The choose-skill meta-agent helps users navigate the 35+ skill ecosystem by recommending optimal skill combinations. Without syncing, your new skill won't appear in recommendations, reducing its discoverability and usefulness.
+
+**Note:** The catalog is automatically updated with the skill's metadata from SKILL.md, so ensure your description and "When to Use" sections are complete and accurate before syncing.
+
+### Step 7: Packaging a Skill
+
+Once the skill is ready, registered, and synced, it should be packaged into a distributable zip file that gets shared with the user. The packaging process automatically validates the skill first to ensure it meets all requirements:
 
 ```bash
 scripts/package_skill.py <path/to/skill-folder>
@@ -157,7 +192,7 @@ The packaging script will:
 
 If validation fails, the script will report the errors and exit without creating a package. Fix any validation errors and run the packaging command again.
 
-### Step 7: Iterate
+### Step 8: Iterate
 
 After testing the skill, users may request improvements. Often this happens right after using the skill, with fresh context of how the skill performed.
 
@@ -168,3 +203,4 @@ After testing the skill, users may request improvements. Often this happens righ
 4. Implement changes and test again
 5. Update SYSTEM.md description if triggers or use cases change
 6. Update AGENTS.md if new trigger phrases are discovered
+7. **Re-sync to choose-skill** if description or use cases changed significantly
