@@ -8,8 +8,8 @@ use UnitEnum;
 use App\Filament\Resources\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Articles\Pages\EditArticle;
 use App\Filament\Resources\Articles\Pages\ListArticles;
+use App\Filament\Resources\BaseResource;
 use App\Models\Article;
-use Filament\Resources\Resource;
 use Filament\Schemas\Components\Tabs;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -26,7 +26,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class ArticleResource extends Resource
+class ArticleResource extends BaseResource
 {
     protected static ?string $model = Article::class;
 
@@ -102,6 +102,7 @@ class ArticleResource extends Resource
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['author', 'images']))
             ->columns([
+                static::getRowNumberColumn(),
                 Tables\Columns\ImageColumn::make('cover_image_url')
                     ->label('Ảnh bìa')
                     ->width(60)

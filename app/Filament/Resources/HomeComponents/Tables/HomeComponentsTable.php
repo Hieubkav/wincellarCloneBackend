@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\HomeComponents\Tables;
 
-use App\Enums\HomeComponentType;
+
+use App\Filament\Resources\BaseResource;use App\Enums\HomeComponentType;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -22,6 +23,7 @@ class HomeComponentsTable
             ->defaultSort('order', 'asc')
             ->reorderable('order')
             ->columns([
+                BaseResource::getRowNumberColumn(),
                 TextColumn::make('order')
                     ->label('#')
                     ->sortable()

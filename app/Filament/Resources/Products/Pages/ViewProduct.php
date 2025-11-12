@@ -13,6 +13,12 @@ class ViewProduct extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Actions\Action::make('view_frontend')
+                ->label('Web')
+                ->icon('heroicon-o-eye')
+                ->color('info')
+                ->url(fn() => ProductResource::getFrontendUrl($this->record))
+                ->openUrlInNewTab(),
             Actions\EditAction::make(),
         ];
     }

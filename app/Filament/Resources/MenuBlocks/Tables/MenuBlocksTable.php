@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\MenuBlocks\Tables;
 
-use Filament\Actions\BulkActionGroup;
+
+use App\Filament\Resources\BaseResource;use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -22,6 +23,7 @@ class MenuBlocksTable
             ->defaultSort('order', 'asc')
             ->reorderable('order')
             ->columns([
+                BaseResource::getRowNumberColumn(),
                 TextColumn::make('menu.title')
                     ->label('Menu cha')
                     ->badge()

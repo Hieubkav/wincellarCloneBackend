@@ -55,6 +55,7 @@ class VisitorResource extends Resource
                 $query->withCount(['sessions', 'events'])
             )
             ->columns([
+                static::getRowNumberColumn(),
                 TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),

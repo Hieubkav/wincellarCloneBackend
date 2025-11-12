@@ -215,8 +215,7 @@ class HomeComponentForm
                     self::imageSelectWithQuickCreate('image_id', 'Hình ảnh'),
                     TextInput::make('href')
                         ->label('Link đến (URL)')
-                        ->url()
-                        ->placeholder('https://example.com/products'),
+                        ->placeholder('/filter hoặc https://example.com'),
                     TextInput::make('alt')
                         ->label('Mô tả ảnh (Alt text)')
                         ->placeholder('Banner khuyến mãi'),
@@ -238,7 +237,7 @@ class HomeComponentForm
                     self::imageSelectWithQuickCreate('image_id', 'Hình ảnh'),
                     TextInput::make('href')
                         ->label('Link đến (URL)')
-                        ->url(),
+                        ->placeholder('/filter hoặc https://example.com'),
                     TextInput::make('alt')
                         ->label('Mô tả ảnh (Alt text)'),
                 ])
@@ -434,8 +433,7 @@ class HomeComponentForm
                     self::imageSelectWithQuickCreate('image_id', 'Logo thương hiệu'),
                     TextInput::make('href')
                         ->label('Link đến (URL)')
-                        ->url()
-                        ->placeholder('https://example.com'),
+                        ->placeholder('/filter hoặc https://example.com'),
                     TextInput::make('alt')
                         ->label('Tên thương hiệu (Alt text)')
                         ->placeholder('Tên thương hiệu'),
@@ -471,8 +469,8 @@ class HomeComponentForm
                         ->placeholder('Xem Thêm'),
                     TextInput::make('config.ctaHref')
                         ->label('Link nút xem thêm')
-                        ->url()
-                        ->placeholder('/wines'),
+                        ->placeholder('/filter')
+                        ->helperText('Nhập URL tương đối (vd: /filter) hoặc URL đầy đủ (vd: https://example.com)'),
                     Select::make('config.tone')
                         ->label('Giao diện màu sắc')
                         ->options([

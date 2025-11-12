@@ -107,6 +107,70 @@ class ProductController extends Controller
             throw ApiException::notFound('Product', $slug);
         }
 
+        // Get related products (2 sections)
+        $sameTypeProducts = $this->getSameTypeProducts($product, 4);
+        $relatedByAttributeProducts = $this->getRelatedByAttributeProducts($product, 4);
+        
+        $product->setRelation('sameTypeProducts', $sameTypeProducts);
+        $product->setRelation('relatedByAttributeProducts', $relatedByAttributeProducts);
+
         return new ProductResource($product);
+    }
+
+    /**
+     * Section 1: Get products with same type
+     * Only return if >= 4 products, otherwise return empty
+     */
+    protected function getSameTypeProducts(Product $product, int $limit = 4): \Illuminate\Database\Eloquent\Collection
+    {
+        if (!$product->type_id) {
+            return new \Illuminate\Database\Eloquent\Collection([]);
+        }
+
+        $products = Product::query()
+            ->with(['coverImage', 'images', 'terms.group', 'categories', 'type'])
+            ->active()
+            ->where('id', '!=', $product->id)
+            ->where('type_id', $product->type_id)
+            ->limit($limit)
+            ->get();
+
+        // Only return if we have at least 4 products
+        return $products->count() >= 4 ? $products : new \Illuminate\Database\Eloquent\Collection([]);
+    }
+
+    /**
+     * Section 2: Get products with shared attribute terms
+     * Find products sharing at least 1 term from catalog_attribute_groups
+     * (grape, origin, etc.)
+     * Only return if >= 4 products, otherwise return empty
+     */
+    protected function getRelatedByAttributeProducts(Product $product, int $limit = 4): \Illuminate\Database\Eloquent\Collection
+    {
+        // Get all terms of this product (excluding brand as it's not for matching)
+        $productTerms = $product->terms()
+            ->whereHas('group', function ($query) {
+                $query->where('code', '!=', 'brand'); // Exclude brand
+            })
+            ->pluck('catalog_terms.id')
+            ->toArray();
+
+        if (empty($productTerms)) {
+            return new \Illuminate\Database\Eloquent\Collection([]);
+        }
+
+        // Find products that share at least 1 term with this product
+        $products = Product::query()
+            ->with(['coverImage', 'images', 'terms.group', 'categories', 'type'])
+            ->active()
+            ->where('id', '!=', $product->id)
+            ->whereHas('terms', function ($query) use ($productTerms) {
+                $query->whereIn('catalog_terms.id', $productTerms);
+            })
+            ->limit($limit)
+            ->get();
+
+        // Only return if we have at least 4 products
+        return $products->count() >= 4 ? $products : new \Illuminate\Database\Eloquent\Collection([]);
     }
 }

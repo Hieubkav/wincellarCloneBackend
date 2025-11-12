@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\Images\Tables;
 
-use App\Models\Article;
+
+use App\Filament\Resources\BaseResource;use App\Models\Article;
 use App\Models\Image;
 use App\Models\Product;
 use Filament\Actions\BulkActionGroup;
@@ -28,6 +29,7 @@ class ImagesTable
             ->defaultSort('order', 'asc')
             ->reorderable('order')
             ->columns([
+                BaseResource::getRowNumberColumn(),
                 ImageColumn::make('url')
                     ->label('Xem trước')
                     ->state(fn (Image $record): ?string => $record->url)

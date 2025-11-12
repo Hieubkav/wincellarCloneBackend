@@ -50,7 +50,19 @@ class ImagesRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->label('Tải lên mới')
-                    ->icon('heroicon-o-arrow-up-tray'),
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->before(function (array $data, CreateAction $action) {
+                        // Nếu file_path null (upload failed), halt action
+                        if (empty($data['file_path'])) {
+                            $action->halt();
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Không thể tải lên ảnh')
+                                ->body('Vui lòng chọn file ảnh hợp lệ.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
 Action::make('selectFromLibrary')
                     ->label('Chọn từ thư viện')
                     ->icon('heroicon-o-photo')

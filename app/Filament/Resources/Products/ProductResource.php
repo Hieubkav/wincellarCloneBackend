@@ -59,7 +59,8 @@ class ProductResource extends BaseResource
                                 TextInput::make('name')
                                     ->label('Tên sản phẩm')
                                     ->required()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->copyable(),
 
                                 Select::make('categories')
                                     ->label('Danh mục')
@@ -67,8 +68,7 @@ class ProductResource extends BaseResource
                                     ->options(ProductCategory::active()->pluck('name', 'id'))
                                     ->searchable()
                                     ->multiple()
-                                    ->preload()
-                                    ->required(),
+                                    ->preload(),
 
                                 Select::make('type_id')
                                     ->label('Loại sản phẩm')
@@ -132,38 +132,6 @@ class ProductResource extends BaseResource
 
                         Tabs\Tab::make('Thuộc tính')
                             ->schema(static::getAttributeFields()),
-
-                        Tabs\Tab::make('Hình ảnh')
-                            ->schema([
-                                FileUpload::make('product_images')
-                                    ->label('Hình ảnh sản phẩm')
-                                    ->image()
-                                    ->multiple()
-                                    ->disk('public')
-                                    ->directory('products')
-                                    ->imageEditor()
-                                    ->reorderable()
-                                    ->maxFiles(10)
-                                    ->maxSize(10240)
-                                    ->helperText('Tải lên tối đa 10 ảnh. Ảnh đầu tiên sẽ là ảnh chính. Có thể kéo thả để sắp xếp.')
-                                    ->saveUploadedFileUsing(function ($file) {
-                                        $filename = uniqid('product_') . '.webp';
-                                        $path = 'products/' . $filename;
-
-                                        $manager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
-                                        $image = $manager->read($file->getRealPath());
-
-                                        if ($image->width() > 1200) {
-                                            $image->scale(width: 1200);
-                                        }
-
-                                        $webp = $image->toWebp(quality: 85);
-                                        \Storage::disk('public')->put($path, $webp);
-
-                                        return $path;
-                                    })
-                                    ->columnSpanFull(),
-                            ]),
                     ])
                     ->columnSpanFull(),
             ]);
@@ -200,6 +168,7 @@ class ProductResource extends BaseResource
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['terms.group', 'images']))
             ->columns([
+                static::getRowNumberColumn(),
                 Tables\Columns\ImageColumn::make('product_image')
                     ->label('Ảnh')
                     ->disk('public')
@@ -335,5 +304,16 @@ class ProductResource extends BaseResource
             'create' => CreateProduct::route('/create'),
             'edit' => EditProduct::route('/{record}/edit'),
         ];
+    }
+
+    /**
+     * Get frontend URL for a product
+     * Uses FRONTEND_URL from .env config
+     */
+    public static function getFrontendUrl(Product $product): string
+    {
+        $frontendBaseUrl = config('app.frontend_url', 'http://localhost:3000');
+        
+        return $frontendBaseUrl . '/san-pham/' . $product->slug;
     }
 }

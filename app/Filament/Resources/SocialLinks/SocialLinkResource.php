@@ -175,6 +175,7 @@ class SocialLinkResource extends Resource
             ->defaultSort('order', 'asc')
             ->reorderable('order')
             ->columns([
+                static::getRowNumberColumn(),
                 Tables\Columns\TextColumn::make('platform')
                     ->label('Tên mạng xã hội')
                     ->searchable()

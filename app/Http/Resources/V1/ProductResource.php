@@ -98,6 +98,41 @@ class ProductResource extends JsonResource
                 'description' => $this->meta_description,
             ]),
             
+            // Section 1: Same type products (detail view only)
+            'same_type_products' => $this->when(
+                $request->routeIs('api.v1.products.show') && $this->relationLoaded('sameTypeProducts'),
+                function () {
+                    $products = $this->sameTypeProducts;
+                    if ($products->isEmpty()) {
+                        return null;
+                    }
+                    
+                    return [
+                        'products' => $products->map(fn ($product) => $this->mapProductSummary($product))->values(),
+                        'view_all_url' => $this->type ? '/filter?type=' . $this->type->id : null,
+                    ];
+                }
+            ),
+            
+            // Section 2: Related by attributes (detail view only)  
+            'related_by_attributes' => $this->when(
+                $request->routeIs('api.v1.products.show') && $this->relationLoaded('relatedByAttributeProducts'),
+                function () {
+                    $products = $this->relatedByAttributeProducts;
+                    if ($products->isEmpty()) {
+                        return null;
+                    }
+                    
+                    // Get first shared term for view_all_url
+                    $firstSharedTerm = $this->getFirstSharedTerm($products);
+                    
+                    return [
+                        'products' => $products->map(fn ($product) => $this->mapProductSummary($product))->values(),
+                        'view_all_url' => $firstSharedTerm ? $this->buildFilterUrl($firstSharedTerm) : null,
+                    ];
+                }
+            ),
+            
             // HATEOAS links
             '_links' => [
                 'self' => [
@@ -134,6 +169,88 @@ class ProductResource extends JsonResource
                 ]),
             ],
         ];
+    }
+
+    /**
+     * Map product summary for related products
+     */
+    protected function mapProductSummary($product): array
+    {
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'price' => $product->price,
+            'original_price' => $product->original_price,
+            'discount_percent' => $product->discount_percent,
+            'show_contact_cta' => $product->should_show_contact_cta,
+            'main_image_url' => $product->cover_image_url ?: '/placeholder/wine-bottle.svg',
+            'gallery' => $product->gallery_for_output,
+            'brand_term' => ($brand = $product->primaryTerm('brand')) ? [
+                'id' => $brand->id,
+                'name' => $brand->name,
+                'slug' => $brand->slug,
+            ] : null,
+            'country_term' => ($country = $product->primaryTerm('origin')) ? [
+                'id' => $country->id,
+                'name' => $country->name,
+                'slug' => $country->slug,
+            ] : null,
+            'category' => $product->categories->isNotEmpty() ? [
+                'id' => $product->categories->first()->id,
+                'name' => $product->categories->first()->name,
+                'slug' => $product->categories->first()->slug,
+            ] : null,
+            'type' => $product->type ? [
+                'id' => $product->type->id,
+                'name' => $product->type->name,
+                'slug' => $product->type->slug,
+            ] : null,
+            'alcohol_percent' => $product->alcohol_percent,
+            'badges' => $product->badges ?? [],
+        ];
+    }
+
+    /**
+     * Get first shared term between current product and related products
+     */
+    protected function getFirstSharedTerm($products)
+    {
+        // Get all terms of current product (excluding brand)
+        $currentProductTerms = $this->terms
+            ->filter(function ($term) {
+                return $term->group && $term->group->code !== 'brand';
+            });
+
+        // Find first matching term
+        foreach ($currentProductTerms as $term) {
+            return $term; // Return first term found
+        }
+
+        return null;
+    }
+
+    /**
+     * Build filter URL based on term
+     */
+    protected function buildFilterUrl($term): string
+    {
+        if (!$term || !$term->group) {
+            return '/filter';
+        }
+
+        $groupCode = $term->group->code;
+        
+        // Map group code to filter param
+        $paramMap = [
+            'grape' => 'grape',
+            'origin' => 'origin',
+            'type' => 'type',
+        ];
+
+        $param = $paramMap[$groupCode] ?? $groupCode;
+        
+        return '/filter?' . $param . '=' . $term->id;
     }
 
     /**

@@ -30,9 +30,8 @@ class BrandShowcaseTransformer extends AbstractComponentTransformer
             }
 
             $entries[] = [
-                'image' => $resources->mapImageSummary($image),
+                'image' => $resources->mapImage($image, $item['alt'] ?? null),
                 'href' => $item['href'] ?? null,
-                'alt' => $item['alt'] ?? $image->alt,
             ];
         }
 

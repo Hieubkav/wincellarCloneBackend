@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CatalogTerms\Tables;
 
+use App\Filament\Resources\BaseResource;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -21,6 +22,7 @@ class CatalogTermsTable
             ->defaultSort('position', 'asc')
             ->reorderable('position')
             ->columns([
+                BaseResource::getRowNumberColumn(),
                 TextColumn::make('group.name')
                     ->label('Nhóm thuộc tính')
                     ->badge()

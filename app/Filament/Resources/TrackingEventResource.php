@@ -59,6 +59,7 @@ class TrackingEventResource extends Resource
                 $query->with(['visitor', 'session', 'product', 'article'])
             )
             ->columns([
+                static::getRowNumberColumn(),
                 TextColumn::make('id')
                     ->label('ID')
                     ->sortable()

@@ -90,7 +90,7 @@ trait ManagesImageUploads
                                     $this->extractImageMetadata($state, $set, $get);
                                 })
                                 ->columnSpanFull()
-                                ->helperText('Tải lên ảnh mới (tự động convert sang WebP)'),
+                                ->helperText('Tải lên ảnh mới (hỗ trợ JPG, PNG, GIF, WebP, AVIF, BMP, v.v. - tự động convert sang WebP)'),
                         ]),
                 ])
                 ->contained(false)
@@ -106,24 +106,41 @@ trait ManagesImageUploads
     /**
      * Xử lý upload ảnh: convert sang WebP và resize
      */
-    protected function handleImageUpload(TemporaryUploadedFile $file): string
+    protected function handleImageUpload(TemporaryUploadedFile $file): ?string
     {
-        $prefix = $this->getFilenamePrefix();
-        $filename = uniqid($prefix . '_') . '.webp';
-        $path = $this->getUploadDirectory() . '/' . $filename;
+        try {
+            $prefix = $this->getFilenamePrefix();
+            $filename = uniqid($prefix . '_') . '.webp';
+            $path = $this->getUploadDirectory() . '/' . $filename;
 
-        $manager = new ImageManager(new Driver());
-        $image = $manager->read($file->getRealPath());
+            $manager = new ImageManager(new Driver());
+            $image = $manager->read($file->getRealPath());
 
-        $maxWidth = $this->getMaxImageWidth();
-        if ($image->width() > $maxWidth) {
-            $image->scale(width: $maxWidth);
+            $maxWidth = $this->getMaxImageWidth();
+            if ($image->width() > $maxWidth) {
+                $image->scale(width: $maxWidth);
+            }
+
+            $webp = $image->toWebp(quality: $this->getImageQuality());
+            Storage::disk($this->getDefaultDisk())->put($path, $webp);
+
+            return $path;
+        } catch (\Throwable $e) {
+            // Log error for debugging
+            \Log::warning('Image upload failed', [
+                'file' => $file->getClientOriginalName(),
+                'error' => $e->getMessage(),
+            ]);
+
+            \Filament\Notifications\Notification::make()
+                ->title('Không xử lý được ảnh này')
+                ->body('File ảnh không được hỗ trợ hoặc bị lỗi. Vui lòng thử file ảnh khác.')
+                ->danger()
+                ->send();
+            
+            // Không throw exception - return null để Filament validation xử lý
+            return null;
         }
-
-        $webp = $image->toWebp(quality: $this->getImageQuality());
-        Storage::disk($this->getDefaultDisk())->put($path, $webp);
-
-        return $path;
     }
 
     /**

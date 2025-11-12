@@ -2,7 +2,8 @@
 
 namespace App\Filament\Resources\ProductCategories\Tables;
 
-use Filament\Actions\BulkActionGroup;
+
+use App\Filament\Resources\BaseResource;use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -20,6 +21,7 @@ class ProductCategoriesTable
             ->defaultSort('order', 'asc')
             ->reorderable('order')
             ->columns([
+                BaseResource::getRowNumberColumn(),
                 TextColumn::make('name')
                     ->label('Tên nhóm')
                     ->searchable()
