@@ -42,4 +42,5 @@ Route::middleware(['api', 'throttle:api'])
         require __DIR__.'/api/articles.php';
         require __DIR__.'/api/settings.php';
         require __DIR__.'/api/social-links.php';
+        require __DIR__.'/api/tracking.php';
     });
