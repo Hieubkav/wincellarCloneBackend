@@ -7,9 +7,6 @@ use App\Models\Article;
 use App\Models\CatalogTerm;
 use App\Models\Image;
 use App\Models\Product;
-use App\Models\ProductCategory;
-use Filament\Actions\Action;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -19,11 +16,6 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class HomeComponentForm
 {
@@ -84,67 +76,6 @@ class HomeComponentForm
             
             return [$product->id => $html];
         })->toArray();
-    }
-
-    protected static function imageSelectWithQuickCreate(string $name = 'image_id', string $label = 'Hình ảnh'): Select
-    {
-        return Select::make($name)
-            ->label($label)
-            ->options(fn () => self::getImageOptionsWithPreview())
-            ->allowHtml()
-            ->searchable()
-            ->required()
-            ->preload()
-            ->createOptionForm([
-                FileUpload::make('file_path')
-                    ->label('Tải lên hình ảnh')
-                    ->required()
-                    ->image()
-                    ->imageEditor()
-                    ->maxFiles(1)
-                    ->maxSize(10240)
-                    ->disk('public')
-                    ->directory('media/images')
-                    ->saveUploadedFileUsing(function (TemporaryUploadedFile $file) {
-                        $filename = 'img-' . Str::uuid() . '.webp';
-                        $disk = 'public';
-                        $path = 'media/images/' . $filename;
-
-                        $manager = new ImageManager(new Driver());
-                        $image = $manager->read($file->getRealPath());
-
-                        if ($image->width() > 1920) {
-                            $image->scale(width: 1920);
-                        }
-
-                        $webp = $image->toWebp(quality: 85);
-                        Storage::disk($disk)->put($path, $webp);
-
-                        return $path;
-                    })
-                    ->columnSpanFull()
-                    ->helperText('Tải lên ảnh mới (tự động convert sang WebP, tối đa 1920px width)'),
-                
-                Toggle::make('active')
-                    ->label('Đang hiển thị')
-                    ->default(true)
-                    ->inline(false),
-            ])
-            ->createOptionUsing(function (array $data): int {
-                $image = Image::create([
-                    'file_path' => $data['file_path'],
-                    'active' => $data['active'] ?? true,
-                    'disk' => 'public',
-                ]);
-                
-                return $image->id;
-            })
-            ->createOptionAction(
-                fn (Action $action) => $action
-                    ->modalHeading('Tạo ảnh mới')
-                    ->modalWidth('2xl')
-                    ->modalSubmitActionLabel('Tạo ảnh')
-            );
     }
 
     public static function configure(Schema $schema): Schema
@@ -212,7 +143,13 @@ class HomeComponentForm
             Repeater::make('config.slides')
                 ->label('Danh sách slide')
                 ->schema([
-                    self::imageSelectWithQuickCreate('image_id', 'Hình ảnh'),
+                    Select::make('image_id')
+                        ->label('Hình ảnh')
+                        ->options(fn () => self::getImageOptionsWithPreview())
+                        ->allowHtml()
+                        ->searchable()
+                        ->required()
+                        ->preload(),
                     TextInput::make('href')
                         ->label('Link đến (URL)')
                         ->url()
@@ -235,7 +172,13 @@ class HomeComponentForm
             Repeater::make('config.banners')
                 ->label('Danh sách banner')
                 ->schema([
-                    self::imageSelectWithQuickCreate('image_id', 'Hình ảnh'),
+                    Select::make('image_id')
+                        ->label('Hình ảnh')
+                        ->options(fn () => self::getImageOptionsWithPreview())
+                        ->allowHtml()
+                        ->searchable()
+                        ->required()
+                        ->preload(),
                     TextInput::make('href')
                         ->label('Link đến (URL)')
                         ->url(),
@@ -256,134 +199,51 @@ class HomeComponentForm
     {
         return [
             Repeater::make('config.categories')
-                ->label('Danh sách lưới')
+                ->label('Danh sách danh mục')
                 ->schema([
                     Grid::make()
                         ->columns(2)
                         ->schema([
-                            Select::make('filter_type')
-                                ->label('Loại bộ lọc')
-                                ->options(function () {
-                                    $options = [
-                                        'product_category' => '📁 Danh mục sản phẩm',
-                                        'product_type' => '📦 Loại sản phẩm',
-                                    ];
-                                    
-                                    $groups = \App\Models\CatalogAttributeGroup::query()
-                                        ->where('is_filterable', true)
-                                        ->orderBy('position')
-                                        ->get();
-                                    
-                                    foreach ($groups as $group) {
-                                        $options['attribute_group_' . $group->id] = '🏷️ ' . $group->name;
-                                    }
-                                    
-                                    return $options;
-                                })
-                                ->required()
-                                ->live()
+                            Select::make('term_id')
+                                ->label('Danh mục')
+                                ->options(fn () => CatalogTerm::pluck('name', 'id'))
                                 ->searchable()
-                                ->preload()
-                                ->afterStateUpdated(function ($state, callable $set) {
-                                    $set('filter_value_id', null);
-                                    $set('title', '');
-                                    $set('href', '');
-                                })
-                                ->helperText('Chọn loại để hiển thị danh sách giá trị tương ứng'),
-                            
-                            Select::make('filter_value_id')
-                                ->label('Giá trị')
-                                ->options(function (Get $get) {
-                                    $filterType = $get('filter_type');
-                                    
-                                    if (!$filterType) {
-                                        return [];
-                                    }
-                                    
-                                    if ($filterType === 'product_category') {
-                                        return \App\Models\ProductCategory::query()
-                                            ->where('active', true)
-                                            ->orderBy('order')
-                                            ->pluck('name', 'id');
-                                    }
-                                    
-                                    if ($filterType === 'product_type') {
-                                        return \App\Models\ProductType::query()
-                                            ->where('active', true)
-                                            ->orderBy('order')
-                                            ->pluck('name', 'id');
-                                    }
-                                    
-                                    if (str_starts_with($filterType, 'attribute_group_')) {
-                                        $groupId = str_replace('attribute_group_', '', $filterType);
-                                        return \App\Models\CatalogTerm::query()
-                                            ->where('group_id', $groupId)
-                                            ->where('is_active', true)
-                                            ->orderBy('position')
-                                            ->pluck('name', 'id');
-                                    }
-                                    
-                                    return [];
-                                })
                                 ->required()
-                                ->searchable()
                                 ->preload()
                                 ->live()
                                 ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                    if (!$state) {
-                                        return;
-                                    }
-                                    
-                                    $filterType = $get('filter_type');
-                                    
-                                    if ($filterType === 'product_category') {
-                                        $category = \App\Models\ProductCategory::find($state);
-                                        if ($category) {
-                                            if (!$get('title')) {
-                                                $set('title', $category->name);
-                                            }
-                                            $set('href', '/filter?category=' . $category->id);
-                                        }
-                                    } elseif ($filterType === 'product_type') {
-                                        $productType = \App\Models\ProductType::find($state);
-                                        if ($productType) {
-                                            if (!$get('title')) {
-                                                $set('title', $productType->name);
-                                            }
-                                            $set('href', '/filter?type=' . $productType->id);
-                                        }
-                                    } elseif (str_starts_with($filterType, 'attribute_group_')) {
-                                        $groupId = str_replace('attribute_group_', '', $filterType);
-                                        $term = \App\Models\CatalogTerm::with('group')->find($state);
+                                    if ($state && !$get('title')) {
+                                        $term = CatalogTerm::find($state);
                                         if ($term) {
-                                            if (!$get('title')) {
-                                                $set('title', $term->name);
-                                            }
-                                            $set('href', '/filter?' . $term->group->code . '=' . $term->id);
+                                            $set('title', $term->name);
                                         }
                                     }
-                                })
-                                ->helperText('Chọn giá trị cụ thể, URL sẽ tự động tạo'),
-                            
-                            self::imageSelectWithQuickCreate('image_id', 'Hình ảnh nền'),
+                                }),
+                            Select::make('image_id')
+                                ->label('Hình ảnh nền')
+                                ->options(fn () => self::getImageOptionsWithPreview())
+                                ->allowHtml()
+                                ->searchable()
+                                ->required()
+                                ->preload(),
                         ]),
                     TextInput::make('title')
                         ->label('Tiêu đề hiển thị')
                         ->placeholder('VANG ĐỎ')
                         ->required()
-                        ->helperText('Tự động lấy từ giá trị đã chọn, có thể chỉnh sửa'),
+                        ->helperText('Tự động lấy từ tên danh mục, có thể chỉnh sửa'),
                     TextInput::make('href')
                         ->label('Link đến (URL)')
-                        ->placeholder('/filter?brand=150')
-                        ->required()
-                        ->helperText('Tự động tạo dạng /filter?key=value, có thể chỉnh sửa'),
+                        ->url()
+                        ->placeholder('/categories/vang-do')
+                        ->helperText('Để trống sẽ tự động dùng link của danh mục'),
                 ])
                 ->columnSpanFull()
                 ->defaultItems(1)
-                ->addActionLabel('Thêm ô lưới')
+                ->addActionLabel('Thêm danh mục')
                 ->collapsible()
                 ->itemLabel(fn (array $state): ?string => 
-                    $state['title'] ?? 'Ô lưới mới'
+                    $state['title'] ?? ($state['term_id'] ? CatalogTerm::find($state['term_id'])?->name : 'Danh mục mới')
                 ),
         ];
     }
@@ -431,7 +291,13 @@ class HomeComponentForm
             Repeater::make('config.brands')
                 ->label('Danh sách thương hiệu')
                 ->schema([
-                    self::imageSelectWithQuickCreate('image_id', 'Logo thương hiệu'),
+                    Select::make('image_id')
+                        ->label('Logo thương hiệu')
+                        ->options(fn () => self::getImageOptionsWithPreview())
+                        ->allowHtml()
+                        ->searchable()
+                        ->required()
+                        ->preload(),
                     TextInput::make('href')
                         ->label('Link đến (URL)')
                         ->url()
@@ -636,10 +502,14 @@ class HomeComponentForm
                         ->required()
                         ->default('home')
                         ->live(),
-                    self::imageSelectWithQuickCreate('icon_image_id', 'Icon tùy chỉnh')
+                    Select::make('icon_image_id')
+                        ->label('Icon tùy chỉnh')
+                        ->options(fn () => self::getImageOptionsWithPreview())
+                        ->allowHtml()
+                        ->searchable()
+                        ->preload()
                         ->visible(fn (Get $get) => $get('icon_type') === 'custom')
-                        ->helperText('Chỉ sử dụng khi chọn "Tùy chỉnh"')
-                        ->required(fn (Get $get) => $get('icon_type') === 'custom'),
+                        ->helperText('Chỉ sử dụng khi chọn "Tùy chỉnh"'),
                     TextInput::make('label')
                         ->label('Nhãn hiển thị')
                         ->placeholder('Hotline')
