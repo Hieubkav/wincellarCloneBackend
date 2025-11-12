@@ -32,6 +32,8 @@ class VisitorResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
+    protected static bool $shouldRegisterNavigation = false;
+
     public static function getNavigationBadge(): ?string
     {
         $count = static::getModel()::query()->count();
