@@ -16,10 +16,10 @@ class ProductFilterController extends Controller
 {
     public function __invoke(): JsonResponse
     {
-        // Cache filter options for 10 minutes since they don't change frequently
+        // Cache filter options for 1 hour since they don't change frequently
         // Cache key includes catalog version to auto-invalidate on changes
         $cacheKey = 'product_filter_options_v3';
-        $cacheTtl = 600; // 10 minutes
+        $cacheTtl = 3600; // 1 hour (increased from 10 min for better performance)
 
         $data = cache()->remember($cacheKey, $cacheTtl, function () {
             // Get categories and types (built-in filters)
@@ -63,12 +63,21 @@ class ProductFilterController extends Controller
                 }
             }
 
-            // Get price and alcohol ranges
-            $priceMin = Product::query()->active()->min('price') ?? 0;
-            $priceMax = Product::query()->active()->max('price') ?? 0;
+            // Get price and alcohol ranges in SINGLE query (optimized)
+            $ranges = \DB::table('products')
+                ->where('active', true)
+                ->selectRaw('
+                    MIN(price) as price_min,
+                    MAX(price) as price_max,
+                    MIN(alcohol_percent) as alcohol_min,
+                    MAX(alcohol_percent) as alcohol_max
+                ')
+                ->first();
 
-            $alcoholMin = Product::query()->active()->min('alcohol_percent') ?? 0;
-            $alcoholMax = Product::query()->active()->max('alcohol_percent') ?? 0;
+            $priceMin = $ranges->price_min ?? 0;
+            $priceMax = $ranges->price_max ?? 0;
+            $alcoholMin = $ranges->alcohol_min ?? 0;
+            $alcoholMax = $ranges->alcohol_max ?? 0;
 
             return [
                 // Built-in filters (always present)

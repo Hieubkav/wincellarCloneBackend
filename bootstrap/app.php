@@ -22,6 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\AddCorrelationId::class,
             \App\Http\Middleware\PerformanceMonitor::class,
         ]);
+        
+        // Add cache headers for static assets (images, fonts, etc.)
+        $middleware->web(append: [
+            \App\Http\Middleware\AddStaticAssetCacheHeaders::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Custom API exceptions

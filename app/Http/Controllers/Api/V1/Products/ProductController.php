@@ -9,11 +9,13 @@ use App\Http\Resources\V1\ProductCollection;
 use App\Http\Resources\V1\ProductResource;
 use App\Http\Responses\ErrorResponse;
 use App\Models\Product;
+use App\Support\Product\ProductCacheManager;
 use App\Support\Product\ProductPaginator;
 use App\Support\Product\ProductSearchBuilder;
 use App\Support\Product\ProductSorts;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Cache;
 
 class ProductController extends Controller
 {
@@ -58,12 +60,18 @@ class ProductController extends Controller
 
             $perPage = (int) $request->input('per_page', 24);
             $requestedPage = (int) $request->input('page', 1);
+            $sort = $request->input('sort', '-created_at');
+            $searchQuery = $request->input('q');
 
-            // Cache for 5 minutes for non-search, 1 minute for search
-            $cacheKey = 'products_' . md5(serialize($filters) . $request->input('q') . $request->input('sort') . $perPage . $requestedPage);
-            $cacheTime = empty($request->input('q')) ? 300 : 60; // 5 min non-search, 1 min search
+            // Priority 3 Optimization: Smarter cache strategy with tags
+            // - Semantic cache keys (no MD5)
+            // - Tag-based invalidation
+            // - Dynamic TTL based on query type
+            $cacheKey = ProductCacheManager::buildKey($filters, $sort, $requestedPage, $perPage, $searchQuery);
+            $cacheTags = ProductCacheManager::getTags($filters);
+            $cacheTtl = ProductCacheManager::getTtl($filters, $searchQuery);
 
-            $paginator = cache()->remember($cacheKey, $cacheTime, function () use ($query, $perPage, $requestedPage, $usingCursor) {
+            $paginator = Cache::tags($cacheTags)->remember($cacheKey, $cacheTtl, function () use ($query, $perPage, $requestedPage, $usingCursor) {
                 return ProductPaginator::paginate(
                     $query,
                     $perPage,

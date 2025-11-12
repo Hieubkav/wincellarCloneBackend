@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Product;
+use App\Support\Product\ProductCacheManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
@@ -10,12 +11,16 @@ class ProductObserver
 {
     /**
      * Increment API cache version when product data changes
+     * Also flush product caches (Priority 3 optimization)
      */
     private function incrementCacheVersion(): void
     {
         $version = (int) Cache::get('api_cache_version', 0);
         Cache::put('api_cache_version', $version + 1);
         Cache::put('last_cache_clear', now()->toIso8601String());
+
+        // Priority 3: Flush product query caches using tag-based invalidation
+        ProductCacheManager::flushAll();
     }
     /**
      * Handle the Product "creating" event.
