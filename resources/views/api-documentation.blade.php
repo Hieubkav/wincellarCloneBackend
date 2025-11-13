@@ -3,945 +3,572 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Wincellar API Documentation</title>
+    <title>API Docs - Thiên Kim Wine</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=montserrat:300,400,500,600,700" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=montserrat:400,600,700" rel="stylesheet" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --noir: #1C1C1C;
-            --amber: #ECAA4D;
-            --wine: #9B2C3B;
-            --white: #FFFFFF;
-            --gray-light: #F5F5F5;
-            --gray-border: #E8E8E8;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --noir: #1C1C1C; --amber: #ECAA4D; --wine: #9B2C3B; }
         body {
             font-family: 'Montserrat', sans-serif;
             color: var(--noir);
-            background: var(--white);
+            background: #FFF;
             line-height: 1.6;
         }
-
-        /* Header */
         header {
             background: var(--noir);
-            color: var(--white);
-            padding: 2rem;
+            color: #FFF;
+            padding: 1rem 2rem;
             border-bottom: 3px solid var(--amber);
         }
-
         header h1 {
-            font-size: 2.5rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            letter-spacing: -1px;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.2rem;
         }
-
         header p {
-            font-size: 1rem;
-            font-weight: 300;
-            color: #CCC;
+            font-size: 0.85rem;
+            color: #DDD;
         }
-
-        /* Navigation */
         nav {
-            background: var(--gray-light);
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid var(--gray-border);
+            background: #F5F5F5;
+            padding: 0.8rem 2rem;
+            border-bottom: 1px solid #DDD;
             position: sticky;
             top: 0;
             z-index: 100;
         }
-
         nav ul {
             list-style: none;
             display: flex;
-            gap: 2rem;
+            gap: 1.5rem;
             flex-wrap: wrap;
             max-width: 1200px;
             margin: 0 auto;
         }
-
         nav a {
             text-decoration: none;
             color: var(--noir);
-            font-weight: 500;
-            font-size: 0.9rem;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 3px;
+            transition: background 0.2s;
         }
-
-        nav a:hover {
-            background: var(--amber);
-            color: var(--white);
-        }
-
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-        }
-
-        /* Hero Section */
+        nav a:hover { background: var(--amber); color: #FFF; }
         .hero {
-            padding: 4rem 2rem;
-            background: linear-gradient(135deg, rgba(155, 44, 59, 0.05) 0%, rgba(236, 170, 77, 0.05) 100%);
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(155,44,59,0.05) 0%, rgba(236,170,77,0.05) 100%);
             text-align: center;
-            border-bottom: 1px solid var(--gray-border);
-        }
-
-        .hero h2 {
-            font-size: 2rem;
-            font-weight: 700;
+            border-bottom: 1px solid #DDD;
             margin-bottom: 1rem;
-            color: var(--noir);
         }
-
+        .hero h2 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+        }
         .hero p {
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             color: #666;
             max-width: 700px;
             margin: 0 auto;
+        }
+        .quick-start {
+            padding: 1.5rem 2rem;
+            background: var(--wine);
+            color: #FFF;
+            margin-bottom: 1rem;
+        }
+        .quick-start h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .quick-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .quick-card {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 3px solid var(--amber);
+        }
+        .quick-card h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        .quick-card p {
+            font-size: 0.8rem;
             font-weight: 400;
         }
-
-        /* Quick Start */
-        .quick-start {
-            padding: 3rem 2rem;
-            background: var(--wine);
-            color: var(--white);
-        }
-
-        .quick-start h3 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-        }
-
-        .quick-start-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .quick-start-card {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border-left: 4px solid var(--amber);
-        }
-
-        .quick-start-card h4 {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .quick-start-card p {
-            font-size: 0.95rem;
-            font-weight: 300;
-            line-height: 1.6;
-        }
-
-        /* Main Content */
         main {
-            padding: 3rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
         }
-
         section {
-            margin-bottom: 4rem;
+            margin-bottom: 2.5rem;
         }
-
         section h2 {
-            font-size: 1.8rem;
+            font-size: 1.4rem;
             font-weight: 700;
             color: var(--noir);
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.4rem;
             border-bottom: 2px solid var(--amber);
+            display: inline-block;
         }
-
         section h3 {
-            font-size: 1.3rem;
+            font-size: 1rem;
             font-weight: 600;
-            color: var(--noir);
-            margin: 2rem 0 1rem 0;
+            margin: 1.2rem 0 0.6rem 0;
         }
-
-        /* Endpoint Card */
+        section p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.6rem;
+        }
         .endpoint {
-            background: var(--gray-light);
-            border: 1px solid var(--gray-border);
+            background: #F5F5F5;
+            border: 1px solid #DDD;
             border-left: 4px solid var(--amber);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            border-radius: 4px;
-            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 3px;
         }
-
-        .endpoint:hover {
-            transform: translateX(4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
         .endpoint-header {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
             flex-wrap: wrap;
         }
-
         .method {
             display: inline-block;
-            padding: 0.4rem 0.8rem;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 0.85rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 3px;
+            font-weight: 700;
+            font-size: 0.7rem;
         }
-
-        .method.get {
-            background: #E3F2FD;
-            color: #1976D2;
-        }
-
-        .method.post {
-            background: #F3E5F5;
-            color: #7B1FA2;
-        }
-
-        .method.put {
-            background: #FFF3E0;
-            color: #E65100;
-        }
-
-        .method.delete {
-            background: #FFEBEE;
-            color: #C62828;
-        }
-
+        .method.get { background: #E3F2FD; color: #1976D2; }
+        .method.post { background: #F3E5F5; color: #7B1FA2; }
+        .method.put { background: #FFF3E0; color: #E65100; }
+        .method.delete { background: #FFEBEE; color: #C62828; }
         .endpoint-path {
             font-family: 'Courier New', monospace;
             background: var(--noir);
             color: var(--amber);
-            padding: 0.8rem;
-            border-radius: 4px;
-            font-size: 0.95rem;
+            padding: 0.6rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
             flex: 1;
-            min-width: 200px;
         }
-
         .endpoint-description {
             color: #666;
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
+            margin-bottom: 0.8rem;
         }
-
-        /* Code Block */
         pre {
             background: var(--noir);
             color: #E0E0E0;
-            padding: 1.5rem;
-            border-radius: 4px;
+            padding: 0.8rem;
+            border-radius: 3px;
             overflow-x: auto;
-            margin: 1rem 0;
-            font-size: 0.85rem;
-            line-height: 1.5;
+            margin: 0.8rem 0;
+            font-size: 0.7rem;
+            line-height: 1.4;
         }
-
-        code {
-            font-family: 'Courier New', monospace;
-        }
-
-        /* Table */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 1.5rem 0;
-            border: 1px solid var(--gray-border);
+            margin: 0.8rem 0;
+            font-size: 0.8rem;
         }
-
         th {
             background: var(--noir);
-            color: var(--white);
-            padding: 1rem;
+            color: #FFF;
+            padding: 0.6rem;
             text-align: left;
             font-weight: 600;
-            font-size: 0.95rem;
         }
-
         td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--gray-border);
+            padding: 0.5rem;
+            border-bottom: 1px solid #DDD;
         }
-
-        tr:hover {
-            background: var(--gray-light);
-        }
-
-        /* Links */
-        a {
-            color: var(--wine);
-            text-decoration: none;
-        }
-
-        a:hover {
-            color: var(--amber);
-            text-decoration: underline;
-        }
-
-        /* Auth Section */
-        .auth-card {
-            background: rgba(236, 170, 77, 0.1);
-            border-left: 4px solid var(--amber);
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            border-radius: 4px;
-        }
-
-        .auth-card h4 {
-            color: var(--wine);
-            margin-bottom: 0.5rem;
-        }
-
-        /* Info Box */
-        .info-box {
-            background: rgba(28, 28, 28, 0.05);
-            border-left: 4px solid var(--noir);
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            border-radius: 4px;
-        }
-
-        .info-box strong {
-            color: var(--noir);
-        }
-
-        /* Badge */
+        tr:hover { background: #F9F9F9; }
         .badge {
             display: inline-block;
-            padding: 0.4rem 0.8rem;
+            padding: 0.2rem 0.4rem;
             background: var(--amber);
-            color: var(--white);
-            border-radius: 4px;
+            color: #FFF;
+            border-radius: 2px;
+            font-size: 0.65rem;
+            font-weight: 700;
+        }
+        .badge.required { background: var(--wine); }
+        .info-box {
+            background: rgba(28,28,28,0.05);
+            border-left: 3px solid var(--noir);
+            padding: 0.8rem;
+            margin: 0.8rem 0;
+            border-radius: 3px;
             font-size: 0.8rem;
-            font-weight: 600;
-            margin-right: 0.5rem;
         }
-
-        .badge.required {
-            background: var(--wine);
+        .auth-card {
+            background: rgba(236,170,77,0.1);
+            border-left: 3px solid var(--amber);
+            padding: 0.8rem;
+            margin: 0.8rem 0;
+            border-radius: 3px;
+            font-size: 0.8rem;
         }
-
-        /* Footer */
         footer {
             background: var(--noir);
-            color: var(--white);
-            padding: 2rem;
+            color: #FFF;
+            padding: 1rem 2rem;
             text-align: center;
             border-top: 3px solid var(--amber);
-            margin-top: 4rem;
+            font-size: 0.75rem;
         }
-
-        footer p {
-            font-size: 0.95rem;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Responsive */
+        footer p { margin: 0.2rem 0; }
+        footer a { color: var(--amber); text-decoration: none; }
         @media (max-width: 768px) {
-            header h1 {
-                font-size: 1.8rem;
-            }
-
-            nav ul {
-                gap: 0.5rem;
-            }
-
-            section h2 {
-                font-size: 1.5rem;
-            }
-
-            .endpoint-header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            pre {
-                font-size: 0.75rem;
-            }
+            header h1 { font-size: 1.3rem; }
+            nav ul { gap: 0.8rem; }
+            .quick-grid { grid-template-columns: 1fr; }
+            section h2 { font-size: 1.2rem; }
+            .endpoint-header { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header>
-        <div class="container">
-            <h1>🍷 Wincellar API</h1>
-            <p>Tài liệu API cho hệ thống quản lý rượu vang thế hệ mới</p>
-        </div>
+        <h1>Thiên Kim Wine API v1</h1>
+        <p>REST API 19 endpoints - Backend Laravel 12 + Frontend Next.js 15</p>
     </header>
 
-    <!-- Navigation -->
     <nav>
-        <div class="container">
-            <ul>
-                <li><a href="#overview">Tổng quan</a></li>
-                <li><a href="#auth">Xác thực</a></li>
-                <li><a href="#health">Health Check</a></li>
-                <li><a href="#products">Sản phẩm</a></li>
-                <li><a href="#articles">Bài viết</a></li>
-                <li><a href="#home">Trang chủ</a></li>
-                <li><a href="#settings">Cài đặt</a></li>
-                <li><a href="#docs">Tài liệu</a></li>
-            </ul>
-        </div>
+        <ul>
+            <li><a href="#overview">Tổng Quan</a></li>
+            <li><a href="#auth">Auth</a></li>
+            <li><a href="#health">Health</a></li>
+            <li><a href="#products">Products</a></li>
+            <li><a href="#articles">Articles</a></li>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#menus">Menus</a></li>
+            <li><a href="#social">Social</a></li>
+            <li><a href="#tracking">Tracking</a></li>
+            <li><a href="#settings">Settings</a></li>
+        </ul>
     </nav>
 
-    <!-- Main Content -->
     <div class="hero">
-        <div class="container">
-            <h2>Bắt đầu nhanh chóng</h2>
-            <p>API REST hiện đại với response JSON, hỗ trợ filter, sort, pagination và search đầy đủ.</p>
-        </div>
+        <h2>REST API Documentation</h2>
+        <p>19 endpoints RESTful với JSON response, filter, sort, pagination, tracking, cache management.</p>
     </div>
 
-    <!-- Quick Start -->
     <div class="quick-start">
-        <div class="container">
+        <div style="max-width: 1200px; margin: 0 auto;">
             <h3>Quick Start</h3>
-            <div class="quick-start-grid">
-                <div class="quick-start-card">
-                    <h4>1. Base URL</h4>
+            <div class="quick-grid">
+                <div class="quick-card">
+                    <h4>Base URL</h4>
                     <p><code>http://localhost:8000/api/v1</code></p>
                 </div>
-                <div class="quick-start-card">
-                    <h4>2. Lấy dữ liệu</h4>
-                    <p>Hầu hết endpoints không cần authentication</p>
+                <div class="quick-card">
+                    <h4>Frontend</h4>
+                    <p><code>http://localhost:3000</code></p>
                 </div>
-                <div class="quick-start-card">
-                    <h4>3. Phản hồi JSON</h4>
-                    <p>Tất cả responses đều là JSON format</p>
+                <div class="quick-card">
+                    <h4>Auth</h4>
+                    <p>Hầu hết endpoints public không cần auth</p>
+                </div>
+                <div class="quick-card">
+                    <h4>Response</h4>
+                    <p>JSON với HATEOAS links</p>
                 </div>
             </div>
         </div>
     </div>
 
     <main>
-        <div class="container">
-            <!-- Overview -->
-            <section id="overview">
-                <h2>📖 Tổng quan</h2>
-                <p>Wincellar API cung cấp các endpoints để:</p>
-                <ul style="margin: 1rem 0 0 2rem;">
-                    <li>Quản lý sản phẩm rượu vang với filter nâng cao</li>
-                    <li>Lấy dữ liệu trang chủ (banners, featured products)</li>
-                    <li>Lấy thông tin cài đặt ứng dụng (logo, contact info, meta defaults)</li>
-                    <li>Kiểm tra tính khỏe mạnh của hệ thống</li>
-                    <li>Tìm kiếm sản phẩm theo tên, giá, thương hiệu, xuất xứ...</li>
-                </ul>
+        <section id="overview">
+            <h2>Tổng Quan</h2>
+            <p><strong>Thiên Kim Wine API</strong> cung cấp 19 endpoints quản lý sản phẩm, bài viết, menus, settings, tracking.</p>
+            <ul style="margin-left: 1.5rem; font-size: 0.85rem; color: #666;">
+                <li><strong>19 API endpoints</strong> RESTful</li>
+                <li><strong>Rate limit:</strong> 60 req/phút</li>
+                <li><strong>Response:</strong> JSON + HATEOAS</li>
+                <li><strong>Tracking:</strong> Anonymous visitor & event tracking</li>
+                <li><strong>Cache:</strong> Redis + version tracking</li>
+                <li><strong>Monitoring:</strong> Health check system</li>
+            </ul>
+        </section>
 
-                <div class="info-box">
-                    <strong>Lưu ý:</strong> API hiện đang ở phiên bản v1. Tất cả endpoints bắt đầu bằng <code>/api/v1</code>
-                </div>
-            </section>
-
-            <!-- Authentication -->
-            <section id="auth">
-                <h2>🔐 Xác thực</h2>
-                <p>Hầu hết các endpoints public không yêu cầu xác thực. Một số endpoints admin sẽ yêu cầu JWT token.</p>
-
-                <h3>Header yêu cầu</h3>
+        <section id="auth">
+            <h2>Authentication</h2>
+            <p>Hầu hết endpoints public không yêu cầu xác thực.</p>
+            <div class="endpoint">
+                <h4>Header (nếu cần auth):</h4>
                 <pre>Authorization: Bearer YOUR_TOKEN</pre>
+            </div>
+        </section>
 
-                <div class="auth-card">
-                    <h4>Cấp JWT Token</h4>
-                    <p>Token được cấp qua endpoint login với credentials.</p>
+        <section id="health">
+            <h2>Health & System</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/health</div>
                 </div>
-            </section>
-
-            <!-- Health Check -->
-            <section id="health">
-                <h2>🏥 Health & System</h2>
-
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method get">GET</span>
-                        <div class="endpoint-path">/health</div>
-                    </div>
-                    <p class="endpoint-description">Kiểm tra tính khỏe mạnh của hệ thống (database, cache, storage)</p>
-
-                    <h4>Tham số</h4>
-                    <p>Không có</p>
-
-                    <h4>Phản hồi thành công (200)</h4>
-                    <pre>{
-  "status": "healthy",
-  "services": {
-    "database": {
-      "status": "healthy",
-      "response_time_ms": 2.34
-    },
-    "cache": {
-      "status": "healthy",
-      "response_time_ms": 1.23
-    }
-  },
-  "performance": {
-    "response_time_ms": 15.67,
-    "memory_usage_mb": 12.5
-  }
-}</pre>
-
-                    <div class="info-box">
-                        <strong>Rate Limit:</strong> 60 requests/minute
-                    </div>
+                <p class="endpoint-description">System health status</p>
+                <div class="info-box">
+                    <strong>Response:</strong> { "status": "OK", "database": true, "cache": true }
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Products -->
-            <section id="products">
-                <h2>🍷 Sản phẩm</h2>
-
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method get">GET</span>
-                        <div class="endpoint-path">/san-pham</div>
-                    </div>
-                    <p class="endpoint-description">Danh sách sản phẩm với filter, sort, pagination</p>
-
-                    <h4>Query Parameters</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tham số</th>
-                                <th>Kiểu</th>
-                                <th>Mô tả</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>page</code></td>
-                                <td>integer</td>
-                                <td>Trang hiện tại (default: 1)</td>
-                            </tr>
-                            <tr>
-                                <td><code>per_page</code></td>
-                                <td>integer</td>
-                                <td>Số items per page (max: 60, default: 24)</td>
-                            </tr>
-                            <tr>
-                                <td><code>sort</code></td>
-                                <td>string</td>
-                                <td>Sắp xếp: <code>-created_at</code>, <code>price</code>, <code>-price</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>q</code></td>
-                                <td>string</td>
-                                <td>Tìm kiếm theo tên sản phẩm</td>
-                            </tr>
-                            <tr>
-                                <td><code>terms[brand][]</code></td>
-                                <td>integer[]</td>
-                                <td>Filter theo thương hiệu (ID)</td>
-                            </tr>
-                            <tr>
-                                <td><code>price_min</code></td>
-                                <td>integer</td>
-                                <td>Giá tối thiểu (VND)</td>
-                            </tr>
-                            <tr>
-                                <td><code>price_max</code></td>
-                                <td>integer</td>
-                                <td>Giá tối đa (VND)</td>
-                            </tr>
-                            <tr>
-                                <td><code>alcohol_min</code></td>
-                                <td>float</td>
-                                <td>Độ cồn tối thiểu (%)</td>
-                            </tr>
-                            <tr>
-                                <td><code>alcohol_max</code></td>
-                                <td>float</td>
-                                <td>Độ cồn tối đa (%)</td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <h4>Ví dụ Request</h4>
-                    <pre>GET /api/v1/san-pham?page=1&per_page=24&sort=-created_at&price_min=100000&price_max=500000</pre>
-
-                    <h4>Phản hồi thành công (200)</h4>
-                    <pre>{
-  "data": [
-    {
-      "id": 1,
-      "name": "Rượu Vang Đỏ Bordeaux",
-      "slug": "ruou-vang-do-bordeaux",
-      "price": 250000,
-      "alcohol": 13.5,
-      "vintage": 2015,
-      "description": "...",
-      "images": [...]
-    }
-  ],
-  "pagination": {
-    "total": 150,
-    "per_page": 24,
-    "current_page": 1,
-    "last_page": 7
-  }
-}</pre>
-
-                    <div class="info-box">
-                        <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu
-                    </div>
+        <section id="products">
+            <h2>Products</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/san-pham</div>
                 </div>
-            </section>
+                <p class="endpoint-description">Danh sách sản phẩm (filter, sort, pagination)</p>
+                <h4>Parameters:</h4>
+                <table>
+                    <tr>
+                        <th>Field</th>
+                        <th>Kiểu</th>
+                        <th>Mô Tả</th>
+                    </tr>
+                    <tr>
+                        <td><code>q</code></td>
+                        <td>string</td>
+                        <td>Tìm kiếm theo tên</td>
+                    </tr>
+                    <tr>
+                        <td><code>brand</code></td>
+                        <td>int</td>
+                        <td>ID thương hiệu</td>
+                    </tr>
+                    <tr>
+                        <td><code>price_min, price_max</code></td>
+                        <td>int</td>
+                        <td>Khoảng giá</td>
+                    </tr>
+                    <tr>
+                        <td><code>sort</code></td>
+                        <td>string</td>
+                        <td>price, name, created_at (thêm - để giảm dần)</td>
+                    </tr>
+                    <tr>
+                        <td><code>page, per_page</code></td>
+                        <td>int</td>
+                        <td>Pagination (mặc định 24/trang)</td>
+                    </tr>
+                </table>
+                <h4>Ví Dụ:</h4>
+                <pre>GET /api/v1/san-pham?q=bordeaux&brand=5&price_max=5000000&sort=-price&page=1&per_page=24</pre>
+            </div>
 
-            <!-- Articles -->
-            <section id="articles">
-                <h2>📰 Bài viết</h2>
-
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method get">GET</span>
-                        <div class="endpoint-path">/bai-viet</div>
-                    </div>
-                    <p class="endpoint-description">Danh sách bài viết với pagination và sorting</p>
-
-                    <h4>Query Parameters</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tham số</th>
-                                <th>Kiểu</th>
-                                <th>Mô tả</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>page</code></td>
-                                <td>integer</td>
-                                <td>Trang hiện tại (default: 1)</td>
-                            </tr>
-                            <tr>
-                                <td><code>per_page</code></td>
-                                <td>integer</td>
-                                <td>Số items per page (max: 50, default: 12)</td>
-                            </tr>
-                            <tr>
-                                <td><code>sort</code></td>
-                                <td>string</td>
-                                <td>Sắp xếp: <code>-created_at</code>, <code>created_at</code>, <code>title</code>, <code>-title</code></td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <h4>Ví dụ Request</h4>
-                    <pre>GET /api/v1/bai-viet?page=1&per_page=12&sort=-created_at</pre>
-
-                    <h4>Phản hồi thành công (200)</h4>
-                    <pre>{
-  "data": [
-    {
-      "id": 1,
-      "title": "Cách Chọn Rượu Vang Phù Hợp",
-      "slug": "cach-chon-ruou-vang-phu-hop",
-      "excerpt": "Hướng dẫn chi tiết cách chọn rượu vang...",
-      "cover_image_url": "/storage/articles/cover-1.jpg",
-      "published_at": "2025-11-09T15:30:00Z",
-      "_links": {
-        "self": {
-          "href": "http://localhost:8000/api/v1/bai-viet/cach-chon-ruou-vang-phu-hop",
-          "method": "GET"
-        }
-      }
-    }
-  ],
-  "meta": {
-    "pagination": {
-      "page": 1,
-      "per_page": 12,
-      "total": 25,
-      "last_page": 3,
-      "has_more": true
-    },
-    "api_version": "v1"
-  },
-  "_links": {
-    "self": {"href": "http://localhost:8000/api/v1/bai-viet?page=1"},
-    "next": {"href": "http://localhost:8000/api/v1/bai-viet?page=2"},
-    "last": {"href": "http://localhost:8000/api/v1/bai-viet?page=3"}
-  }
-}</pre>
-
-                    <div class="info-box">
-                        <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu
-                    </div>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/san-pham/{slug}</div>
                 </div>
-
-                <!-- Get Article Detail -->
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method get">GET</span>
-                        <div class="endpoint-path">/bai-viet/{slug}</div>
-                    </div>
-                    <p class="endpoint-description">Chi tiết bài viết theo slug với full content, gallery, và thông tin tác giả</p>
-
-                    <h4>Path Parameters</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Tham số</th>
-                                <th>Kiểu</th>
-                                <th>Mô tả</th>
-                                <th>Ví dụ</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>slug</code></td>
-                                <td>string</td>
-                                <td>URL-friendly identifier của bài viết</td>
-                                <td><code>cach-chon-ruou-vang-phu-hop</code></td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <h4>Ví dụ Request</h4>
-                    <pre>GET /api/v1/bai-viet/cach-chon-ruou-vang-phu-hop</pre>
-
-                    <h4>Phản hồi thành công (200)</h4>
-                    <pre>{
+                <p class="endpoint-description">Chi tiết sản phẩm</p>
+                <h4>Response:</h4>
+                <pre>{
   "data": {
     "id": 1,
-    "title": "Cách Chọn Rượu Vang Phù Hợp",
-    "slug": "cach-chon-ruou-vang-phu-hop",
-    "excerpt": "Hướng dẫn chi tiết...",
-    "content": "&lt;p&gt;Nội dung đầy đủ của bài viết...&lt;/p&gt;",
-    "cover_image_url": "/storage/articles/cover-1.jpg",
-    "gallery": [
-      {
-        "id": 1,
-        "url": "/storage/articles/gallery-1.jpg",
-        "alt": "Rượu vang đỏ",
-        "order": 1
-      }
-    ],
-    "author": {
-      "id": 1,
-      "name": "Admin",
-      "email": "admin@wincellar.com"
-    },
-    "published_at": "2025-11-09T15:30:00Z",
-    "meta": {
-      "title": "Cách Chọn Rượu Vang Phù Hợp - Wincellar",
-      "description": "Hướng dẫn chi tiết cách chọn rượu vang phù hợp...",
-      "keywords": "rượu vang, chọn rượu, wine guide"
-    },
-    "_links": {
-      "self": {
-        "href": "http://localhost:8000/api/v1/bai-viet/cach-chon-ruou-vang-phu-hop",
-        "method": "GET"
-      },
-      "collection": {
-        "href": "http://localhost:8000/api/v1/bai-viet",
-        "method": "GET"
-      }
-    }
+    "name": "Rượu Vang Đỏ Bordeaux",
+    "slug": "ruou-vang-do-bordeaux",
+    "price": 2500000,
+    "alcohol": 13.5,
+    "vintage": 2015,
+    "description": "...",
+    "gallery": [...],
+    "brand": { ... },
+    "origin": { ... },
+    "wine_type": { ... }
   },
-  "meta": {
-    "api_version": "v1",
-    "timestamp": "2025-11-11T10:30:00Z"
-  }
+  "_links": { "self": { "href": "..." } }
 }</pre>
+            </div>
+        </section>
 
-                    <h4>Phản hồi lỗi (404)</h4>
-                    <pre>{
-  "error": "NotFound",
-  "message": "Article not found",
-  "timestamp": "2025-11-11T10:30:00Z",
-  "correlation_id": "550e8400-e29b-41d4-a716-446655440000",
-  "details": {
-    "identifier": "non-existent-slug"
-  }
-}</pre>
-
-                    <div class="info-box">
-                        <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu
-                    </div>
-
-                    <div class="auth-card">
-                        <h4>💡 Response Fields</h4>
-                        <ul style="margin: 0.5rem 0 0 1.5rem;">
-                            <li><strong>excerpt:</strong> Tóm tắt ngắn gọn cho list view</li>
-                            <li><strong>content:</strong> Nội dung HTML đầy đủ (chỉ có trong detail view)</li>
-                            <li><strong>gallery:</strong> Mảng ảnh đính kèm (chỉ có trong detail view)</li>
-                            <li><strong>author:</strong> Thông tin tác giả (chỉ có trong detail view)</li>
-                            <li><strong>meta:</strong> SEO metadata cho dynamic rendering</li>
-                            <li><strong>_links:</strong> HATEOAS links để navigate giữa resources</li>
-                        </ul>
-                    </div>
+        <section id="articles">
+            <h2>Articles</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/bai-viet</div>
                 </div>
+                <p class="endpoint-description">Danh sách bài viết (pagination)</p>
+                <p style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">Query: page, per_page (mặc định 12/trang)</p>
+            </div>
 
-                <div class="auth-card" style="background: rgba(155, 44, 59, 0.05); border-left-color: var(--wine);">
-                    <h4>📌 Use Cases</h4>
-                    <ul style="margin: 0.5rem 0 0 1.5rem; line-height: 1.8;">
-                        <li><strong>Blog/News listing:</strong> Dùng <code>GET /bai-viet</code> với pagination</li>
-                        <li><strong>Article detail page:</strong> Dùng <code>GET /bai-viet/{slug}</code></li>
-                        <li><strong>SEO optimization:</strong> Sử dụng <code>meta</code> fields cho dynamic meta tags</li>
-                        <li><strong>Image gallery:</strong> Render <code>gallery</code> array trong lightbox/carousel</li>
-                        <li><strong>Author attribution:</strong> Display author info từ <code>author</code> object</li>
-                    </ul>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/bai-viet/{slug}</div>
                 </div>
-            </section>
+                <p class="endpoint-description">Chi tiết bài viết</p>
+            </div>
+        </section>
 
-            <!-- Home -->
-            <section id="home">
-                <h2>🏠 Trang chủ</h2>
+        <section id="home">
+            <h2>Home</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/home</div>
+                </div>
+                <p class="endpoint-description">Homepage components (carousel, featured products, banners)</p>
+            </div>
+        </section>
 
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method get">GET</span>
-                        <div class="endpoint-path">/home</div>
-                    </div>
-                    <p class="endpoint-description">Lấy dữ liệu trang chủ (components, featured products, banners)</p>
+        <section id="menus">
+            <h2>Menus</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/menus</div>
+                </div>
+                <p class="endpoint-description">Cấu trúc menu navigation</p>
+                <p style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">Trả về: menus > blocks > items (3 cấp)</p>
+            </div>
+        </section>
 
-                    <h4>Tham số</h4>
-                    <p>Không có</p>
+        <section id="social">
+            <h2>Social Links</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/social-links</div>
+                </div>
+                <p class="endpoint-description">Facebook, Instagram, YouTube, Zalo... (ở footer)</p>
+                <h4>Response:</h4>
+                <pre>[
+  {
+    "id": 1,
+    "platform": "facebook",
+    "url": "https://facebook.com/wincellar",
+    "icon_url": "/storage/icons/facebook.svg",
+    "order": 1
+  },
+  ...
+]</pre>
+            </div>
+        </section>
 
-                    <h4>Phản hồi thành công (200)</h4>
-                    <pre>{
+        <section id="tracking">
+            <h2>Tracking & Analytics</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/track/generate-id</div>
+                </div>
+                <p class="endpoint-description">Generate UUID cho anonymous tracking (call 1 lần first visit)</p>
+                <h4>Response:</h4>
+                <pre>{
+  "success": true,
   "data": {
-    "components": [
-      {
-        "type": "carousel",
-        "items": [...]
-      },
-      {
-        "type": "featured_products",
-        "products": [...]
-      }
-    ]
+    "anon_id": "550e8400-e29b-41d4-a716-446655440000"
   }
 }</pre>
+            </div>
 
-                    <div class="info-box">
-                        <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu
-                    </div>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <div class="endpoint-path">/track/visitor</div>
                 </div>
-            </section>
+                <p class="endpoint-description">Track visitor session</p>
+                <h4>Body:</h4>
+                <table>
+                    <tr>
+                        <th>Field</th>
+                        <th>Bắt Buộc</th>
+                    </tr>
+                    <tr>
+                        <td><code>anon_id</code></td>
+                        <td><span class="badge required">Required</span></td>
+                    </tr>
+                    <tr>
+                        <td><code>user_agent</code></td>
+                        <td><span class="badge">Optional</span></td>
+                    </tr>
+                </table>
+            </div>
 
-            <!-- Settings -->
-            <section id="settings">
-                <h2>⚙️ Cài đặt</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <div class="endpoint-path">/track/event</div>
+                </div>
+                <p class="endpoint-description">Track events: product_view, article_view, cta_contact</p>
+                <h4>Body:</h4>
+                <pre>{
+  "anon_id": "550e8400-e29b-41d4-a716-446655440000",
+  "event_type": "product_view",
+  "product_id": 123,
+  "metadata": {
+    "referrer": "/san-pham",
+    "page_url": "/san-pham/ruou-vang-do"
+  }
+}</pre>
+                <div class="auth-card">
+                    <strong>Event Types:</strong> product_view, article_view, cta_contact
+                </div>
+            </div>
+        </section>
 
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method get">GET</span>
-                        <div class="endpoint-path">/settings</div>
-                    </div>
-                    <p class="endpoint-description">Lấy thông tin cài đặt ứng dụng (logo, thông tin liên hệ, meta defaults)</p>
-
-                    <h4>Tham số</h4>
-                    <p>Không có</p>
-
-                    <h4>Phản hồi thành công (200)</h4>
-                    <pre>{
+        <section id="settings">
+            <h2>Settings</h2>
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <div class="endpoint-path">/settings</div>
+                </div>
+                <p class="endpoint-description">Site info: logo, hotline, email, địa chỉ, meta defaults</p>
+                <h4>Response:</h4>
+                <pre>{
   "data": {
     "id": 1,
     "site_name": "Wincellar Clone",
     "hotline": "0123 456 789",
     "address": "123 Đường ABC, Quận 1, TP.HCM",
-    "hours": "8:00 - 22:00 hàng ngày",
+    "hours": "8:00 - 22:00",
     "email": "contact@wincellar.com",
-    "google_map_embed": "<iframe src=\"https://www.google.com/maps/embed?...\" width=\"600\" height=\"450\"></iframe>",
     "logo_url": "/storage/images/logo.png",
-    "favicon_url": "/storage/images/favicon.ico",
     "meta_defaults": {
-      "title": "Wincellar - Cửa hàng rượu vang uy tín",
-      "description": "Chuyên cung cấp rượu vang nhập khẩu chính hãng",
-      "keywords": "rượu vang, wine, bordeaux"
-    },
-    "_links": {
-      "self": {
-        "href": "http://localhost:8000/api/v1/settings",
-        "method": "GET"
-      }
+      "title": "Thiên Kim Wine - Cửa Hàng Rượu Vang",
+      "description": "Chuyên cung cấp rượu vang nhập khẩu",
+      "keywords": "rượu vang, wine"
     }
   },
   "meta": {
-    "api_version": "v1",
-    "timestamp": "2025-11-11T10:30:00Z"
+    "cache_version": 15
   }
 }</pre>
-
-                    <div class="info-box">
-                        <strong>Rate Limit:</strong> 60 requests/minute | <strong>Auth:</strong> Không yêu cầu | <strong>Cache:</strong> 1 giờ (auto-invalidate khi admin update)
-                    </div>
-
-                    <div class="auth-card">
-                        <h4>💡 Cách sử dụng</h4>
-                        <ul style="margin: 0.5rem 0 0 1.5rem;">
-                            <li>Settings được cache 1 giờ để tối ưu performance</li>
-                            <li>Cache tự động invalidate khi admin update trong Filament</li>
-                            <li>Frontend nên call endpoint này 1 lần khi app init và lưu vào global state</li>
-                            <li>Không trả về sensitive data (passwords, API keys, etc.)</li>
-                        </ul>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Documentation -->
-            <section id="docs">
-                <h2>📚 Tài liệu đầy đủ</h2>
-
-                <p>Để xem tài liệu API chi tiết đầy đủ, vui lòng xem các file sau:</p>
-
-                <div class="endpoint" style="background: rgba(236, 170, 77, 0.1);">
-                    <h4>📄 Tài liệu API</h4>
-                    <ul style="margin: 1rem 0 0 2rem;">
-                        <li><a href="/docs/api/API_ENDPOINTS.md" target="_blank">API Endpoints - Danh sách tất cả endpoints</a></li>
-                        <li><a href="/docs/api/API_DESIGN_AUDIT.md" target="_blank">API Design Audit - Đánh giá thiết kế</a></li>
-                        <li><a href="/docs/api/API_TEST_RESULTS.md" target="_blank">API Test Results - Kết quả kiểm tra</a></li>
-                    </ul>
-                </div>
-
                 <div class="info-box">
-                    <strong>💡 Lưu ý:</strong> Tài liệu API được tự động cập nhật khi có thay đổi. Kiểm tra <code>docs/api</code> để xem phiên bản mới nhất.
+                    <strong>Cache:</strong> 1 giờ | Auto-invalidate khi admin update
                 </div>
-            </section>
-
-            <!-- Support -->
-            <section>
-                <h2>💬 Hỗ trợ</h2>
-                <p>Nếu gặp vấn đề hoặc có câu hỏi về API, vui lòng:</p>
-                <ul style="margin: 1rem 0 0 2rem;">
-                    <li>Kiểm tra tài liệu đầy đủ tại <code>/docs</code></li>
-                    <li>Xem các test cases tại <code>/tests</code></li>
-                    <li>Liên hệ team development</li>
-                </ul>
-            </section>
-        </div>
+            </div>
+        </section>
     </main>
 
-    <!-- Footer -->
     <footer>
-        <div class="container">
-            <p><strong>Wincellar API v1</strong></p>
-            <p>Tài liệu API được cập nhật lần cuối: {{ date('d/m/Y H:i') }}</p>
-            <p style="color: #CCC; margin-top: 1rem; font-size: 0.85rem;">© 2025 Thiên Kim Wine. All rights reserved.</p>
-        </div>
+        <p><strong>Thiên Kim Wine API v1</strong></p>
+        <p><a href="/tong-quan">Tổng quan</a> | <a href="/huong-dan">Hướng dẫn</a> | <a href="/tinh-nang">Tính năng</a> | <a href="/api-docs">API</a> | <a href="/admin">Admin</a></p>
+        <p style="color: #AAA; margin-top: 0.6rem;">© 2025 Thiên Kim Wine. All rights reserved.</p>
     </footer>
 </body>
 </html>

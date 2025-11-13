@@ -3,9 +3,30 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 
+// Homepage - Landing page with navigation cards
 Route::get('/', function () {
-    return view('api-documentation');
+    return view('home');
 });
+
+// Tổng quan - System overview
+Route::get('/tong-quan', function () {
+    return view('tong-quan');
+})->name('tong-quan');
+
+// Hướng dẫn - User guide with tutorials
+Route::get('/huong-dan', function () {
+    return view('huong-dan');
+})->name('huong-dan');
+
+// Tính năng - Feature list
+Route::get('/tinh-nang', function () {
+    return view('tinh-nang');
+})->name('tinh-nang');
+
+// API Documentation - Full API reference
+Route::get('/api-docs', function () {
+    return view('api-documentation');
+})->name('api-docs');
 
 // Run storage link - for production deployment
 Route::get('/run-storage-link', function () {
