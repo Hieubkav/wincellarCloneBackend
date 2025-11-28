@@ -17,8 +17,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Tabs;
-use Filament\Forms\Components\FileUpload;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
@@ -51,89 +50,87 @@ class ProductResource extends BaseResource
     public static function form(Schema $schema): Schema
     {
         return $schema
+            ->columns(1)
             ->schema([
-                Tabs::make()
-                    ->tabs([
-                        Tabs\Tab::make('Thông tin chính')
+                Section::make('Thông tin chính')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Tên sản phẩm')
+                            ->required()
+                            ->maxLength(255)
+                            ->copyable(),
+
+                        Select::make('categories')
+                            ->label('Danh mục')
+                            ->relationship('categories', 'name')
+                            ->options(ProductCategory::active()->pluck('name', 'id'))
+                            ->searchable()
+                            ->multiple()
+                            ->preload(),
+
+                        Select::make('type_id')
+                            ->label('Loại sản phẩm')
+                            ->options(ProductType::active()->pluck('name', 'id'))
+                            ->searchable()
+                            ->required(),
+
+                        LexicalEditor::make('description')
+                            ->label('Mô tả')
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Giá & Thông số')
+                    ->schema([
+                        Grid::make()
+                            ->columns(2)
                             ->schema([
-                                TextInput::make('name')
-                                    ->label('Tên sản phẩm')
-                                    ->required()
-                                    ->maxLength(255)
-                                    ->copyable(),
+                                TextInput::make('price')
+                                    ->label('Giá bán')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->default(0)
+                                    ->prefix('?'),
 
-                                Select::make('categories')
-                                    ->label('Danh mục')
-                                    ->relationship('categories', 'name')
-                                    ->options(ProductCategory::active()->pluck('name', 'id'))
-                                    ->searchable()
-                                    ->multiple()
-                                    ->preload(),
+                                TextInput::make('original_price')
+                                    ->label('Giá gốc')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->default(0)
+                                    ->prefix('?'),
 
-                                Select::make('type_id')
-                                    ->label('Loại sản phẩm')
-                                    ->options(ProductType::active()->pluck('name', 'id'))
-                                    ->searchable()
-                                    ->required(),
-
-                                LexicalEditor::make('description')
-                                    ->label('Mô tả')
+                                TagsInput::make('badges')
+                                    ->label('Nhãn hiển thị')
+                                    ->suggestions(['HOT', 'NEW', 'SALE', 'LIMITED', 'BEST_SELLER'])
                                     ->columnSpanFull(),
-                            ])
-                            ->columns(2),
-
-                        Tabs\Tab::make('Giá & Thông số')
-                            ->schema([
-                                Grid::make()
-                                    ->schema([
-                                        TextInput::make('price')
-                                            ->label('Giá bán')
-                                            ->numeric()
-                                            ->minValue(0)
-                                            ->default(0)
-                                            ->prefix('₫'),
-
-                                        TextInput::make('original_price')
-                                            ->label('Giá gốc')
-                                            ->numeric()
-                                            ->minValue(0)
-                                            ->default(0)
-                                            ->prefix('₫'),
-
-                                        TagsInput::make('badges')
-                                            ->label('Nhãn hiển thị')
-                                            ->suggestions(['HOT', 'NEW', 'SALE', 'LIMITED', 'BEST_SELLER'])
-                                            ->columnSpanFull(),
-                                    ])
-                                    ->columns(2),
-
-                                Grid::make()
-                                    ->schema([
-                                        TextInput::make('alcohol_percent')
-                                            ->label('Nồng độ cồn (%)')
-                                            ->numeric()
-                                            ->minValue(0)
-                                            ->maxValue(100)
-                                            ->step(0.1)
-                                            ->suffix('%'),
-
-                                        TextInput::make('volume_ml')
-                                            ->label('Dung tích (ml)')
-                                            ->numeric()
-                                            ->minValue(0)
-                                            ->suffix('ml'),
-
-                                        Toggle::make('active')
-                                            ->label('Hoạt động')
-                                            ->default(true),
-                                    ])
-                                    ->columns(3),
                             ]),
 
-                        Tabs\Tab::make('Thuộc tính')
-                            ->schema(static::getAttributeFields()),
-                    ])
-                    ->columnSpanFull(),
+                        Grid::make()
+                            ->columns(3)
+                            ->schema([
+                                TextInput::make('alcohol_percent')
+                                    ->label('Nồng độ cồn (%)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->maxValue(100)
+                                    ->step(0.1)
+                                    ->suffix('%'),
+
+                                TextInput::make('volume_ml')
+                                    ->label('Dung tích (ml)')
+                                    ->numeric()
+                                    ->minValue(0)
+                                    ->suffix('ml'),
+
+                                Toggle::make('active')
+                                    ->label('Hoạt động')
+                                    ->default(true),
+                            ]),
+                    ]),
+
+                Section::make('Thuộc tính')
+                    ->columns(3)
+                    ->schema(static::getAttributeFields()),
             ]);
     }
 
