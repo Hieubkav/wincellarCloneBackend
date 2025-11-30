@@ -9,6 +9,7 @@ use App\Filament\Resources\CatalogAttributeGroups\Pages\ViewCatalogAttributeGrou
 use App\Filament\Resources\CatalogAttributeGroups\Schemas\CatalogAttributeGroupForm;
 use App\Filament\Resources\CatalogAttributeGroups\Schemas\CatalogAttributeGroupInfolist;
 use App\Filament\Resources\CatalogAttributeGroups\Tables\CatalogAttributeGroupsTable;
+use App\Filament\Resources\CatalogAttributeGroups\RelationManagers;
 use App\Models\CatalogAttributeGroup;
 use BackedEnum;
 use UnitEnum;
@@ -50,10 +51,22 @@ class CatalogAttributeGroupResource extends Resource
         return CatalogAttributeGroupsTable::configure($table);
     }
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::query()->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'primary';
+    }
+
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\TermsRelationManager::class,
         ];
     }
 
@@ -62,7 +75,6 @@ class CatalogAttributeGroupResource extends Resource
         return [
             'index' => ListCatalogAttributeGroups::route('/'),
             'create' => CreateCatalogAttributeGroup::route('/create'),
-            'view' => ViewCatalogAttributeGroup::route('/{record}'),
             'edit' => EditCatalogAttributeGroup::route('/{record}/edit'),
         ];
     }

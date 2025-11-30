@@ -18,7 +18,7 @@ class ProductTypesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->withCount('products'))
+            ->modifyQueryUsing(fn (Builder $query) => $query->withCount(['products', 'categories']))
             ->defaultSort('order', 'asc')
             ->reorderable('order')
             ->columns([
@@ -37,6 +37,11 @@ class ProductTypesTable
                     ->tooltip('Click để copy'),
                 TextColumn::make('products_count')
                     ->label('Số sản phẩm')
+                    ->badge()
+                    ->color('gray')
+                    ->sortable(),
+                TextColumn::make('categories_count')
+                    ->label('Số danh mục')
                     ->badge()
                     ->color('gray')
                     ->sortable(),
@@ -61,7 +66,12 @@ class ProductTypesTable
             ])
             ->recordActions([
                 EditAction::make()->iconButton(),
-                DeleteAction::make()->iconButton(),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->disabled(fn ($record) => $record->products_count > 0)
+                    ->tooltip(fn ($record) => $record->products_count > 0
+                        ? 'Không thể xoá: vẫn còn sản phẩm thuộc phân mục này.'
+                        : null),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

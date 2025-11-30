@@ -28,7 +28,22 @@ class CatalogAttributeGroupInfolist
                                     ->weight('medium'),
                                 TextEntry::make('filter_type')
                                     ->label('Filter type')
-                                    ->formatStateUsing(fn (?string $state): ?string => $state ? ucfirst($state) : null)
+                                    ->formatStateUsing(function (?string $state): ?string {
+                                        return match($state) {
+                                            'chon_don' => 'Chọn đơn',
+                                            'chon_nhieu' => 'Chọn nhiều',
+                                            'nhap_tay' => 'Nhập tay',
+                                            default => $state,
+                                        };
+                                    })
+                                    ->badge(),
+                                TextEntry::make('input_type')
+                                    ->label('Kiểu nhập')
+                                    ->formatStateUsing(fn (?string $state): ?string => match($state) {
+                                        'text' => 'Text',
+                                        'number' => 'Số',
+                                        default => null,
+                                    })
                                     ->badge(),
                                 TextEntry::make('terms_count')
                                     ->label('Terms')

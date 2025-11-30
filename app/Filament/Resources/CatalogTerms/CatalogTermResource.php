@@ -30,6 +30,11 @@ class CatalogTermResource extends Resource
 
     protected static ?int $navigationSort = 40;
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
+
     protected static ?string $modelLabel = 'Thuộc tính';
 
     protected static ?string $pluralModelLabel = 'Các thuộc tính';

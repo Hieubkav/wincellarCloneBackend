@@ -16,13 +16,16 @@ class CatalogAttributeGroupFactory extends Factory
     public function definition(): array
     {
         $name = $this->faker->unique()->words(2, true);
+        $filterType = $this->faker->randomElement(['chon_don', 'chon_nhieu', 'nhap_tay']);
 
         return [
             'code' => Str::slug($name),
             'name' => Str::title($name),
-            'filter_type' => $this->faker->randomElement(['single', 'multi', 'hierarchy', 'tag']),
+            'filter_type' => $filterType,
+            'input_type' => $filterType === 'nhap_tay'
+                ? $this->faker->randomElement(['text', 'number'])
+                : null,
             'is_filterable' => true,
-            'is_primary' => $this->faker->boolean(30),
             'position' => $this->faker->numberBetween(0, 20),
             'display_config' => [
                 'icon' => 'lucide:' . $this->faker->randomElement(['tag', 'sparkles', 'box']),
@@ -30,4 +33,3 @@ class CatalogAttributeGroupFactory extends Factory
         ];
     }
 }
-

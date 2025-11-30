@@ -2,21 +2,21 @@
 
 namespace App\Filament\Resources\CatalogAttributeGroups\Schemas;
 
-use Filament\Forms\Components\FileUpload;
+use App\Models\CatalogAttributeGroup;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
-use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Str;
 
 class CatalogAttributeGroupForm
 {
     /**
-     * Compose the form used to manage catalog attribute groups.
+     * Form tạo/sửa nhóm thuộc tính.
+     * Ẩn mã nhóm, thứ tự, icon; mã & thứ tự sẽ tự sinh.
      */
     public static function configure(Schema $schema): Schema
     {
@@ -26,70 +26,61 @@ class CatalogAttributeGroupForm
                 Section::make('Thông tin chung')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('code')
-                            ->label('Mã nhóm')
-                            ->required()
-                            ->maxLength(50)
-                            ->unique(ignoreRecord: true)
-                            ->helperText('Mã định danh duy nhất. Ví dụ: brand, country, region, grape'),
                         TextInput::make('name')
                             ->label('Tên hiển thị')
                             ->helperText('Ví dụ: Thương hiệu, Quốc gia, Vùng miền, Giống nho')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->live(onBlur: true) // tránh Livewire gửi request liên tục khi gõ
+                            
+                            ->afterStateUpdated(fn ($state, callable $set) => $set('code', Str::slug((string) $state, '_'))),
+
                         Select::make('filter_type')
                             ->label('Kiểu bộ lọc')
                             ->required()
                             ->default('chon_nhieu')
+                            ->live()
                             ->options([
                                 'chon_don' => 'Chọn đơn',
                                 'chon_nhieu' => 'Chọn nhiều',
+                                'nhap_tay' => 'Nhập tay',
                             ])
                             ->helperText('Quyết định cách hiển thị bộ lọc trên website'),
+
+                        Select::make('input_type')
+                            ->label('Kiểu nhập')
+                            ->options([
+                                'text' => 'Text',
+                                'number' => 'Số',
+                            ])
+                            ->default('text')
+                            ->required(fn (Get $get) => $get('filter_type') === 'nhap_tay')
+                            ->hidden(fn (Get $get) => $get('filter_type') !== 'nhap_tay')
+                            ->helperText('Chọn nhập số hoặc text khi kiểu lộc là Nhập tay'),
+
                         Toggle::make('is_filterable')
                             ->label('Cho phép lọc')
                             ->helperText('Bật để hiển thị trong bộ lọc')
                             ->default(true)
                             ->inline(false),
-                        TextInput::make('position')
-                            ->label('Thứ tự hiển thị')
-                            ->numeric()
-                            ->default(0)
-                            ->minValue(0)
-                            ->step(1)
-                            ->helperText('Số nhỏ sẽ hiển thị trước'),
-                    ]),
-                Section::make('Icon')
-                    ->collapsed()
-                    ->description('Upload icon cho nhóm thuộc tính')
-                    ->schema([
-                        FileUpload::make('icon_path')
-                            ->label('Icon nhóm thuộc tính')
-                            ->image()
-                            ->disk('public')
-                            ->directory('catalog-attribute-group-icons')
-                            ->visibility('public')
-                            ->imageEditor()
-                            ->imageEditorAspectRatios(['1:1'])
-                            ->maxSize(2048)
-                            ->acceptedFileTypes(['image/*'])
-                            ->helperText('Upload icon cho nhóm. Ảnh sẽ tự động chuyển sang webp và tối ưu.')
-                            ->saveUploadedFileUsing(function ($file, $record) {
-                                // Tạo tên file unique
-                                $filename = uniqid() . '.webp';
-                                $path = 'catalog-attribute-group-icons/' . $filename;
-                                
-                                // Convert sang webp và lưu
-                                $manager = new ImageManager(new Driver());
-                                $image = $manager->read($file->getRealPath());
-                                $image->scale(width: 200); // Resize về 200px width
-                                $webp = $image->toWebp(quality: 85);
-                                
-                                Storage::disk('public')->put($path, $webp);
-                                
-                                return $path;
-                            })
-                            ->columnSpanFull(),
+
+                        // Ẩn nhưng vẫn gửi về server
+                        Hidden::make('code')
+                            ->dehydrated(true)
+                            ->required()
+                            ->default(fn (Get $get) => Str::slug((string) ($get('name') ?? ''), '_'))
+                            ->unique(ignoreRecord: true)
+                            ->dehydrateStateUsing(function ($state, Get $get) {
+                                $value = $state ?: Str::slug((string) ($get('name') ?? ''), '_');
+                                return $value ?: Str::random(8);
+                            }),
+
+                        Hidden::make('position')
+                            ->dehydrated(true)
+                            ->default(fn () => (int) (CatalogAttributeGroup::max('position') ?? 0) + 1),
+
+                        Hidden::make('icon_path')
+                            ->dehydrated(false),
                     ]),
             ]);
     }

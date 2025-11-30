@@ -22,6 +22,7 @@ class ProductSeeder extends Seeder
         Schema::disableForeignKeyConstraints();
         DB::table('product_term_assignments')->truncate();
         DB::table('products')->truncate();
+        DB::table('product_category_product')->truncate();
         Schema::enableForeignKeyConstraints();
 
         // Xóa ảnh cũ gắn với product để tránh order duplicate.
@@ -29,7 +30,7 @@ class ProductSeeder extends Seeder
             ->where('model_type', $context->modelClass('product'))
             ->delete();
 
-        $categories = DB::table('product_categories')->select('id', 'name', 'slug')->get();
+        $categories = DB::table('product_categories')->select('id', 'name', 'slug', 'type_id')->get();
         $types = DB::table('product_types')->select('id', 'name', 'slug')->get();
         $taxonomy = $this->loadTaxonomy();
 
@@ -38,11 +39,12 @@ class ProductSeeder extends Seeder
         $productRows = [];
         $imageRows = [];
         $termAssignments = [];
+        $categoryProductRows = [];
         $productId = 1;
 
         for ($i = 0; $i < $productCount; $i++, $productId++) {
             $category = $categories->random();
-            $type = $types->random();
+            $type = $types->firstWhere('id', $category->type_id) ?? $types->random();
 
             $isAccessory = $this->isAccessoryProduct($category->slug, $type->slug);
             $isWine = $this->isWineType($type->slug);
@@ -74,7 +76,6 @@ class ProductSeeder extends Seeder
                 'id' => $productId,
                 'name' => $name,
                 'slug' => $slug,
-                'product_category_id' => $category->id,
                 'type_id' => $type->id,
                 'description' => $faker->paragraphs(random_int(2, 4), true),
                 'price' => $price,
@@ -85,6 +86,13 @@ class ProductSeeder extends Seeder
                 'active' => random_int(1, 100) > 7,
                 'meta_title' => "{$name} | Wincellar",
                 'meta_description' => $faker->sentence(20),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+
+            $categoryProductRows[] = [
+                'product_id' => $productId,
+                'product_category_id' => $category->id,
                 'created_at' => $now,
                 'updated_at' => $now,
             ];
@@ -175,16 +183,16 @@ class ProductSeeder extends Seeder
             }
 
             if ($productId % self::CHUNK_SIZE === 0) {
-                $this->flush($productRows, $imageRows, $termAssignments);
+                $this->flush($productRows, $imageRows, $termAssignments, $categoryProductRows);
             }
         }
 
-        $this->flush($productRows, $imageRows, $termAssignments);
+        $this->flush($productRows, $imageRows, $termAssignments, $categoryProductRows);
 
         $faker->unique(true);
     }
 
-    private function flush(array &$products, array &$images, array &$assignments): void
+    private function flush(array &$products, array &$images, array &$assignments, array &$categoryProductRows): void
     {
         if (!empty($products)) {
             DB::table('products')->insert($products);
@@ -199,6 +207,11 @@ class ProductSeeder extends Seeder
         if (!empty($assignments)) {
             DB::table('product_term_assignments')->insert($assignments);
             $assignments = [];
+        }
+
+        if (!empty($categoryProductRows)) {
+            DB::table('product_category_product')->insert($categoryProductRows);
+            $categoryProductRows = [];
         }
     }
 
@@ -257,8 +270,8 @@ class ProductSeeder extends Seeder
 
     private function isAccessoryProduct(string $categorySlug, string $typeSlug): bool
     {
-        return Str::contains($categorySlug, ['phu-kien', 'ly', 'dung-cu'])
-            || Str::contains($typeSlug, ['ly', 'dung-cu', 'decanter']);
+        return Str::contains($categorySlug, ['phu-kien', 'phu_kien', 'ly', 'dung-cu', 'qua-tang', 'qua_tang'])
+            || Str::contains($typeSlug, ['phu-kien', 'phu_kien', 'ly', 'dung-cu', 'decanter']);
     }
 
     private function isWineType(string $typeSlug): bool

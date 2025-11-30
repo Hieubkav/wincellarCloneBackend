@@ -41,6 +41,7 @@ class Product extends Model
         'alcohol_percent',
         'volume_ml',
         'badges',
+        'extra_attrs',
         'active',
         'meta_title',
         'meta_description',
@@ -53,6 +54,7 @@ class Product extends Model
     {
         return [
             'badges' => 'array',
+            'extra_attrs' => 'array',
             'active' => 'bool',
             'price' => 'int',
             'original_price' => 'int',

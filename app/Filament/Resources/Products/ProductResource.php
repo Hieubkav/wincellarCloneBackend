@@ -9,6 +9,7 @@ use App\Filament\Resources\BaseResource;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ListProducts;
+use App\Models\CatalogAttributeGroup;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
@@ -16,22 +17,27 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Malzariey\FilamentLexicalEditor\LexicalEditor;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
+use Malzariey\FilamentLexicalEditor\LexicalEditor;
 
 class ProductResource extends BaseResource
 {
     protected static ?string $model = Product::class;
+
+    protected static ?array $attributeFieldKeys = null;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
 
@@ -55,25 +61,47 @@ class ProductResource extends BaseResource
                 Section::make('Thông tin chính')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('name')
-                            ->label('Tên sản phẩm')
+                        Select::make('type_id')
+                            ->label('Phân mục sản phẩm')
+                            ->options(fn () => ProductType::active()->orderBy('order')->orderBy('id')->pluck('name', 'id'))
+                            ->searchable()
+                            ->preload()
                             ->required()
-                            ->maxLength(255)
-                            ->copyable(),
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                $set('categories', []);
+                                static::clearAttributeFieldStates($set);
+                            }),
 
                         Select::make('categories')
                             ->label('Danh mục')
                             ->relationship('categories', 'name')
-                            ->options(ProductCategory::active()->pluck('name', 'id'))
+                            ->options(function (callable $get) {
+                                $typeId = $get('type_id');
+
+                                return ProductCategory::query()
+                                    ->when($typeId, fn ($query) => $query->where(function ($q) use ($typeId) {
+                                        $q->where('type_id', $typeId)
+                                            ->orWhereNull('type_id');
+                                    }))
+                                    ->where('active', true)
+                                    ->orderBy('order')
+                                    ->orderBy('id')
+                                    ->pluck('name', 'id');
+                            })
                             ->searchable()
                             ->multiple()
-                            ->preload(),
+                            ->preload()
+                            ->live()
+                            ->disabled(fn (callable $get) => !$get('type_id'))
+                            ->helperText('Chọn phân mục trước; danh mục sẽ lọc theo phân mục hoặc chưa gán phân mục.'),
 
-                        Select::make('type_id')
-                            ->label('Loại sản phẩm')
-                            ->options(ProductType::active()->pluck('name', 'id'))
-                            ->searchable()
-                            ->required(),
+                        TextInput::make('name')
+                            ->label('Tên sản phẩm')
+                            ->required()
+                            ->maxLength(255)
+                            ->copyable()
+                            ->columnSpanFull(),
 
                         LexicalEditor::make('description')
                             ->label('Mô tả')
@@ -83,44 +111,21 @@ class ProductResource extends BaseResource
                 Section::make('Giá & Thông số')
                     ->schema([
                         Grid::make()
-                            ->columns(2)
+                            ->columns(3)
                             ->schema([
                                 TextInput::make('price')
                                     ->label('Giá bán')
                                     ->numeric()
                                     ->minValue(0)
                                     ->default(0)
-                                    ->prefix('?'),
+                                    ->prefix('₫'),
 
                                 TextInput::make('original_price')
                                     ->label('Giá gốc')
                                     ->numeric()
                                     ->minValue(0)
                                     ->default(0)
-                                    ->prefix('?'),
-
-                                TagsInput::make('badges')
-                                    ->label('Nhãn hiển thị')
-                                    ->suggestions(['HOT', 'NEW', 'SALE', 'LIMITED', 'BEST_SELLER'])
-                                    ->columnSpanFull(),
-                            ]),
-
-                        Grid::make()
-                            ->columns(3)
-                            ->schema([
-                                TextInput::make('alcohol_percent')
-                                    ->label('Nồng độ cồn (%)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->maxValue(100)
-                                    ->step(0.1)
-                                    ->suffix('%'),
-
-                                TextInput::make('volume_ml')
-                                    ->label('Dung tích (ml)')
-                                    ->numeric()
-                                    ->minValue(0)
-                                    ->suffix('ml'),
+                                    ->prefix('₫'),
 
                                 Toggle::make('active')
                                     ->label('Hoạt động')
@@ -128,36 +133,123 @@ class ProductResource extends BaseResource
                             ]),
                     ]),
 
+                Section::make('Hình ảnh')
+                    ->columns(1)
+                    ->schema([
+                        FileUpload::make('product_images')
+                            ->label('Ảnh sản phẩm')
+                            ->image()
+                            ->multiple()
+                            ->required(fn (?string $operation): bool => $operation === 'create')
+                            ->hidden(fn (?string $operation): bool => $operation === 'edit')
+                            ->disk('public')
+                            ->directory('products')
+                            ->visibility('public')
+                            ->maxFiles(10)
+                            ->imageEditor()
+                            ->helperText('Tải lên ít nhất 1 ảnh; thứ tự ảnh dựa trên thứ tự chọn.'),
+                    ]),
+
                 Section::make('Thuộc tính')
                     ->columns(3)
-                    ->schema(static::getAttributeFields()),
+                    ->schema(fn (Get $get) => static::getAttributeFields($get('type_id'))),
             ]);
     }
 
-    protected static function getAttributeFields(): array
+    /**
+     * @return array<int, \Filament\Forms\Components\Component>
+     */
+    protected static function getAttributeFields(?int $typeId): array
     {
-        $groups = \App\Models\CatalogAttributeGroup::with(['terms' => function ($query) {
-            $query->where('is_active', true)->orderBy('position');
-        }])->orderBy('position')->get();
+        $groups = static::attributeGroupsForType($typeId);
+
+        if (!$typeId) {
+            return [
+                Placeholder::make('attributes_select_type')
+                    ->content('Chọn phân mục để hiển thị nhóm thuộc tính tương ứng.')
+                    ->columnSpanFull(),
+            ];
+        }
+
+        if ($groups->isEmpty()) {
+            return [
+                Placeholder::make('attributes_empty')
+                    ->label('Thuộc tính')
+                    ->content('Chưa cấu hình nhóm thuộc tính cho phân mục này. Vào Product Type → Nhóm thuộc tính để gán.')
+                    ->columnSpanFull(),
+            ];
+        }
 
         $fields = [];
         foreach ($groups as $group) {
+            $fieldName = "attributes_{$group->id}";
+
+            // Nhập tay: hiển thị TextInput (text/number)
+            if ($group->filter_type === 'nhap_tay') {
+                $input = TextInput::make($fieldName)
+                    ->label($group->name);
+
+                if ($group->input_type === 'number') {
+                    $input->numeric()->step('any');
+                } else {
+                    $input->maxLength(255);
+                }
+
+                $fields[] = $input;
+                continue;
+            }
+
             $isMultiple = $group->filter_type === 'chon_nhieu';
-            
-            $field = Select::make("attributes_{$group->id}")
+
+            $field = Select::make($fieldName)
                 ->label($group->name)
                 ->options($group->terms->pluck('name', 'id'))
                 ->searchable()
-                ->preload();
-            
+                ->preload()
+                ->hidden(fn () => $group->terms->isEmpty());
+
             if ($isMultiple) {
                 $field->multiple();
             }
-            
+
             $fields[] = $field;
         }
 
         return $fields;
+    }
+
+    public static function attributeGroupsForType(?int $typeId): Collection
+    {
+        if ($typeId) {
+            $type = ProductType::query()
+                ->with(['attributeGroups' => function ($query) {
+                    $query->with(['terms' => fn ($q) => $q->where('is_active', true)->orderBy('position')])
+                        ->orderByPivot('position')
+                        ->orderBy('position');
+                }])
+                ->find($typeId);
+
+            return $type?->attributeGroups ?? collect();
+        }
+
+        return CatalogAttributeGroup::query()
+            ->with(['terms' => fn ($q) => $q->where('is_active', true)->orderBy('position')])
+            ->orderBy('position')
+            ->get();
+    }
+
+    protected static function clearAttributeFieldStates(callable $set): void
+    {
+        if (static::$attributeFieldKeys === null) {
+            static::$attributeFieldKeys = CatalogAttributeGroup::query()
+                ->pluck('id')
+                ->map(fn (int $id) => "attributes_{$id}")
+                ->all();
+        }
+
+        foreach (static::$attributeFieldKeys as $field) {
+            $set($field, null);
+        }
     }
 
     public static function table(Table $table): Table
@@ -182,7 +274,7 @@ class ProductResource extends BaseResource
                     ->searchable()
                     ->sortable()
                     ->limit(40)
-                    ->tooltip(fn($record) => $record->name),
+                    ->tooltip(fn ($record) => $record->name),
                 Tables\Columns\TextColumn::make('categories.name')
                     ->label('Danh mục')
                     ->badge()
@@ -190,7 +282,7 @@ class ProductResource extends BaseResource
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('type.name')
-                    ->label('Loại sản phẩm')
+                    ->label('Phân mục')
                     ->badge()
                     ->searchable()
                     ->sortable()
@@ -208,7 +300,7 @@ class ProductResource extends BaseResource
                             return [];
                         }
 
-                        $grouped = $record->terms->groupBy(function($term) {
+                        $grouped = $record->terms->groupBy(function ($term) {
                             return $term->group ? $term->group->name : 'Khác';
                         });
 
@@ -229,16 +321,6 @@ class ProductResource extends BaseResource
                 Tables\Columns\TextColumn::make('original_price')
                     ->label('Giá gốc')
                     ->money('VND')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('alcohol_percent')
-                    ->label('Nồng độ cồn')
-                    ->suffix('%')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('volume_ml')
-                    ->label('Dung tích')
-                    ->suffix(' ml')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\IconColumn::make('active')

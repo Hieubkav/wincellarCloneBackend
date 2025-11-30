@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\CatalogAttributeGroups\Tables;
 
-
-use App\Filament\Resources\BaseResource;use Filament\Actions\BulkActionGroup;
+use App\Filament\Resources\BaseResource;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -21,12 +21,6 @@ class CatalogAttributeGroupsTable
             ->defaultSort('position')
             ->columns([
                 BaseResource::getRowNumberColumn(),
-                TextColumn::make('code')
-                    ->label('Code')
-                    ->searchable()
-                    ->copyable()
-                    ->badge()
-                    ->extraAttributes(['class' => 'whitespace-nowrap']),
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()
@@ -35,10 +29,22 @@ class CatalogAttributeGroupsTable
                     ->label('Kiểu lọc')
                     ->sortable()
                     ->badge()
+                    ->formatStateUsing(function (?string $state): ?string {
+                        return match($state) {
+                            'chon_don' => 'Chọn đơn',
+                            'chon_nhieu' => 'Chọn nhiều',
+                            'nhap_tay' => 'Nhập tay',
+                            default => $state,
+                        };
+                    }),
+                TextColumn::make('input_type')
+                    ->label('Kiểu nhập')
+                    ->sortable()
+                    ->badge()
                     ->formatStateUsing(fn (?string $state): ?string => match($state) {
-                        'chon_don' => 'Chọn đơn',
-                        'chon_nhieu' => 'Chọn nhiều',
-                        default => $state,
+                        'text' => 'Text',
+                        'number' => 'Số',
+                        default => null,
                     }),
                 IconColumn::make('is_filterable')
                     ->label('Cho phép lọc')
@@ -48,10 +54,6 @@ class CatalogAttributeGroupsTable
                     ->counts('terms')
                     ->badge()
                     ->color('gray')
-                    ->sortable(),
-                TextColumn::make('position')
-                    ->label('Order')
-                    ->numeric()
                     ->sortable(),
                 TextColumn::make('updated_at')
                     ->label('Updated')
@@ -69,6 +71,7 @@ class CatalogAttributeGroupsTable
                     ->options([
                         'chon_don' => 'Chọn đơn',
                         'chon_nhieu' => 'Chọn nhiều',
+                        'nhap_tay' => 'Nhập tay',
                     ]),
                 TernaryFilter::make('is_filterable')
                     ->label('Cho phép lọc'),

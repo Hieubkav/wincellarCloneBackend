@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProductCategory extends Model
@@ -16,6 +17,7 @@ class ProductCategory extends Model
     protected $fillable = [
         'name',
         'slug',
+        'type_id',
         'order',
         'active',
     ];
@@ -35,6 +37,11 @@ class ProductCategory extends Model
     {
         return $this->belongsToMany(Product::class, 'product_category_product')
             ->withTimestamps();
+    }
+
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(ProductType::class, 'type_id');
     }
 
     public function scopeActive($query)

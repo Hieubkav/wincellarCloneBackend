@@ -58,9 +58,14 @@ class ProductsRelationManager extends RelationManager
                 TextColumn::make('pivot.position')
                     ->label('Thứ tự')
                     ->numeric()
-                    ->sortable(),
+                    ->sortable(
+                        query: fn (Builder $query, string $direction): Builder => $query->orderBy(
+                            'product_term_assignments.position',
+                            $direction,
+                        ),
+                    ),
             ])
-            ->defaultSort('pivot.position', 'asc');
+            ->defaultSort('product_term_assignments.position', 'asc');
     }
 
     protected function getTableHeaderActions(): array

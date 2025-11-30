@@ -29,6 +29,7 @@ class CatalogTermForm
                             ->label('Nhóm thuộc tính')
                             ->required()
                             ->options(fn (): array => CatalogAttributeGroup::query()
+                                ->whereIn('filter_type', ['chon_don', 'chon_nhieu'])
                                 ->orderBy('position')
                                 ->pluck('name', 'id')
                                 ->all())

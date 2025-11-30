@@ -31,11 +31,34 @@ class CreateProduct extends CreateRecord
     {
         $product = $this->record;
         $data = $this->data;
+        $groups = ProductResource::attributeGroupsForType($product->type_id)->keyBy('id');
+        $extraAttrs = [];
         
-        // Lưu term assignments
+        // Lưu term assignments hoặc extra attributes
         $position = 0;
         foreach ($data as $key => $value) {
             if (!str_starts_with($key, 'attributes_')) {
+                continue;
+            }
+            
+            $groupId = (int) str_replace('attributes_', '', $key);
+            $group = $groups->get($groupId);
+            if (!$group) {
+                continue;
+            }
+
+            if ($group->filter_type === 'nhap_tay') {
+                $cleanValue = is_string($value) ? trim($value) : $value;
+                if ($cleanValue === '' || $cleanValue === null) {
+                    continue;
+                }
+
+                $extraAttrs[$group->code] = [
+                    'label' => $group->name,
+                    'value' => $group->input_type === 'number' ? (float) $cleanValue : $cleanValue,
+                    'type' => $group->input_type ?? 'text',
+                ];
+
                 continue;
             }
             
@@ -51,6 +74,12 @@ class CreateProduct extends CreateRecord
                     'position' => $position++,
                 ]);
             }
+        }
+
+        // Lưu extra attributes
+        if (!empty($extraAttrs)) {
+            $product->extra_attrs = $extraAttrs;
+            $product->save();
         }
 
         // Lưu images

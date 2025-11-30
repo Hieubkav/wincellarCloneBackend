@@ -5,65 +5,69 @@ namespace App\Http\Controllers\Api\V1\Products;
 use App\Http\Controllers\Controller;
 use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
-use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 class ProductFilterController extends Controller
 {
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        // Cache filter options for 1 hour since they don't change frequently
-        // Cache key includes catalog version to auto-invalidate on changes
-        $cacheKey = 'product_filter_options_v3';
-        $cacheTtl = 3600; // 1 hour (increased from 10 min for better performance)
+        $typeId = $request->integer('type_id');
+        $typeSlug = $request->input('type_slug');
 
-        $data = cache()->remember($cacheKey, $cacheTtl, function () {
-            // Get categories and types (built-in filters)
-            $categories = ProductCategory::query()
+        $type = null;
+        if ($typeId) {
+            $type = ProductType::query()->whereKey($typeId)->first();
+        }
+        if (!$type && $typeSlug) {
+            $type = ProductType::query()->where('slug', $typeSlug)->first();
+        }
+
+        $cacheTtl = 3600;
+        $cacheKey = 'product_filter_options_v4:' . ($type?->id ?? 'all');
+
+        $data = cache()->remember($cacheKey, $cacheTtl, function () use ($type) {
+            // Categories filtered by type (or all if none selected)
+            $categoriesQuery = ProductCategory::query()
                 ->where('active', true)
                 ->orderBy('order')
-                ->orderBy('id')
-                ->get(['id', 'name', 'slug']);
+                ->orderBy('id');
 
+            if ($type) {
+                $categoriesQuery->where(function ($query) use ($type) {
+                    $query->where('type_id', $type->id)
+                        ->orWhereNull('type_id');
+                });
+            }
+
+            $categories = $categoriesQuery->get(['id', 'name', 'slug', 'type_id']);
+
+            // All types (tabs/selector)
             $types = ProductType::query()
                 ->where('active', true)
                 ->orderBy('order')
                 ->orderBy('id')
                 ->get(['id', 'name', 'slug']);
 
-            // Get dynamic attribute groups (filterable only)
-            $attributeGroups = CatalogAttributeGroup::query()
-                ->where('is_filterable', true)
-                ->orderBy('position')
-                ->get(['id', 'code', 'name', 'filter_type', 'display_config']);
+            // Attribute groups by type (filterable only)
+            $attributeGroups = $type
+                ? $type->attributeGroups()
+                    ->where('is_filterable', true)
+                    ->with(['terms' => fn ($q) => $q->active()->orderBy('position')->orderBy('id')])
+                    ->orderByPivot('position')
+                    ->get(['catalog_attribute_groups.id', 'code', 'name', 'filter_type', 'input_type', 'display_config'])
+                : CatalogAttributeGroup::query()
+                    ->where('is_filterable', true)
+                    ->with(['terms' => fn ($q) => $q->active()->orderBy('position')->orderBy('id')])
+                    ->orderBy('position')
+                    ->get(['id', 'code', 'name', 'filter_type', 'input_type', 'display_config']);
 
-            // Build dynamic filters based on attribute groups
-            $dynamicFilters = [];
-            foreach ($attributeGroups as $group) {
-                $terms = $this->fetchTermsByGroup($group->code);
-                
-                // Only include if there are terms
-                if ($terms->count() > 0) {
-                    $displayConfig = $group->display_config;
-                    if (is_string($displayConfig)) {
-                        $displayConfig = json_decode($displayConfig, true) ?? [];
-                    }
-                    
-                    $dynamicFilters[] = [
-                        'code' => $group->code,
-                        'name' => $group->name,
-                        'filter_type' => $group->filter_type,
-                        'display_config' => $displayConfig,
-                        'options' => $terms,
-                    ];
-                }
-            }
+            $dynamicFilters = static::buildDynamicFilters($attributeGroups);
 
-            // Get price and alcohol ranges in SINGLE query (optimized)
+            // Price & alcohol ranges (kept global for backward compatibility)
             $ranges = \DB::table('products')
                 ->where('active', true)
                 ->selectRaw('
@@ -74,33 +78,31 @@ class ProductFilterController extends Controller
                 ')
                 ->first();
 
-            $priceMin = $ranges->price_min ?? 0;
-            $priceMax = $ranges->price_max ?? 0;
-            $alcoholMin = $ranges->alcohol_min ?? 0;
-            $alcoholMax = $ranges->alcohol_max ?? 0;
-
             return [
-                // Built-in filters (always present)
+                'type' => $type ? [
+                    'id' => $type->id,
+                    'name' => $type->name,
+                    'slug' => $type->slug,
+                ] : null,
                 'categories' => $categories->map(fn ($category) => [
                     'id' => $category->id,
                     'name' => $category->name,
                     'slug' => $category->slug,
+                    'type_id' => $category->type_id,
                 ])->values(),
-                'types' => $types->map(fn ($type) => [
-                    'id' => $type->id,
-                    'name' => $type->name,
-                    'slug' => $type->slug,
+                'types' => $types->map(fn ($t) => [
+                    'id' => $t->id,
+                    'name' => $t->name,
+                    'slug' => $t->slug,
                 ])->values(),
                 'price' => [
-                    'min' => (int) $priceMin,
-                    'max' => (int) $priceMax,
+                    'min' => (int) ($ranges->price_min ?? 0),
+                    'max' => (int) ($ranges->price_max ?? 0),
                 ],
                 'alcohol' => [
-                    'min' => (float) $alcoholMin,
-                    'max' => (float) $alcoholMax,
+                    'min' => (float) ($ranges->alcohol_min ?? 0),
+                    'max' => (float) ($ranges->alcohol_max ?? 0),
                 ],
-                
-                // Dynamic filters (based on catalog_attribute_groups)
                 'attribute_filters' => $dynamicFilters,
             ];
         });
@@ -109,21 +111,39 @@ class ProductFilterController extends Controller
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, array{id:int,name:string,slug:string}>
+     * @param \Illuminate\Support\Collection<int, CatalogAttributeGroup> $attributeGroups
+     * @return array<int, array<string, mixed>>
      */
-    private function fetchTermsByGroup(string $code): Collection
+    protected static function buildDynamicFilters(Collection $attributeGroups): array
     {
-        return CatalogTerm::query()
-            ->active()
-            ->whereHas('group', fn ($query) => $query->where('code', $code))
-            ->orderBy('position')
-            ->orderBy('id')
-            ->get(['id', 'name', 'slug'])
-            ->map(fn (CatalogTerm $term) => [
+        $filters = [];
+
+        foreach ($attributeGroups as $group) {
+            $terms = $group->terms->map(fn (CatalogTerm $term) => [
                 'id' => $term->id,
                 'name' => $term->name,
                 'slug' => $term->slug,
-            ])
-            ->values();
+            ])->values();
+
+            if ($terms->isEmpty()) {
+                continue;
+            }
+
+            $displayConfig = $group->display_config;
+            if (is_string($displayConfig)) {
+                $displayConfig = json_decode($displayConfig, true) ?? [];
+            }
+
+            $filters[] = [
+                'code' => $group->code,
+                'name' => $group->name,
+                'filter_type' => $group->filter_type,
+                'input_type' => $group->input_type,
+                'display_config' => $displayConfig,
+                'options' => $terms,
+            ];
+        }
+
+        return $filters;
     }
 }

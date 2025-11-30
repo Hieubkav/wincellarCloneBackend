@@ -27,14 +27,21 @@ class EditProduct extends EditRecord
     {
         // Load attributes data
         $product = $this->record;
-        $groups = \App\Models\CatalogAttributeGroup::all();
-        
+        $groups = ProductResource::attributeGroupsForType($product->type_id);
+        $extraAttrs = $product->extra_attrs ?? [];
+
         foreach ($groups as $group) {
+            // Nhập tay -> lấy giá trị từ extra_attrs
+            if ($group->filter_type === 'nhap_tay') {
+                $data["attributes_{$group->id}"] = $extraAttrs[$group->code]['value'] ?? null;
+                continue;
+            }
+
             $termIds = $product->termAssignments()
                 ->whereHas('term', fn($q) => $q->where('group_id', $group->id))
                 ->pluck('term_id')
                 ->toArray();
-            
+
             if ($group->filter_type === 'chon_nhieu') {
                 $data["attributes_{$group->id}"] = $termIds;
             } else {
@@ -61,6 +68,8 @@ class EditProduct extends EditRecord
     {
         $product = $this->record;
         $data = $this->data;
+        $groups = ProductResource::attributeGroupsForType($product->type_id)->keyBy('id');
+        $extraAttrs = $product->extra_attrs ?? [];
         
         // Xóa tất cả assignments cũ
         $product->termAssignments()->delete();
@@ -69,6 +78,30 @@ class EditProduct extends EditRecord
         $position = 0;
         foreach ($data as $key => $value) {
             if (!str_starts_with($key, 'attributes_')) {
+                continue;
+            }
+
+            $groupId = (int) str_replace('attributes_', '', $key);
+            $group = $groups->get($groupId);
+            if (!$group) {
+                continue;
+            }
+
+            // Nhập tay -> lưu vào extra_attrs
+            if ($group->filter_type === 'nhap_tay') {
+                $cleanValue = is_string($value) ? trim($value) : $value;
+
+                if ($cleanValue === '' || $cleanValue === null) {
+                    unset($extraAttrs[$group->code]);
+                    continue;
+                }
+
+                $extraAttrs[$group->code] = [
+                    'label' => $group->name,
+                    'value' => $group->input_type === 'number' ? (float) $cleanValue : $cleanValue,
+                    'type' => $group->input_type ?? 'text',
+                ];
+
                 continue;
             }
             
@@ -85,5 +118,9 @@ class EditProduct extends EditRecord
                 ]);
             }
         }
+
+        // Cập nhật extra attributes
+        $product->extra_attrs = $extraAttrs;
+        $product->save();
     }
 }

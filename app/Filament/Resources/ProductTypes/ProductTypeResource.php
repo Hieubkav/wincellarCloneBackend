@@ -5,9 +5,12 @@ namespace App\Filament\Resources\ProductTypes;
 use App\Filament\Resources\ProductTypes\Pages\CreateProductType;
 use App\Filament\Resources\ProductTypes\Pages\EditProductType;
 use App\Filament\Resources\ProductTypes\Pages\ListProductTypes;
+use App\Filament\Resources\ProductTypes\RelationManagers\AttributeGroupsRelationManager;
+use App\Filament\Resources\ProductTypes\RelationManagers\CategoriesRelationManager;
 use App\Filament\Resources\ProductTypes\Schemas\ProductTypeForm;
 use App\Filament\Resources\ProductTypes\Tables\ProductTypesTable;
 use App\Models\ProductType;
+use Illuminate\Database\Eloquent\Model;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -25,13 +28,13 @@ class ProductTypeResource extends Resource
 
     protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
 
-    protected static ?string $navigationLabel = 'Loại sản phẩm';
+    protected static ?string $navigationLabel = 'Phân mục';
 
     protected static ?int $navigationSort = 30;
 
-    protected static ?string $modelLabel = 'Loại sản phẩm';
+    protected static ?string $modelLabel = 'Phân mục';
 
-    protected static ?string $pluralModelLabel = 'Các loại sản phẩm';
+    protected static ?string $pluralModelLabel = 'Các phân mục';
 
     public static function form(Schema $schema): Schema
     {
@@ -60,7 +63,8 @@ class ProductTypeResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            AttributeGroupsRelationManager::class,
+            CategoriesRelationManager::class,
         ];
     }
 
@@ -72,5 +76,16 @@ class ProductTypeResource extends Resource
             'edit' => EditProductType::route('/{record}/edit'),
         ];
     }
-}
 
+    /**
+     * Chặn xoá nếu còn sản phẩm liên kết.
+     */
+    public static function canDelete(Model $record): bool
+    {
+        if ($record instanceof ProductType) {
+            return $record->products()->count() === 0;
+        }
+
+        return parent::canDelete($record);
+    }
+}

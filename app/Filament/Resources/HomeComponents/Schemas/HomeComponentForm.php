@@ -270,6 +270,7 @@ class HomeComponentForm
                                     
                                     $groups = \App\Models\CatalogAttributeGroup::query()
                                         ->where('is_filterable', true)
+                                        ->whereIn('filter_type', ['chon_don', 'chon_nhieu'])
                                         ->orderBy('position')
                                         ->get();
                                     
@@ -663,4 +664,3 @@ class HomeComponentForm
         ];
     }
 }
-

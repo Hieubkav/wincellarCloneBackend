@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CatalogAttributeGroup extends Model
@@ -17,6 +18,7 @@ class CatalogAttributeGroup extends Model
         'code',
         'name',
         'filter_type',
+        'input_type',
         'is_filterable',
         'position',
         'display_config',
@@ -45,5 +47,12 @@ class CatalogAttributeGroup extends Model
     {
         return $this->hasMany(MenuBlock::class, 'attribute_group_id')
             ->orderBy('order');
+    }
+
+    public function productTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductType::class, 'catalog_attribute_group_product_type', 'group_id', 'type_id')
+            ->withPivot('position')
+            ->orderByPivot('position');
     }
 }

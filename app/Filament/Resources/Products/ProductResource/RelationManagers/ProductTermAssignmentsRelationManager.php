@@ -22,7 +22,6 @@ class ProductTermAssignmentsRelationManager extends RelationManager
     protected static ?string $modelLabel = 'thuộc tính';
 
 
-
     public function table(Table $table): Table
     {
         return $table
@@ -54,6 +53,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                         ->label('Nhóm thuộc tính')
                         ->options(function () {
                             return \App\Models\CatalogAttributeGroup::orderBy('position')
+                                ->whereIn('filter_type', ['chon_don', 'chon_nhieu'])
                                 ->get()
                                 ->mapWithKeys(function ($group) {
                                     $type = $group->filter_type === 'chon_nhieu' ? '(Chọn nhiều)' : '(Chọn đơn)';
@@ -61,7 +61,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                                 });
                         })
                         ->required()
-                        ->reactive()
+                        ->live()
                         ->afterStateUpdated(fn ($state, callable $set) => $set('term_id', null)),
                     
                     Select::make('term_id')
@@ -82,7 +82,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                         ->hidden(fn (callable $get) => !$get('attribute_group_id')),
                 ])
                 ->mutateFormDataUsing(function (array $data): array {
-                    // Bỏ attribute_group_id khỏi data vì không lưu vào database
+                    // Bỏ attribute_group_id khỏi data và không lưu vào database
                     unset($data['attribute_group_id']);
                     return $data;
                 })
@@ -116,6 +116,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                         ->label('Nhóm thuộc tính')
                         ->options(function () {
                             return \App\Models\CatalogAttributeGroup::orderBy('position')
+                                ->whereIn('filter_type', ['chon_don', 'chon_nhieu'])
                                 ->get()
                                 ->mapWithKeys(function ($group) {
                                     $type = $group->filter_type === 'chon_nhieu' ? '(Chọn nhiều)' : '(Chọn đơn)';
@@ -123,7 +124,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                                 });
                         })
                         ->required()
-                        ->reactive()
+                        ->live()
                         ->afterStateUpdated(fn ($state, callable $set) => $set('term_id', null))
                         ->afterStateHydrated(function (Select $component, $state, $record) {
                             if ($record && $record->term) {
@@ -149,7 +150,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                         ->hidden(fn (callable $get) => !$get('attribute_group_id')),
                 ])
                 ->mutateFormDataUsing(function (array $data): array {
-                    // Bỏ attribute_group_id khỏi data vì không lưu vào database
+                    // Bỏ attribute_group_id khỏi data và không lưu vào database
                     unset($data['attribute_group_id']);
                     return $data;
                 })
