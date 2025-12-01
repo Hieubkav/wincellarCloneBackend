@@ -17,6 +17,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -26,6 +27,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Filament\Support\Enums\GridDirection;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -133,21 +135,20 @@ class ProductResource extends BaseResource
                             ]),
                     ]),
 
-                Section::make('Hình ảnh')
-                    ->columns(1)
+                Section::make('Hinh anh')
+                    ->columns(2)
                     ->schema([
                         FileUpload::make('product_images')
-                            ->label('Ảnh sản phẩm')
+                            ->label('Anh san pham (tai len moi)')
                             ->image()
                             ->multiple()
-                            ->required(fn (?string $operation): bool => $operation === 'create')
                             ->hidden(fn (?string $operation): bool => $operation === 'edit')
                             ->disk('public')
                             ->directory('products')
                             ->visibility('public')
                             ->maxFiles(10)
                             ->imageEditor()
-                            ->helperText('Tải lên ít nhất 1 ảnh; thứ tự ảnh dựa trên thứ tự chọn.'),
+                            ->helperText('Co the bo trong khi tao; tai len toi da 10 anh neu can.'),
                     ]),
 
                 Section::make('Thuộc tính')
@@ -157,10 +158,14 @@ class ProductResource extends BaseResource
     }
 
     /**
+     * @param int|string|null $typeId
      * @return array<int, \Filament\Forms\Components\Component>
      */
-    protected static function getAttributeFields(?int $typeId): array
+    protected static function getAttributeFields(int|string|null $typeId): array
     {
+        // Cast state to int because Filament Select usually returns string.
+        $typeId = ($typeId !== null && $typeId !== '') ? (int) $typeId : null;
+
         $groups = static::attributeGroupsForType($typeId);
 
         if (!$typeId) {
@@ -396,3 +401,4 @@ class ProductResource extends BaseResource
         return $frontendBaseUrl . '/san-pham/' . $product->slug;
     }
 }
+

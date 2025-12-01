@@ -28,6 +28,11 @@ Route::get('/api-docs', function () {
     return view('api-documentation');
 })->name('api-docs');
 
+// Admin API Routes
+Route::prefix('admin/api')->group(function () {
+    Route::get('/library-images', [\App\Http\Controllers\Admin\AdminApiController::class, 'getLibraryImages']);
+});
+
 // Run storage link - for production deployment
 Route::get('/run-storage-link', function () {
     Artisan::call('storage:link');

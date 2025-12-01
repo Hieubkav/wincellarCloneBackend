@@ -14,16 +14,19 @@ class CreateProduct extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Lưu product_images trước khi loại bỏ khỏi data
+        // Luu product_images truoc khi loai bo khoi data
         $this->productImages = $data['product_images'] ?? [];
-        
-        // Lọc bỏ các attributes fields và product_images khỏi data chính
+
+        // Loc bo cac attributes fields va product_images khoi data chinh
         foreach ($data as $key => $value) {
-            if (str_starts_with($key, 'attributes_') || $key === 'product_images') {
+            if (
+                str_starts_with($key, 'attributes_')
+                || $key === 'product_images'
+            ) {
                 unset($data[$key]);
             }
         }
-        
+
         return $data;
     }
 
@@ -33,14 +36,14 @@ class CreateProduct extends CreateRecord
         $data = $this->data;
         $groups = ProductResource::attributeGroupsForType($product->type_id)->keyBy('id');
         $extraAttrs = [];
-        
-        // Lưu term assignments hoặc extra attributes
+
+        // Luu term assignments hoac extra attributes
         $position = 0;
         foreach ($data as $key => $value) {
             if (!str_starts_with($key, 'attributes_')) {
                 continue;
             }
-            
+
             $groupId = (int) str_replace('attributes_', '', $key);
             $group = $groups->get($groupId);
             if (!$group) {
@@ -61,13 +64,13 @@ class CreateProduct extends CreateRecord
 
                 continue;
             }
-            
+
             if (empty($value)) {
                 continue;
             }
-            
+
             $termIds = is_array($value) ? $value : [$value];
-            
+
             foreach ($termIds as $termId) {
                 $product->termAssignments()->create([
                     'term_id' => $termId,
@@ -76,15 +79,16 @@ class CreateProduct extends CreateRecord
             }
         }
 
-        // Lưu extra attributes
+        // Luu extra attributes
         if (!empty($extraAttrs)) {
             $product->extra_attrs = $extraAttrs;
             $product->save();
         }
 
-        // Lưu images
+        // Luu images tu file upload
+        $order = 0;
+
         if (!empty($this->productImages)) {
-            $order = 0;
             foreach ($this->productImages as $filePath) {
                 Image::create([
                     'file_path' => $filePath,
