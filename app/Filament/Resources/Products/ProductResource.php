@@ -29,6 +29,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\GridDirection;
 use Filament\Support\Icons\Heroicon;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -117,17 +118,27 @@ class ProductResource extends BaseResource
                             ->schema([
                                 TextInput::make('price')
                                     ->label('Giá bán')
+                                    ->type('text')
+                                    ->prefix('₫')
+                                    ->formatStateUsing(fn ($state) => $state !== null ? number_format((int) $state, 0, '.', ',') : null)
+                                    ->mask(RawJs::make('$money($input, ".", ",", 0)'))
+                                    ->stripCharacters([',', '.'])
                                     ->numeric()
                                     ->minValue(0)
-                                    ->default(0)
-                                    ->prefix('₫'),
+                                    ->dehydrateStateUsing(fn ($state) => $state === null || $state === '' ? null : (int) $state)
+                                    ->placeholder('Nhập giá bán'),
 
                                 TextInput::make('original_price')
                                     ->label('Giá gốc')
+                                    ->type('text')
+                                    ->prefix('₫')
+                                    ->formatStateUsing(fn ($state) => $state !== null ? number_format((int) $state, 0, '.', ',') : null)
+                                    ->mask(RawJs::make('$money($input, ".", ",", 0)'))
+                                    ->stripCharacters([',', '.'])
                                     ->numeric()
                                     ->minValue(0)
-                                    ->default(0)
-                                    ->prefix('₫'),
+                                    ->dehydrateStateUsing(fn ($state) => $state === null || $state === '' ? null : (int) $state)
+                                    ->placeholder('Nhập giá gốc'),
 
                                 Toggle::make('active')
                                     ->label('Hoạt động')
