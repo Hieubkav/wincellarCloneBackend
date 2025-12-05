@@ -54,6 +54,8 @@ class EditProduct extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
+        ProductResource::validatePricing($data);
+
         // Lọc bỏ các attributes fields khỏi data chính
         foreach ($data as $key => $value) {
             if (str_starts_with($key, 'attributes_')) {

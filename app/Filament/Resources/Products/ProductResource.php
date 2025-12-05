@@ -14,6 +14,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
@@ -31,6 +32,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Malzariey\FilamentLexicalEditor\LexicalEditor;
 class ProductResource extends BaseResource
 {
@@ -79,6 +81,11 @@ class ProductResource extends BaseResource
                             })
                             ->searchable()
                             ->multiple()
+                            ->default([])
+                            ->afterStateHydrated(function ($state, callable $set) {
+                                // Đảm bảo Select multiple luôn là mảng, tránh foreach() trên null của Filament.
+                                $set('categories', $state ?? []);
+                            })
                             ->preload()
                             ->live()
                             ->disabled(fn (callable $get) => !$get('type_id'))
@@ -103,9 +110,15 @@ class ProductResource extends BaseResource
                                     ->label('Giá bán')
                                     ->type('text')
                                     ->prefix('₫')
+                                    ->extraInputAttributes([
+                                        'inputmode' => 'numeric',
+                                        'x-on:keypress' => 'if (!/[0-9]/.test($event.key)) $event.preventDefault()',
+                                        'x-on:paste' => '$event.preventDefault(); let nums = $event.clipboardData.getData("text").replace(/[^0-9]/g, ""); document.execCommand("insertText", false, nums)',
+                                    ])
                                     ->formatStateUsing(fn ($state) => $state !== null ? number_format((int) $state, 0, '.', ',') : null)
                                     ->mask(RawJs::make('$money($input, ".", ",", 0)'))
                                     ->stripCharacters([',', '.'])
+                                    ->rules(['nullable', 'integer'])
                                     ->numeric()
                                     ->minValue(0)
                                     ->dehydrateStateUsing(fn ($state) => $state === null || $state === '' ? null : (int) $state)
@@ -114,9 +127,15 @@ class ProductResource extends BaseResource
                                     ->label('Giá gốc')
                                     ->type('text')
                                     ->prefix('₫')
+                                    ->extraInputAttributes([
+                                        'inputmode' => 'numeric',
+                                        'x-on:keypress' => 'if (!/[0-9]/.test($event.key)) $event.preventDefault()',
+                                        'x-on:paste' => '$event.preventDefault(); let nums = $event.clipboardData.getData("text").replace(/[^0-9]/g, ""); document.execCommand("insertText", false, nums)',
+                                    ])
                                     ->formatStateUsing(fn ($state) => $state !== null ? number_format((int) $state, 0, '.', ',') : null)
                                     ->mask(RawJs::make('$money($input, ".", ",", 0)'))
                                     ->stripCharacters([',', '.'])
+                                    ->rules(['nullable', 'integer'])
                                     ->numeric()
                                     ->minValue(0)
                                     ->dehydrateStateUsing(fn ($state) => $state === null || $state === '' ? null : (int) $state)
@@ -145,6 +164,31 @@ class ProductResource extends BaseResource
                     ->columns(3)
                     ->schema(fn (Get $get) => static::getAttributeFields($get('type_id'))),
             ]);
+    }
+
+    /**
+     * Đảm bảo giá bán < giá gốc khi cả hai được nhập; vi phạm thì bắn noti và chặn lưu.
+     */
+    public static function validatePricing(array $data): void
+    {
+        $price = $data['price'] ?? null;
+        $originalPrice = $data['original_price'] ?? null;
+
+        $price = $price === '' ? null : (int) $price;
+        $originalPrice = $originalPrice === '' ? null : (int) $originalPrice;
+
+        if ($price !== null && $originalPrice !== null && $price >= $originalPrice) {
+            Notification::make()
+                ->title('Giá bán phải nhỏ hơn giá gốc')
+                ->body('Vui lòng điều chỉnh Giá bán hoặc Giá gốc trước khi lưu.')
+                ->danger()
+                ->send();
+
+            throw ValidationException::withMessages([
+                'price' => 'Giá bán phải nhỏ hơn giá gốc.',
+                'original_price' => 'Giá gốc phải lớn hơn giá bán.',
+            ]);
+        }
     }
     /**
      * @param int|string|null $typeId
@@ -193,7 +237,12 @@ class ProductResource extends BaseResource
                 ->preload()
                 ->hidden(fn () => $group->terms->isEmpty());
             if ($isMultiple) {
-                $field->multiple();
+                $field->multiple()
+                    ->default([])
+                    ->afterStateHydrated(function ($state, callable $set) use ($fieldName) {
+                        // Giữ state luôn là mảng cho select nhiều lựa chọn.
+                        $set($fieldName, $state ?? []);
+                    });
             }
             $fields[] = $field;
         }

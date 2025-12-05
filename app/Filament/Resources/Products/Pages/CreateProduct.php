@@ -17,6 +17,8 @@ class CreateProduct extends CreateRecord
         // Luu product_images truoc khi loai bo khoi data
         $this->productImages = $data['product_images'] ?? [];
 
+        ProductResource::validatePricing($data);
+
         // Loc bo cac attributes fields va product_images khoi data chinh
         foreach ($data as $key => $value) {
             if (
