@@ -1,10 +1,7 @@
 <?php
-
 namespace App\Filament\Resources\Products;
-
 use BackedEnum;
 use UnitEnum;
-
 use App\Filament\Resources\BaseResource;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
@@ -35,27 +32,17 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Malzariey\FilamentLexicalEditor\LexicalEditor;
-
 class ProductResource extends BaseResource
 {
     protected static ?string $model = Product::class;
-
     protected static ?array $attributeFieldKeys = null;
-
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
-
     protected static ?string $recordTitleAttribute = 'name';
-
     protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
-
     protected static ?string $navigationLabel = 'Sản phẩm';
-
     protected static ?int $navigationSort = 10;
-
     protected static ?string $modelLabel = 'Sản phẩm';
-
     protected static ?string $pluralModelLabel = 'Các sản phẩm';
-
     public static function form(Schema $schema): Schema
     {
         return $schema
@@ -75,13 +62,11 @@ class ProductResource extends BaseResource
                                 $set('categories', []);
                                 static::clearAttributeFieldStates($set);
                             }),
-
                         Select::make('categories')
                             ->label('Danh mục')
                             ->relationship('categories', 'name')
                             ->options(function (callable $get) {
                                 $typeId = $get('type_id');
-
                                 return ProductCategory::query()
                                     ->when($typeId, fn ($query) => $query->where(function ($q) use ($typeId) {
                                         $q->where('type_id', $typeId)
@@ -98,19 +83,17 @@ class ProductResource extends BaseResource
                             ->live()
                             ->disabled(fn (callable $get) => !$get('type_id'))
                             ->helperText('Chọn phân mục trước; danh mục sẽ lọc theo phân mục hoặc chưa gán phân mục.'),
-
                         TextInput::make('name')
                             ->label('Tên sản phẩm')
                             ->required()
                             ->maxLength(255)
                             ->copyable()
                             ->columnSpanFull(),
-
                         LexicalEditor::make('description')
                             ->label('Mô tả')
+                            ->helperText('Ảnh dán/upload trong editor sẽ tự lưu ra file, không lưu base64 vào DB.')
                             ->columnSpanFull(),
                     ]),
-
                 Section::make('Giá & Thông số')
                     ->schema([
                         Grid::make()
@@ -127,7 +110,6 @@ class ProductResource extends BaseResource
                                     ->minValue(0)
                                     ->dehydrateStateUsing(fn ($state) => $state === null || $state === '' ? null : (int) $state)
                                     ->placeholder('Nhập giá bán'),
-
                                 TextInput::make('original_price')
                                     ->label('Giá gốc')
                                     ->type('text')
@@ -139,13 +121,11 @@ class ProductResource extends BaseResource
                                     ->minValue(0)
                                     ->dehydrateStateUsing(fn ($state) => $state === null || $state === '' ? null : (int) $state)
                                     ->placeholder('Nhập giá gốc'),
-
                                 Toggle::make('active')
                                     ->label('Hoạt động')
                                     ->default(true),
                             ]),
                     ]),
-
                 Section::make('Hinh anh')
                     ->columns(2)
                     ->schema([
@@ -161,13 +141,11 @@ class ProductResource extends BaseResource
                             ->imageEditor()
                             ->helperText('Co the bo trong khi tao; tai len toi da 10 anh neu can.'),
                     ]),
-
                 Section::make('Thuộc tính')
                     ->columns(3)
                     ->schema(fn (Get $get) => static::getAttributeFields($get('type_id'))),
             ]);
     }
-
     /**
      * @param int|string|null $typeId
      * @return array<int, \Filament\Forms\Components\Component>
@@ -176,9 +154,7 @@ class ProductResource extends BaseResource
     {
         // Cast state to int because Filament Select usually returns string.
         $typeId = ($typeId !== null && $typeId !== '') ? (int) $typeId : null;
-
         $groups = static::attributeGroupsForType($typeId);
-
         if (!$typeId) {
             return [
                 Placeholder::make('attributes_select_type')
@@ -186,7 +162,6 @@ class ProductResource extends BaseResource
                     ->columnSpanFull(),
             ];
         }
-
         if ($groups->isEmpty()) {
             return [
                 Placeholder::make('attributes_empty')
@@ -195,45 +170,35 @@ class ProductResource extends BaseResource
                     ->columnSpanFull(),
             ];
         }
-
         $fields = [];
         foreach ($groups as $group) {
             $fieldName = "attributes_{$group->id}";
-
             // Nhập tay: hiển thị TextInput (text/number)
             if ($group->filter_type === 'nhap_tay') {
                 $input = TextInput::make($fieldName)
                     ->label($group->name);
-
                 if ($group->input_type === 'number') {
                     $input->numeric()->step('any');
                 } else {
                     $input->maxLength(255);
                 }
-
                 $fields[] = $input;
                 continue;
             }
-
             $isMultiple = $group->filter_type === 'chon_nhieu';
-
             $field = Select::make($fieldName)
                 ->label($group->name)
                 ->options($group->terms->pluck('name', 'id'))
                 ->searchable()
                 ->preload()
                 ->hidden(fn () => $group->terms->isEmpty());
-
             if ($isMultiple) {
                 $field->multiple();
             }
-
             $fields[] = $field;
         }
-
         return $fields;
     }
-
     public static function attributeGroupsForType(?int $typeId): Collection
     {
         if ($typeId) {
@@ -244,16 +209,13 @@ class ProductResource extends BaseResource
                         ->orderBy('position');
                 }])
                 ->find($typeId);
-
             return $type?->attributeGroups ?? collect();
         }
-
         return CatalogAttributeGroup::query()
             ->with(['terms' => fn ($q) => $q->where('is_active', true)->orderBy('position')])
             ->orderBy('position')
             ->get();
     }
-
     protected static function clearAttributeFieldStates(callable $set): void
     {
         if (static::$attributeFieldKeys === null) {
@@ -262,12 +224,10 @@ class ProductResource extends BaseResource
                 ->map(fn (int $id) => "attributes_{$id}")
                 ->all();
         }
-
         foreach (static::$attributeFieldKeys as $field) {
             $set($field, null);
         }
     }
-
     public static function table(Table $table): Table
     {
         return $table
@@ -315,17 +275,14 @@ class ProductResource extends BaseResource
                         if (!$record->relationLoaded('terms') || $record->terms->isEmpty()) {
                             return [];
                         }
-
                         $grouped = $record->terms->groupBy(function ($term) {
                             return $term->group ? $term->group->name : 'Khác';
                         });
-
                         $result = [];
                         foreach ($grouped as $groupName => $terms) {
                             $termNames = $terms->pluck('name')->join(', ');
                             $result[] = "{$groupName}: {$termNames}";
                         }
-
                         return $result;
                     })
                     ->wrap()
@@ -369,21 +326,17 @@ class ProductResource extends BaseResource
             ->paginated([5, 10, 25, 50, 100, 'all'])
             ->defaultPaginationPageOption(25);
     }
-
     public static function getNavigationBadge(): ?string
     {
         $activeCount = static::getModel()::query()
             ->where('active', true)
             ->count();
-
         return $activeCount > 0 ? (string) $activeCount : null;
     }
-
     public static function getNavigationBadgeColor(): ?string
     {
         return 'success';
     }
-
     public static function getRelations(): array
     {
         return [
@@ -391,7 +344,6 @@ class ProductResource extends BaseResource
             // ProductResource\RelationManagers\ProductTermAssignmentsRelationManager::class,
         ];
     }
-
     public static function getPages(): array
     {
         return [
@@ -400,7 +352,6 @@ class ProductResource extends BaseResource
             'edit' => EditProduct::route('/{record}/edit'),
         ];
     }
-
     /**
      * Get frontend URL for a product
      * Uses FRONTEND_URL from .env config
@@ -408,8 +359,6 @@ class ProductResource extends BaseResource
     public static function getFrontendUrl(Product $product): string
     {
         $frontendBaseUrl = config('app.frontend_url', 'http://localhost:3000');
-        
         return $frontendBaseUrl . '/san-pham/' . $product->slug;
     }
 }
-
