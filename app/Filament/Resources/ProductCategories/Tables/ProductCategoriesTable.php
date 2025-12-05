@@ -9,6 +9,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
@@ -59,6 +60,11 @@ class ProductCategoriesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('type_id')
+                    ->label('Phân mục')
+                    ->relationship('type', 'name')
+                    ->searchable()
+                    ->preload(),
                 TernaryFilter::make('active')
                     ->label('Active'),
             ])
