@@ -38,6 +38,7 @@ class ProductResource extends BaseResource
 {
     protected static ?string $model = Product::class;
     protected static ?array $attributeFieldKeys = null;
+    protected static ?array $attributeMultipleFieldKeys = null;
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
     protected static ?string $recordTitleAttribute = 'name';
     protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
@@ -54,7 +55,7 @@ class ProductResource extends BaseResource
                     ->columns(2)
                     ->schema([
                         Select::make('type_id')
-                            ->label('Phân mục sản phẩm')
+                            ->label('Phân loại sp sản phẩm')
                             ->options(fn () => ProductType::active()->orderBy('order')->orderBy('id')->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
@@ -66,30 +67,38 @@ class ProductResource extends BaseResource
                             }),
                         Select::make('categories')
                             ->label('Danh mục')
-                            ->relationship('categories', 'name')
-                            ->options(function (callable $get) {
-                                $typeId = $get('type_id');
-                                return ProductCategory::query()
-                                    ->when($typeId, fn ($query) => $query->where(function ($q) use ($typeId) {
-                                        $q->where('type_id', $typeId)
-                                            ->orWhereNull('type_id');
-                                    }))
+                            ->relationship(
+                                name: 'categories',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: fn (Builder $query) => $query
                                     ->where('active', true)
                                     ->orderBy('order')
                                     ->orderBy('id')
-                                    ->pluck('name', 'id');
+                            )
+                            ->options(function (Get $get) {
+                                $typeId = $get('type_id');
+
+                                return ProductCategory::query()
+                                    ->where('active', true)
+                                    ->when(
+                                        $typeId,
+                                        fn (Builder $query) => $query->where(function (Builder $query) use ($typeId) {
+                                            $query->where('type_id', $typeId)
+                                                ->orWhereNull('type_id');
+                                        }),
+                                        fn (Builder $query) => $query->whereNull('type_id')
+                                    )
+                                    ->orderBy('order')
+                                    ->orderBy('id')
+                                    ->pluck('name', 'id')
+                                    ->toArray();
                             })
                             ->searchable()
                             ->multiple()
                             ->default([])
-                            ->afterStateHydrated(function ($state, callable $set) {
-                                // Đảm bảo Select multiple luôn là mảng, tránh foreach() trên null của Filament.
-                                $set('categories', $state ?? []);
-                            })
                             ->preload()
-                            ->live()
                             ->disabled(fn (callable $get) => !$get('type_id'))
-                            ->helperText('Chọn phân mục trước; danh mục sẽ lọc theo phân mục hoặc chưa gán phân mục.'),
+                            ->helperText('Danh mục sản phẩm'),
                         TextInput::make('name')
                             ->label('Tên sản phẩm')
                             ->required()
@@ -145,7 +154,7 @@ class ProductResource extends BaseResource
                                     ->default(true),
                             ]),
                     ]),
-                Section::make('Hinh anh')
+                Section::make('Hình ảnh')
                     ->columns(2)
                     ->schema([
                         FileUpload::make('product_images')
@@ -202,7 +211,7 @@ class ProductResource extends BaseResource
         if (!$typeId) {
             return [
                 Placeholder::make('attributes_select_type')
-                    ->content('Chọn phân mục để hiển thị nhóm thuộc tính tương ứng.')
+                    ->content('Chọn phân loại sp để hiển thị nhóm thuộc tính tương ứng.')
                     ->columnSpanFull(),
             ];
         }
@@ -210,7 +219,7 @@ class ProductResource extends BaseResource
             return [
                 Placeholder::make('attributes_empty')
                     ->label('Thuộc tính')
-                    ->content('Chưa cấu hình nhóm thuộc tính cho phân mục này. Vào Product Type → Nhóm thuộc tính để gán.')
+                    ->content('Chưa cấu hình nhóm thuộc tính cho phân loại sp này. Vào Product Type → Nhóm thuộc tính để gán.')
                     ->columnSpanFull(),
             ];
         }
@@ -232,17 +241,18 @@ class ProductResource extends BaseResource
             $isMultiple = $group->filter_type === 'chon_nhieu';
             $field = Select::make($fieldName)
                 ->label($group->name)
-                ->options($group->terms->pluck('name', 'id'))
+                ->options(fn () => $group->terms?->pluck('name', 'id')->toArray() ?? [])
                 ->searchable()
                 ->preload()
-                ->hidden(fn () => $group->terms->isEmpty());
+                ->hidden(fn () => $group->terms?->isEmpty() ?? true);
+
             if ($isMultiple) {
                 $field->multiple()
                     ->default([])
-                    ->afterStateHydrated(function ($state, callable $set) use ($fieldName) {
-                        // Giữ state luôn là mảng cho select nhiều lựa chọn.
-                        $set($fieldName, $state ?? []);
-                    });
+                    ->dehydrateStateUsing(fn ($state) => is_array($state) ? $state : []);
+            } else {
+                $field->default(null)
+                    ->nullable();
             }
             $fields[] = $field;
         }
@@ -267,14 +277,25 @@ class ProductResource extends BaseResource
     }
     protected static function clearAttributeFieldStates(callable $set): void
     {
-        if (static::$attributeFieldKeys === null) {
-            static::$attributeFieldKeys = CatalogAttributeGroup::query()
+        if (static::$attributeFieldKeys === null || static::$attributeMultipleFieldKeys === null) {
+            $groups = CatalogAttributeGroup::query()->select('id', 'filter_type')->get();
+
+            static::$attributeFieldKeys = $groups
+                ->pluck('id')
+                ->map(fn (int $id) => "attributes_{$id}")
+                ->all();
+
+            static::$attributeMultipleFieldKeys = $groups
+                ->where('filter_type', 'chon_nhieu')
                 ->pluck('id')
                 ->map(fn (int $id) => "attributes_{$id}")
                 ->all();
         }
         foreach (static::$attributeFieldKeys as $field) {
-            $set($field, null);
+            $set(
+                $field,
+                in_array($field, static::$attributeMultipleFieldKeys, true) ? [] : null,
+            );
         }
     }
     public static function table(Table $table): Table
@@ -307,7 +328,7 @@ class ProductResource extends BaseResource
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('type.name')
-                    ->label('Phân mục')
+                    ->label('Phân loại sp')
                     ->badge()
                     ->searchable()
                     ->sortable()

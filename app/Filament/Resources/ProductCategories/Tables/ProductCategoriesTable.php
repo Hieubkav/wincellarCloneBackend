@@ -36,7 +36,7 @@ class ProductCategoriesTable
                     ->copyable()
                     ->tooltip('Click để copy'),
                 TextColumn::make('type.name')
-                    ->label('Phân mục')
+                    ->label('Phân loại sp')
                     ->badge()
                     ->toggleable(),
                 TextColumn::make('products_count')
@@ -61,7 +61,7 @@ class ProductCategoriesTable
             ])
             ->filters([
                 SelectFilter::make('type_id')
-                    ->label('Phân mục')
+                    ->label('Phân loại sp')
                     ->relationship('type', 'name')
                     ->searchable()
                     ->preload(),

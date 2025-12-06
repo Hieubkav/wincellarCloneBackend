@@ -70,7 +70,7 @@ class ProductTypesTable
                     ->iconButton()
                     ->disabled(fn ($record) => $record->products_count > 0)
                     ->tooltip(fn ($record) => $record->products_count > 0
-                        ? 'Không thể xoá: vẫn còn sản phẩm thuộc phân mục này.'
+                        ? 'Không thể xoá: vẫn còn sản phẩm thuộc phân loại sp này.'
                         : null),
             ])
             ->bulkActions([

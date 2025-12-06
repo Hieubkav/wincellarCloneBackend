@@ -28,13 +28,13 @@ class ProductTypeResource extends Resource
 
     protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
 
-    protected static ?string $navigationLabel = 'Phân mục';
+    protected static ?string $navigationLabel = 'Phân loại sp';
 
     protected static ?int $navigationSort = 30;
 
-    protected static ?string $modelLabel = 'Phân mục';
+    protected static ?string $modelLabel = 'Phân loại sp';
 
-    protected static ?string $pluralModelLabel = 'Các phân mục';
+    protected static ?string $pluralModelLabel = 'Các phân loại sp';
 
     public static function form(Schema $schema): Schema
     {

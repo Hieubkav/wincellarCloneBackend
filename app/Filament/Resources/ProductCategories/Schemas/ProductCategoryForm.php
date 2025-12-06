@@ -24,11 +24,11 @@ class ProductCategoryForm
                     ->columns(2)
                     ->schema([
                         Select::make('type_id')
-                            ->label('Phân mục')
+                            ->label('Phân loại sp')
                             ->options(fn () => ProductType::active()->orderBy('order')->orderBy('id')->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
-                            ->helperText('Gán danh mục vào phân mục để lọc form sản phẩm và bộ lọc FE.'),
+                            ->helperText('Gán danh mục vào phân loại sp để lọc form sản phẩm và bộ lọc FE.'),
                         TextInput::make('name')
                             ->label('Tên nhóm')
                             ->required()
