@@ -319,17 +319,23 @@ class ProductResource extends BaseResource
                     ->label('Tên')
                     ->searchable()
                     ->sortable()
+                    ->wrap()
+                    ->extraCellAttributes(['class' => 'max-w-[220px]'])
                     ->limit(40)
                     ->tooltip(fn ($record) => $record->name),
                 Tables\Columns\TextColumn::make('categories.name')
                     ->label('Danh mục')
                     ->badge()
+                    ->wrap()
+                    ->extraCellAttributes(['class' => 'max-w-[220px]'])
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('type.name')
                     ->label('Phân loại sp')
                     ->badge()
+                    ->wrap()
+                    ->extraCellAttributes(['class' => 'max-w-[160px]'])
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
@@ -340,6 +346,7 @@ class ProductResource extends BaseResource
                             $query->where('name', 'like', "%{$search}%");
                         });
                     })
+                    ->listWithLineBreaks()
                     ->badge()
                     ->getStateUsing(function ($record) {
                         if (!$record->relationLoaded('terms') || $record->terms->isEmpty()) {
@@ -356,6 +363,7 @@ class ProductResource extends BaseResource
                         return $result;
                     })
                     ->wrap()
+                    ->extraCellAttributes(['class' => 'max-w-[260px]'])
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('price')
                     ->label('Giá')
