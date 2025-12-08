@@ -67,14 +67,12 @@ class ProductFilterController extends Controller
 
             $dynamicFilters = static::buildDynamicFilters($attributeGroups);
 
-            // Price & alcohol ranges (kept global for backward compatibility)
+            // Price ranges
             $ranges = \DB::table('products')
                 ->where('active', true)
                 ->selectRaw('
                     MIN(price) as price_min,
-                    MAX(price) as price_max,
-                    MIN(alcohol_percent) as alcohol_min,
-                    MAX(alcohol_percent) as alcohol_max
+                    MAX(price) as price_max
                 ')
                 ->first();
 
@@ -98,10 +96,6 @@ class ProductFilterController extends Controller
                 'price' => [
                     'min' => (int) ($ranges->price_min ?? 0),
                     'max' => (int) ($ranges->price_max ?? 0),
-                ],
-                'alcohol' => [
-                    'min' => (float) ($ranges->alcohol_min ?? 0),
-                    'max' => (float) ($ranges->alcohol_max ?? 0),
                 ],
                 'attribute_filters' => $dynamicFilters,
             ];

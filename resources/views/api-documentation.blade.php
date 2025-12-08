@@ -390,7 +390,6 @@
     "name": "Rượu Vang Đỏ Bordeaux",
     "slug": "ruou-vang-do-bordeaux",
     "price": 2500000,
-    "alcohol": 13.5,
     "vintage": 2015,
     "description": "...",
     "gallery": [...],

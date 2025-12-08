@@ -337,7 +337,6 @@ cd ../wincellarcloneFrontEnd && npm run dev</div>
                     <li><strong>Slug:</strong> Auto tạo từ tên (dùng cho URL)</li>
                     <li><strong>Giá:</strong> Giá hiện tại VND</li>
                     <li><strong>Giá Gốc:</strong> Giá cũ (nếu sale)</li>
-                    <li><strong>Độ Cồn:</strong> % alcohol (VD: 13.5)</li>
                     <li><strong>Vintage:</strong> Năm sản xuất (VD: 2015)</li>
                 </ul>
             </section>

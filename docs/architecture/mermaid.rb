@@ -146,7 +146,6 @@ ActiveRecord::Schema[7.0].define do
     t.text     "description", limit: 4294967295  # LONGTEXT for rich content with images
     t.bigint   "price",       null: false, default: 0
     t.bigint   "original_price", null: false, default: 0
-    t.decimal  "alcohol_percent", precision: 5, scale: 2
     t.integer  "volume_ml"
     t.jsonb    "badges"
     t.boolean  "active",      null: false, default: true

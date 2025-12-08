@@ -54,7 +54,7 @@ GET    /api/v1/home                  (home data)
 ### 4. Pagination & Filtering (✓ Advanced)
 - ✅ Cursor-based pagination support
 - ✅ Traditional page-based pagination
-- ✅ Multi-field filtering (terms, price, alcohol)
+- ✅ Multi-field filtering (terms, price)
 - ✅ Sorting options
 
 ### 5. Caching Strategy (✓ Performance)

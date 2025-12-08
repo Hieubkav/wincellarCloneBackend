@@ -186,8 +186,6 @@ GET /api/v1/san-pham
 | `category[]` | integer[] | Filter theo danh mục | `[1]` |
 | `price_min` | integer | Giá tối thiểu | `100000` |
 | `price_max` | integer | Giá tối đa | `5000000` |
-| `alcohol_min` | float | Độ cồn tối thiểu | `12.5` |
-| `alcohol_max` | float | Độ cồn tối đa | `15.0` |
 
 **Example Request:**
 ```bash

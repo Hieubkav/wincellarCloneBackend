@@ -72,7 +72,6 @@
         "name": "Pháp",
         "slug": "phap"
       },
-      "alcohol_percent": 13.5,
       "volume_ml": 750,
       "badges": ["SALE", "HOT"],
       "category": {
@@ -126,8 +125,6 @@
       "category": [],
       "price_min": null,
       "price_max": null,
-      "alcohol_min": null,
-      "alcohol_max": null,
       "q": null
     },
     "api_version": "v1",

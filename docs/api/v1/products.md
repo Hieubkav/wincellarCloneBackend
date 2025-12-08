@@ -10,7 +10,6 @@
 | `terms[grape][]` | ID term giống nho (array int) |
 | `type[]` | ID `product_types` |
 | `price_min`, `price_max` | Giá (VND) – int ≥0 |
-| `alcohol_min`, `alcohol_max` | Độ cồn – float 0–100 |
 | `page` | Trang (mặc định 1) |
 | `per_page` | Số bản ghi mỗi trang (mặc định 24, tối đa 60) |
 | `sort` | Một trong: `-created_at` (mặc định) \| `created_at` \| `price` \| `-price` \| `name` \| `-name` |
@@ -49,7 +48,6 @@ Phản hồi `200 OK`:
         "name": "Pháp",
         "slug": "france"
       },
-      "alcohol_percent": 13.5,
       "volume_ml": 750,
       "badges": ["HOT", "LIMITED"]
     }
@@ -124,7 +122,6 @@ Trả 404 nếu slug không tồn tại hoặc sản phẩm `inactive`.
         "slug": "bordeaux"
       }
     ],
-    "alcohol_percent": 13.5,
     "volume_ml": 750,
     "badges": ["HOT", "LIMITED"],
     "category": {

@@ -68,7 +68,6 @@ class ProductResource extends JsonResource
             }),
             
             // Product attributes
-            'alcohol_percent' => $this->alcohol_percent,
             'volume_ml' => $this->volume_ml,
             'badges' => $this->badges ?? [],
             
@@ -228,7 +227,6 @@ class ProductResource extends JsonResource
                 'name' => $product->type->name,
                 'slug' => $product->type->slug,
             ] : null,
-            'alcohol_percent' => $product->alcohol_percent,
             'badges' => $product->badges ?? [],
         ];
     }

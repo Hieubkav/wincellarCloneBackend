@@ -39,7 +39,6 @@ class ProductFilters
         $this->applyTypeFilter(Arr::get($filters, 'type', []));
         $this->applyCategoryFilter(Arr::get($filters, 'category', []));
         $this->applyPriceRange($filters);
-        $this->applyAlcoholRange($filters);
 
         return $this->query;
     }
@@ -103,19 +102,6 @@ class ProductFilters
 
         if (isset($filters['price_max'])) {
             $this->query->where('price', '<=', (int) $filters['price_max']);
-        }
-    }
-
-    private function applyAlcoholRange(array $filters): void
-    {
-        if (isset($filters['alcohol_min'])) {
-            $this->query->whereNotNull('alcohol_percent')
-                ->where('alcohol_percent', '>=', (float) $filters['alcohol_min']);
-        }
-
-        if (isset($filters['alcohol_max'])) {
-            $this->query->whereNotNull('alcohol_percent')
-                ->where('alcohol_percent', '<=', (float) $filters['alcohol_max']);
         }
     }
 

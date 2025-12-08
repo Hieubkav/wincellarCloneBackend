@@ -52,8 +52,6 @@ class ProductCollection extends ResourceCollection
                 'category' => request()->input('category', []),
                 'price_min' => request()->input('price_min'),
                 'price_max' => request()->input('price_max'),
-                'alcohol_min' => request()->input('alcohol_min'),
-                'alcohol_max' => request()->input('alcohol_max'),
                 'q' => request()->input('q'),
             ],
             'api_version' => 'v1',
