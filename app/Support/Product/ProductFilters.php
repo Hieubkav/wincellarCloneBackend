@@ -7,9 +7,7 @@ use Illuminate\Support\Arr;
 
 class ProductFilters
 {
-    public function __construct(private Builder $query)
-    {
-    }
+    public function __construct(private Builder $query) {}
 
     public static function apply(Builder $query, array $filters): Builder
     {
@@ -39,6 +37,7 @@ class ProductFilters
         $this->applyTypeFilter(Arr::get($filters, 'type', []));
         $this->applyCategoryFilter(Arr::get($filters, 'category', []));
         $this->applyPriceRange($filters);
+        $this->applyExtraAttrRanges(Arr::get($filters, 'range', []));
 
         return $this->query;
     }
@@ -81,8 +80,6 @@ class ProductFilters
         });
     }
 
-
-
     private function applyTypeFilter(array $types): void
     {
         $ids = $this->filterIds($types);
@@ -106,7 +103,41 @@ class ProductFilters
     }
 
     /**
-     * @param array<int|string, mixed> $items
+     * @param  array<string, array{min?: numeric, max?: numeric}>  $ranges
+     */
+    private function applyExtraAttrRanges(array $ranges): void
+    {
+        foreach ($ranges as $code => $range) {
+            if (! is_array($range)) {
+                continue;
+            }
+
+            // Validate code - chỉ cho phép ký tự an toàn cho JSON path
+            if (! preg_match('/^[a-zA-Z0-9_\-. ]+$/', $code)) {
+                continue;
+            }
+
+            // Build JSON path với quoted key để xử lý ký tự đặc biệt (e.g., "do-cao")
+            $jsonPath = '$."'.$code.'".value';
+
+            if (isset($range['min']) && is_numeric($range['min'])) {
+                $this->query->whereRaw(
+                    'CAST(JSON_UNQUOTE(JSON_EXTRACT(extra_attrs, ?)) AS DECIMAL(10,2)) >= ?',
+                    [$jsonPath, (float) $range['min']]
+                );
+            }
+
+            if (isset($range['max']) && is_numeric($range['max'])) {
+                $this->query->whereRaw(
+                    'CAST(JSON_UNQUOTE(JSON_EXTRACT(extra_attrs, ?)) AS DECIMAL(10,2)) <= ?',
+                    [$jsonPath, (float) $range['max']]
+                );
+            }
+        }
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $items
      * @return int[]
      */
     private function filterIds(array $items): array

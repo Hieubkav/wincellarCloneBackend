@@ -12,6 +12,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CatalogAttributeGroupsTable
 {
@@ -19,6 +20,24 @@ class CatalogAttributeGroupsTable
     {
         return $table
             ->defaultSort('position')
+            ->modifyQueryUsing(function (Builder $query) {
+                $query->selectRaw("
+                    catalog_attribute_groups.*,
+                    CASE 
+                        WHEN filter_type = 'nhap_tay' THEN (
+                            SELECT COUNT(*) 
+                            FROM products 
+                            WHERE JSON_EXTRACT(products.extra_attrs, CONCAT('$.\"', catalog_attribute_groups.code, '\"')) IS NOT NULL
+                        )
+                        ELSE (
+                            SELECT COUNT(DISTINCT pta.product_id)
+                            FROM product_term_assignments pta
+                            JOIN catalog_terms ct ON pta.term_id = ct.id
+                            WHERE ct.group_id = catalog_attribute_groups.id
+                        )
+                    END as computed_products_count
+                ");
+            })
             ->columns([
                 BaseResource::getRowNumberColumn(),
                 TextColumn::make('name')
@@ -30,7 +49,7 @@ class CatalogAttributeGroupsTable
                     ->sortable()
                     ->badge()
                     ->formatStateUsing(function (?string $state): ?string {
-                        return match($state) {
+                        return match ($state) {
                             'chon_don' => 'Chọn đơn',
                             'chon_nhieu' => 'Chọn nhiều',
                             'nhap_tay' => 'Nhập tay',
@@ -41,7 +60,7 @@ class CatalogAttributeGroupsTable
                     ->label('Kiểu nhập')
                     ->sortable()
                     ->badge()
-                    ->formatStateUsing(fn (?string $state): ?string => match($state) {
+                    ->formatStateUsing(fn (?string $state): ?string => match ($state) {
                         'text' => 'Text',
                         'number' => 'Số',
                         default => null,
@@ -55,6 +74,10 @@ class CatalogAttributeGroupsTable
                     ->badge()
                     ->color('gray')
                     ->sortable(),
+                TextColumn::make('computed_products_count')
+                    ->label('Số sản phẩm')
+                    ->badge()
+                    ->color('info'),
                 TextColumn::make('updated_at')
                     ->label('Updated')
                     ->dateTime()
