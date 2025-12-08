@@ -3,7 +3,9 @@
 namespace App\Observers;
 
 use App\Models\CatalogAttributeGroup;
+use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class CatalogAttributeGroupObserver
@@ -29,7 +31,28 @@ class CatalogAttributeGroupObserver
 
     public function updated(CatalogAttributeGroup $catalogAttributeGroup): void
     {
+        // Sync label trong extra_attrs của products khi đổi tên group
+        if ($catalogAttributeGroup->wasChanged('name') && $catalogAttributeGroup->filter_type === 'nhap_tay') {
+            $this->syncExtraAttrsLabel($catalogAttributeGroup);
+        }
+
         $this->clearFilterCache();
+    }
+
+    /**
+     * Cập nhật label trong extra_attrs của tất cả products khi đổi tên attribute group
+     */
+    protected function syncExtraAttrsLabel(CatalogAttributeGroup $group): void
+    {
+        $code = $group->code;
+        $newName = $group->name;
+        $jsonPath = '$."' . $code . '".label';
+
+        DB::table('products')
+            ->whereRaw('JSON_EXTRACT(extra_attrs, ?) IS NOT NULL', ['$."' . $code . '"'])
+            ->update([
+                'extra_attrs' => DB::raw("JSON_SET(extra_attrs, '{$jsonPath}', " . DB::getPdo()->quote($newName) . ")"),
+            ]);
     }
 
     /**
@@ -60,7 +83,15 @@ class CatalogAttributeGroupObserver
 
     private function clearFilterCache(): void
     {
-        Cache::forget('product_filter_options_v2');
-        Cache::forget('product_filter_options_v3');
+        // Clear tất cả versions của filter cache
+        $patterns = ['product_filter_options_v2', 'product_filter_options_v3', 'product_filter_options_v5'];
+        foreach ($patterns as $pattern) {
+            // Clear cache cho tất cả types (all, và từng type_id)
+            Cache::forget($pattern . ':all');
+            // Xóa cache cho các type cụ thể (giả sử có tối đa 100 types)
+            for ($i = 1; $i <= 100; $i++) {
+                Cache::forget($pattern . ':' . $i);
+            }
+        }
     }
 }

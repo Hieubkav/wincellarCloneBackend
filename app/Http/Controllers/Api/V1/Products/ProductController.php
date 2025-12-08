@@ -82,6 +82,9 @@ class ProductController extends Controller
                 );
             });
 
+            // Load relations for API resources (terms for attributes display)
+            $paginator->getCollection()->load(['terms.group', 'categories', 'type', 'coverImage', 'images']);
+
             // Use ProductCollection with Resources
             return new ProductCollection($paginator);
         } catch (\Exception $e) {
