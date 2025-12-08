@@ -19,39 +19,41 @@ class ProductResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
-            
+
             // Price information
             'price' => $this->price,
             'original_price' => $this->original_price,
             'discount_percent' => $this->discount_percent,
             'show_contact_cta' => $this->should_show_contact_cta,
-            
+
             // Images
             'main_image_url' => $this->cover_image_url ?: '/placeholder/wine-bottle.svg',
             'gallery' => $this->gallery_for_output,
-            
+
             // Terms/Taxonomy
             'brand_term' => $this->when($this->relationLoaded('terms'), function () {
                 $brand = $this->primaryTerm('brand');
+
                 return $brand ? [
                     'id' => $brand->id,
                     'name' => $brand->name,
                     'slug' => $brand->slug,
                 ] : null;
             }),
-            
+
             'country_term' => $this->when($this->relationLoaded('terms'), function () {
                 $country = $this->primaryTerm('origin');
+
                 return $country ? [
                     'id' => $country->id,
                     'name' => $country->name,
                     'slug' => $country->slug,
                 ] : null;
             }),
-            
+
             // Conditional fields for detail view
             'description' => $this->when($request->routeIs('api.v1.products.show'), $this->description),
-            
+
             'grape_terms' => $this->when($request->routeIs('api.v1.products.show') && $this->relationLoaded('terms'), function () {
                 return $this->termsByGroup('grape')->map(fn ($term) => [
                     'id' => $term->id,
@@ -59,7 +61,7 @@ class ProductResource extends JsonResource
                     'slug' => $term->slug,
                 ])->values();
             }),
-            
+
             'origin_terms' => $this->when($request->routeIs('api.v1.products.show') && $this->relationLoaded('terms'), function () {
                 return $this->termsByGroup('origin')->map(fn ($term) => [
                     'id' => $term->id,
@@ -67,14 +69,14 @@ class ProductResource extends JsonResource
                     'slug' => $term->slug,
                 ])->values();
             }),
-            
+
             // Product attributes
             'volume_ml' => $this->volume_ml,
             'badges' => $this->badges ?? [],
-            
+
             // Extra attributes (nhập tay từ admin: dung tích custom, độ cồn custom, v.v.)
-            'extra_attrs' => $this->extra_attrs ?? [],
-            
+            'extra_attrs' => $this->transformExtraAttrs(),
+
             // All attributes grouped by catalog_attribute_group (for both list and detail view)
             'attributes' => $this->when($this->relationLoaded('terms'), function () {
                 return $this->terms
@@ -97,7 +99,7 @@ class ProductResource extends JsonResource
                     })
                     ->values();
             }),
-            
+
             // Categories (now many-to-many)
             'categories' => $this->when($this->relationLoaded('categories'), function () {
                 return $this->categories->map(fn ($category) => [
@@ -106,24 +108,24 @@ class ProductResource extends JsonResource
                     'slug' => $category->slug,
                 ])->values();
             }),
-            
+
             'type' => $this->when($this->relationLoaded('type') && $this->type, [
                 'id' => $this->type->id,
                 'name' => $this->type->name,
                 'slug' => $this->type->slug,
             ]),
-            
+
             // Breadcrumbs (detail view only)
             'breadcrumbs' => $this->when($request->routeIs('api.v1.products.show'), function () {
                 return $this->buildBreadcrumbs();
             }),
-            
+
             // SEO meta (detail view only)
             'meta' => $this->when($request->routeIs('api.v1.products.show'), [
                 'title' => $this->meta_title,
                 'description' => $this->meta_description,
             ]),
-            
+
             // Section 1: Same type products (detail view only)
             'same_type_products' => $this->when(
                 $request->routeIs('api.v1.products.show') && $this->relationLoaded('sameTypeProducts'),
@@ -132,15 +134,15 @@ class ProductResource extends JsonResource
                     if ($products->isEmpty()) {
                         return null;
                     }
-                    
+
                     return [
                         'products' => $products->map(fn ($product) => $this->mapProductSummary($product))->values(),
-                        'view_all_url' => $this->type ? '/filter?type=' . $this->type->id : null,
+                        'view_all_url' => $this->type ? '/filter?type='.$this->type->id : null,
                     ];
                 }
             ),
-            
-            // Section 2: Related by attributes (detail view only)  
+
+            // Section 2: Related by attributes (detail view only)
             'related_by_attributes' => $this->when(
                 $request->routeIs('api.v1.products.show') && $this->relationLoaded('relatedByAttributeProducts'),
                 function () {
@@ -148,17 +150,17 @@ class ProductResource extends JsonResource
                     if ($products->isEmpty()) {
                         return null;
                     }
-                    
+
                     // Get first shared term for view_all_url
                     $firstSharedTerm = $this->getFirstSharedTerm($products);
-                    
+
                     return [
                         'products' => $products->map(fn ($product) => $this->mapProductSummary($product))->values(),
                         'view_all_url' => $firstSharedTerm ? $this->buildFilterUrl($firstSharedTerm) : null,
                     ];
                 }
             ),
-            
+
             // HATEOAS links
             '_links' => [
                 'self' => [
@@ -179,6 +181,7 @@ class ProductResource extends JsonResource
                 ]),
                 'brand' => $this->when($this->relationLoaded('terms'), function () {
                     $brand = $this->primaryTerm('brand');
+
                     return $brand ? [
                         'href' => route('api.v1.products.index', ['terms' => ['brand' => [$brand->id]]]),
                         'method' => 'GET',
@@ -186,8 +189,8 @@ class ProductResource extends JsonResource
                 }),
                 'related' => $this->when($request->routeIs('api.v1.products.show'), [
                     'href' => route('api.v1.products.index', [
-                        'category' => $this->relationLoaded('categories') && $this->categories->isNotEmpty() 
-                            ? $this->categories->pluck('id')->toArray() 
+                        'category' => $this->relationLoaded('categories') && $this->categories->isNotEmpty()
+                            ? $this->categories->pluck('id')->toArray()
                             : null,
                         'per_page' => 6,
                     ]),
@@ -195,6 +198,40 @@ class ProductResource extends JsonResource
                 ]),
             ],
         ];
+    }
+
+    /**
+     * Transform extra_attrs to include icon_url from CatalogAttributeGroup.
+     *
+     * @return array<string, array{label: string, value: string|int|float, type: string, icon_url: string|null}>
+     */
+    protected function transformExtraAttrs(): array
+    {
+        $extraAttrs = $this->extra_attrs ?? [];
+
+        if (empty($extraAttrs)) {
+            return [];
+        }
+
+        $codes = array_keys($extraAttrs);
+
+        $iconMap = \App\Models\CatalogAttributeGroup::query()
+            ->whereIn('code', $codes)
+            ->pluck('icon_path', 'code')
+            ->toArray();
+
+        $transformed = [];
+        foreach ($extraAttrs as $code => $attr) {
+            $iconPath = $iconMap[$code] ?? null;
+            $transformed[$code] = [
+                'label' => $attr['label'] ?? $code,
+                'value' => $attr['value'] ?? '',
+                'type' => $attr['type'] ?? 'text',
+                'icon_url' => $iconPath ? Storage::disk('public')->url($iconPath) : null,
+            ];
+        }
+
+        return $transformed;
     }
 
     /**
@@ -260,12 +297,12 @@ class ProductResource extends JsonResource
      */
     protected function buildFilterUrl($term): string
     {
-        if (!$term || !$term->group) {
+        if (! $term || ! $term->group) {
             return '/filter';
         }
 
         $groupCode = $term->group->code;
-        
+
         // Map group code to filter param
         $paramMap = [
             'grape' => 'grape',
@@ -274,8 +311,8 @@ class ProductResource extends JsonResource
         ];
 
         $param = $paramMap[$groupCode] ?? $groupCode;
-        
-        return '/filter?' . $param . '=' . $term->id;
+
+        return '/filter?'.$param.'='.$term->id;
     }
 
     /**

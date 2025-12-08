@@ -60,7 +60,7 @@ class ProductFilterController extends Controller
                     ->where('is_filterable', true)
                     ->with(['terms' => fn ($q) => $q->active()->orderBy('position')->orderBy('id')])
                     ->orderByPivot('position')
-                    ->get(['catalog_attribute_groups.id', 'code', 'name', 'filter_type', 'input_type', 'display_config'])
+                    ->get(['catalog_attribute_groups.id', 'code', 'name', 'filter_type', 'input_type', 'display_config', 'icon_path'])
                 : static::getCommonAttributeGroups($types);
 
             $dynamicFilters = static::buildDynamicFilters($attributeGroups, $type);
@@ -140,7 +140,7 @@ class ProductFilterController extends Controller
             ->where('is_filterable', true)
             ->with(['terms' => fn ($q) => $q->active()->orderBy('position')->orderBy('id')])
             ->orderBy('position')
-            ->get(['id', 'code', 'name', 'filter_type', 'input_type', 'display_config']);
+            ->get(['id', 'code', 'name', 'filter_type', 'input_type', 'display_config', 'icon_path']);
     }
 
     /**
@@ -185,6 +185,7 @@ class ProductFilterController extends Controller
                         'name' => $group->name,
                         'filter_type' => $group->filter_type,
                         'input_type' => $group->input_type,
+                        'icon_url' => $group->icon_path ? asset('storage/' . $group->icon_path) : null,
                         'range' => [
                             'min' => (float) ($stats->min_val ?? 0),
                             'max' => (float) ($stats->max_val ?? 100),
@@ -218,6 +219,7 @@ class ProductFilterController extends Controller
                 'filter_type' => $group->filter_type,
                 'input_type' => $group->input_type,
                 'display_config' => $displayConfig,
+                'icon_url' => $group->icon_path ? asset('storage/' . $group->icon_path) : null,
                 'options' => $terms,
             ];
         }
