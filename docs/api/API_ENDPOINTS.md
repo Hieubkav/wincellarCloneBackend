@@ -2,7 +2,7 @@
 
 **Base URL:** `http://localhost:8000/api/v1`  
 **Version:** v1  
-**Last Updated:** 2025-11-11
+**Last Updated:** 2025-12-07
 
 ---
 
@@ -460,7 +460,7 @@ GET /api/v1/bai-viet/{slug}
 ```
 GET /api/v1/settings
 ```
-**Mô tả:** Lấy thông tin cài đặt ứng dụng (logo, thông tin liên hệ, meta defaults)  
+**Mô tả:** Lấy thông tin cài đặt ứng dụng (logo, favicon, watermark sản phẩm, thông tin liên hệ, meta defaults)  
 **Auth:** No  
 **Rate Limit:** 60 requests/minute  
 **Cache:** 1 hour (auto-invalidate khi admin update)
@@ -478,6 +478,9 @@ GET /api/v1/settings
     "google_map_embed": "<iframe src=\"https://www.google.com/maps/embed?...\" width=\"600\" height=\"450\"></iframe>",
     "logo_url": "/storage/images/logo.png",
     "favicon_url": "/storage/images/favicon.ico",
+    "product_watermark_url": "/storage/images/watermark.png",
+    "product_watermark_position": "none",
+    "product_watermark_size": "128x128",
     "meta_defaults": {
       "title": "Wincellar - Cửa hàng rượu vang uy tín",
       "description": "Chuyên cung cấp rượu vang nhập khẩu chính hãng",
@@ -496,7 +499,7 @@ GET /api/v1/settings
   },
   "meta": {
     "api_version": "v1",
-    "timestamp": "2025-11-11T10:30:00Z"
+    "timestamp": "2025-12-07T10:30:00Z"
   }
 }
 ```
@@ -505,6 +508,8 @@ GET /api/v1/settings
 - Settings được cache 1 giờ để tối ưu performance
 - Cache tự động invalidate khi admin update settings trong Filament
 - Nếu chưa có settings, API trả về default values
+- Trường `product_watermark_url` cho biết ảnh watermark overlay sản phẩm (nếu đã cấu hình)
+- `product_watermark_position` (none/top_left/top_right/bottom_left/bottom_right) + `product_watermark_size` (64x64..192x192) cho FE render thống nhất
 - Không trả về sensitive data (email passwords, API keys, etc.)
 - Frontend nên call endpoint này 1 lần khi app init và lưu vào global state
 
@@ -951,7 +956,7 @@ curl -H "X-Correlation-ID: test-123" http://localhost:8000/api/v1/health
 
 ---
 
-**Last Updated:** 2025-11-13  
+**Last Updated:** 2025-12-07  
 **API Version:** v1  
 **Total Endpoints:** 19
 

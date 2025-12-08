@@ -173,7 +173,14 @@ class Image extends Model
                 'updated_at' => now(),
             ]);
 
-        return ($logoUpdated + $faviconUpdated) > 0;
+        $watermarkUpdated = \DB::table('settings')
+            ->where('product_watermark_image_id', $this->id)
+            ->update([
+                'product_watermark_image_id' => null,
+                'updated_at' => now(),
+            ]);
+
+        return ($logoUpdated + $faviconUpdated + $watermarkUpdated) > 0;
     }
 
     private function isReferencedInSocialLinks(): bool

@@ -20,6 +20,9 @@ class Setting extends Model
     protected $fillable = [
         'logo_image_id',
         'favicon_image_id',
+        'product_watermark_image_id',
+        'product_watermark_position',
+        'product_watermark_size',
         'site_name',
         'hotline',
         'address',
@@ -50,5 +53,10 @@ class Setting extends Model
     public function faviconImage(): BelongsTo
     {
         return $this->belongsTo(Image::class, 'favicon_image_id');
+    }
+
+    public function productWatermarkImage(): BelongsTo
+    {
+        return $this->belongsTo(Image::class, 'product_watermark_image_id');
     }
 }

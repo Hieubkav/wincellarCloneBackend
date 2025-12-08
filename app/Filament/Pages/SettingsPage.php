@@ -78,7 +78,7 @@ class SettingsPage extends Page implements HasForms
                             ->columnSpanFull(),
                     ]),
                 Grid::make()
-                    ->columns(2)
+                    ->columns(3)
                     ->schema([
                         Select::make('logo_image_id')
                             ->label('Logo')
@@ -118,6 +118,45 @@ class SettingsPage extends Page implements HasForms
                             )
                             ->allowHtml()
                             ->searchable(),
+                        Select::make('product_watermark_image_id')
+                            ->label('Watermark sản phẩm')
+                            ->options(
+                                Image::where('active', true)
+                                    ->get()
+                                    ->mapWithKeys(function ($image) {
+                                        $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
+                                        $fileName = basename($image->file_path);
+                                        
+                                        return [
+                                            $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                <span style="font-size: 0.875rem;">' . $fileName . '</span>
+                                            </div>'
+                                        ];
+                                    })
+                            )
+                            ->allowHtml()
+                            ->searchable(),
+                        Select::make('product_watermark_position')
+                            ->label('Vị trí watermark')
+                            ->options([
+                                'none' => 'Không hiển thị',
+                                'top_left' => 'Góc trên trái',
+                                'top_right' => 'Góc trên phải',
+                                'bottom_left' => 'Góc dưới trái',
+                                'bottom_right' => 'Góc dưới phải',
+                            ])
+                            ->default('none'),
+                        Select::make('product_watermark_size')
+                            ->label('Kích thước watermark')
+                            ->options([
+                                '64x64' => '64 x 64 px',
+                                '96x96' => '96 x 96 px',
+                                '128x128' => '128 x 128 px',
+                                '160x160' => '160 x 160 px',
+                                '192x192' => '192 x 192 px',
+                            ])
+                            ->default('128x128'),
                     ]),
                 Grid::make()
                     ->columns(2)

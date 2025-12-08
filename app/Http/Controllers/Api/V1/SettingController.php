@@ -21,7 +21,7 @@ class SettingController extends Controller
             'api:v1:settings',
             3600,
             fn() => Setting::query()
-                ->with(['logoImage', 'faviconImage'])
+                ->with(['logoImage', 'faviconImage', 'productWatermarkImage'])
                 ->first()
         );
 
@@ -33,6 +33,8 @@ class SettingController extends Controller
                 'address' => '',
                 'hours' => '',
                 'email' => '',
+                'product_watermark_position' => 'none',
+                'product_watermark_size' => '128x128',
             ]);
         }
 

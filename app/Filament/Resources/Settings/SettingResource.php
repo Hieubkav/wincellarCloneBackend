@@ -175,6 +175,98 @@ class SettingResource extends Resource
                                     ])
                                     ->contained(false)
                                     ->columnSpanFull(),
+
+                                Select::make('product_watermark_position')
+                                    ->label('Vị trí watermark')
+                                    ->options([
+                                        'none' => 'Không hiển thị',
+                                        'top_left' => 'Góc trên trái',
+                                        'top_right' => 'Góc trên phải',
+                                        'bottom_left' => 'Góc dưới trái',
+                                        'bottom_right' => 'Góc dưới phải',
+                                    ])
+                                    ->default('none')
+                                    ->helperText('Chọn góc dán watermark (nền trong) lên ảnh sản phẩm.'),
+
+                                Select::make('product_watermark_size')
+                                    ->label('Kích thước watermark')
+                                    ->options([
+                                        '64x64' => '64 x 64 px (nhỏ góc nhỏ vừa)',
+                                        '96x96' => '96 x 96 px',
+                                        '128x128' => '128 x 128 px (mặc định)',
+                                        '160x160' => '160 x 160 px',
+                                        '192x192' => '192 x 192 px (to rõ nét)',
+                                    ])
+                                    ->default('128x128')
+                                    ->helperText('Preset phổ biến cho watermark góc trên ảnh sản phẩm, nên giảm theo kích thước ảnh gốc.'),
+                            ]),
+                    ]),
+
+
+                Section::make('Watermark sản phẩm')
+                    ->description('Thiết lập watermark dán lên ảnh sản phẩm')
+                    ->schema([
+                        Grid::make()
+                            ->schema([
+                                Tabs::make('ProductWatermarkSelection')
+                                    ->label('Watermark sản phẩm')
+                                    ->tabs([
+                                        Tabs\Tab::make('Chọn từ thư viện')
+                                            ->icon('heroicon-o-photo')
+                                            ->schema([
+                                                Select::make('product_watermark_image_id')
+                                                    ->label('Watermark có sẵn')
+                                                    ->relationship('productWatermarkImage', 'file_path', fn ($query) => $query->whereNull('model_id')->orWhereNull('model_type'))
+                                                    ->searchable()
+                                                    ->preload()
+                                                    ->getOptionLabelFromRecordUsing(fn (Image $record) => basename($record->file_path))
+                                                    ->helperText('Chọn watermark nền trong có sẵn trong hệ thống'),
+                                            ]),
+                                        Tabs\Tab::make('Tải lên mới')
+                                            ->icon('heroicon-o-arrow-up-tray')
+                                            ->schema([
+                                                FileUpload::make('new_product_watermark')
+                                                    ->label('Upload watermark mới')
+                                                    ->image()
+                                                    ->disk('public')
+                                                    ->directory('branding')
+                                                    ->imageEditor()
+                                                    ->maxSize(5120)
+                                                    ->acceptedFileTypes(['image/*'])
+                                                    ->saveUploadedFileUsing(function ($file, $set) {
+                                                        $filename = 'product_watermark_' . time() . '.webp';
+                                                        $path = 'branding/' . $filename;
+                                                        $disk = 'public';
+
+                                                        $manager = new ImageManager(new Driver());
+                                                        $image = $manager->read($file->getRealPath());
+
+                                                        if ($image->width() > 1200) {
+                                                            $image->scale(width: 1200);
+                                                        }
+
+                                                        $webp = $image->toWebp(quality: 90);
+                                                        Storage::disk($disk)->put($path, $webp);
+
+                                                        // Observer will auto-fill: width, height, mime via saving() hook
+                                                        $imageRecord = Image::create([
+                                                            'file_path' => $path,
+                                                            'disk' => $disk,
+                                                            'alt' => 'Product watermark',
+                                                            'mime' => 'image/webp',
+                                                            'active' => true,
+                                                        ]);
+
+                                                        $set('product_watermark_image_id', $imageRecord->id);
+
+                                                        return $path;
+                                                    })
+                                                    ->dehydrated(false)
+                                                    ->helperText('Watermark nền trong, khuyến nghị bề rộng ngang ≤ 1200px, tự động convert WebP'),
+                                            ]),
+                                    ])
+                                    ->contained(false)
+                                    ->columnSpanFull(),
                             ]),
                     ]),
 

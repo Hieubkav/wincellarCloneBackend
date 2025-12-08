@@ -80,6 +80,8 @@ class SiteConfigSeeder extends Seeder
             'meta_default_title' => 'Wincellar Boutique - Fine Wines & Spirits',
             'meta_default_description' => 'Kham pha bo suu tap ruou vang, bia craft, charcuterie va qua tang cao cap tai Wincellar.',
             'meta_default_keywords' => 'wine, spirits, craft beer, hamper, wincellar',
+            'product_watermark_position' => 'none',
+            'product_watermark_size' => '128x128',
             'extra' => json_encode([
                 'contact_person' => 'Nguyen Van An',
                 'map_embed' => 'https://maps.google.com/?q=12+Nguyen+Sieu',
@@ -347,4 +349,3 @@ class SiteConfigSeeder extends Seeder
         DB::table('menu_block_items')->insert($items);
     }
 }
-

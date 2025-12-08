@@ -537,7 +537,7 @@
                     <span class="method get">GET</span>
                     <div class="endpoint-path">/settings</div>
                 </div>
-                <p class="endpoint-description">Site info: logo, hotline, email, địa chỉ, meta defaults</p>
+                <p class="endpoint-description">Site info: logo, favicon, watermark sản phẩm (url + vị trí + kích thước), hotline, email, địa chỉ, meta defaults</p>
                 <h4>Response:</h4>
                 <pre>{
   "data": {
@@ -548,6 +548,10 @@
     "hours": "8:00 - 22:00",
     "email": "contact@wincellar.com",
     "logo_url": "/storage/images/logo.png",
+    "favicon_url": "/storage/images/favicon.ico",
+    "product_watermark_url": "/storage/images/watermark.png",
+    "product_watermark_position": "none",
+    "product_watermark_size": "128x128",
     "meta_defaults": {
       "title": "Thiên Kim Wine - Cửa Hàng Rượu Vang",
       "description": "Chuyên cung cấp rượu vang nhập khẩu",

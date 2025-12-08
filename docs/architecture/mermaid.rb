@@ -49,6 +49,9 @@ ActiveRecord::Schema[7.0].define do
   create_table "settings", force: :cascade do |t|
     t.bigint   "logo_image_id"
     t.bigint   "favicon_image_id"
+    t.bigint   "product_watermark_image_id"
+    t.string   "product_watermark_position", default: "none"
+    t.string   "product_watermark_size", default: "128x128"
     t.string   "site_name"
     t.string   "hotline"
     t.string   "address"
@@ -63,6 +66,7 @@ ActiveRecord::Schema[7.0].define do
   end
   add_foreign_key "settings", "images", column: "logo_image_id"
   add_foreign_key "settings", "images", column: "favicon_image_id"
+  add_foreign_key "settings", "images", column: "product_watermark_image_id"
 
   # == SOCIAL_LINKS ==
   create_table "social_links", force: :cascade do |t|
