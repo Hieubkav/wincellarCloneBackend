@@ -8,6 +8,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -40,6 +41,10 @@ class CatalogAttributeGroupsTable
             })
             ->columns([
                 BaseResource::getRowNumberColumn(),
+                ImageColumn::make('icon_path')
+                    ->label('Icon')
+                    ->disk('public')
+                    ->openUrlInNewTab(),
                 TextColumn::make('name')
                     ->label('Name')
                     ->searchable()

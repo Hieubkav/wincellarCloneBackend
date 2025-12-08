@@ -4,6 +4,7 @@ namespace App\Http\Resources\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class ProductResource extends JsonResource
 {
@@ -78,15 +79,22 @@ class ProductResource extends JsonResource
             'attributes' => $this->when($this->relationLoaded('terms'), function () {
                 return $this->terms
                     ->groupBy(fn ($term) => $term->group?->code ?? 'other')
-                    ->map(fn ($terms, $groupCode) => [
-                        'group_code' => $groupCode,
-                        'group_name' => $terms->first()?->group?->name,
-                        'terms' => $terms->map(fn ($t) => [
-                            'id' => $t->id,
-                            'name' => $t->name,
-                            'slug' => $t->slug,
-                        ])->values(),
-                    ])
+                    ->map(function ($terms, $groupCode) {
+                        $group = $terms->first()?->group;
+
+                        return [
+                            'group_code' => $groupCode,
+                            'group_name' => $group?->name,
+                            'icon_url' => $group?->icon_path
+                                ? Storage::disk('public')->url($group->icon_path)
+                                : null,
+                            'terms' => $terms->map(fn ($t) => [
+                                'id' => $t->id,
+                                'name' => $t->name,
+                                'slug' => $t->slug,
+                            ])->values(),
+                        ];
+                    })
                     ->values();
             }),
             

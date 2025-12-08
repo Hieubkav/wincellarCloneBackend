@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CatalogAttributeGroups\Schemas;
 
 use App\Models\CatalogAttributeGroup;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -78,9 +79,14 @@ class CatalogAttributeGroupForm
                         Hidden::make('position')
                             ->dehydrated(true)
                             ->default(fn () => (int) (CatalogAttributeGroup::max('position') ?? 0) + 1),
+                    ]),
 
-                        Hidden::make('icon_path')
-                            ->dehydrated(false),
+                Section::make('Icon')
+                    ->schema([
+                        FileUpload::make('icon_path')
+                            ->label('Ảnh icon')
+                            ->image()
+                            ->disk('public'),
                     ]),
             ]);
     }
