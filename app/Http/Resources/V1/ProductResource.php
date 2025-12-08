@@ -72,6 +72,28 @@ class ProductResource extends JsonResource
             'volume_ml' => $this->volume_ml,
             'badges' => $this->badges ?? [],
             
+            // Extra attributes (nhập tay từ admin: dung tích custom, độ cồn custom, v.v.)
+            'extra_attrs' => $this->extra_attrs ?? [],
+            
+            // Dynamic attributes grouped by catalog_attribute_group (detail view only)
+            'attributes' => $this->when(
+                $request->routeIs('api.v1.products.show') && $this->relationLoaded('terms'),
+                function () {
+                    return $this->terms
+                        ->groupBy(fn ($term) => $term->group?->code ?? 'other')
+                        ->map(fn ($terms, $groupCode) => [
+                            'group_code' => $groupCode,
+                            'group_name' => $terms->first()?->group?->name,
+                            'terms' => $terms->map(fn ($t) => [
+                                'id' => $t->id,
+                                'name' => $t->name,
+                                'slug' => $t->slug,
+                            ])->values(),
+                        ])
+                        ->values();
+                }
+            ),
+            
             // Categories (now many-to-many)
             'categories' => $this->when($this->relationLoaded('categories'), function () {
                 return $this->categories->map(fn ($category) => [
