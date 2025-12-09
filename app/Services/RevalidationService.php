@@ -73,7 +73,18 @@ class RevalidationService
     {
         return $this->triggerRevalidation(
             paths: ['/', '/products', '/filter'],
-            tags: ['home', 'menu', 'products']
+            tags: ['home', 'menu', 'products', 'settings']
+        );
+    }
+
+    /**
+     * Revalidate settings only
+     */
+    public function revalidateSettings(): bool
+    {
+        return $this->triggerRevalidation(
+            paths: ['/', '/filter'],
+            tags: ['settings']
         );
     }
 }
