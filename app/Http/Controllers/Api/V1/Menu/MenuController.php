@@ -24,8 +24,6 @@ class MenuController extends Controller
                 'blocks.items' => function ($query) {
                     $query->active()->orderBy('order');
                 },
-                'blocks.items.term.group',
-                'term'
             ])
             ->active()
             ->orderBy('order')
