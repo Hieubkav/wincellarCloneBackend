@@ -270,7 +270,62 @@ class ProductResource extends JsonResource
                 'slug' => $product->type->slug,
             ] : null,
             'badges' => $product->badges ?? [],
+            'extra_attrs' => $this->transformExtraAttrsForProduct($product),
+            'attributes' => $product->relationLoaded('terms')
+                ? $product->terms
+                    ->groupBy(fn ($term) => $term->group?->code ?? 'other')
+                    ->map(function ($terms, $groupCode) {
+                        $group = $terms->first()?->group;
+
+                        return [
+                            'group_code' => $groupCode,
+                            'group_name' => $group?->name,
+                            'icon_url' => $group?->icon_path
+                                ? Storage::disk('public')->url($group->icon_path)
+                                : null,
+                            'terms' => $terms->map(fn ($t) => [
+                                'id' => $t->id,
+                                'name' => $t->name,
+                                'slug' => $t->slug,
+                            ])->values(),
+                        ];
+                    })
+                    ->values()
+                    ->toArray()
+                : [],
         ];
+    }
+
+    /**
+     * Transform extra_attrs for a specific product
+     */
+    protected function transformExtraAttrsForProduct($product): array
+    {
+        $extraAttrs = $product->extra_attrs ?? [];
+
+        if (empty($extraAttrs)) {
+            return [];
+        }
+
+        $codes = array_keys($extraAttrs);
+
+        $iconMap = \App\Models\CatalogAttributeGroup::query()
+            ->whereIn('code', $codes)
+            ->pluck('icon_path', 'code')
+            ->toArray();
+
+        $transformed = [];
+        foreach ($extraAttrs as $code => $attr) {
+            $iconPath = $iconMap[$code] ?? null;
+            $transformed[$code] = [
+                'label' => $attr['label'] ?? $code,
+                'value' => $attr['value'] ?? '',
+                'type' => $attr['type'] ?? 'text',
+                'icon_url' => $iconPath ? Storage::disk('public')->url($iconPath) : null,
+            ];
+        }
+
+        return $transformed;
     }
 
     /**
