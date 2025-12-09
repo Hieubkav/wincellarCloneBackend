@@ -20,9 +20,6 @@ class MenuBlock extends Model
     protected $fillable = [
         'menu_id',
         'title',
-        'attribute_group_id',
-        'max_terms',
-        'config',
         'order',
         'active',
     ];
@@ -33,8 +30,6 @@ class MenuBlock extends Model
     protected function casts(): array
     {
         return [
-            'config' => 'array',
-            'max_terms' => 'int',
             'order' => 'int',
             'active' => 'bool',
         ];
@@ -43,11 +38,6 @@ class MenuBlock extends Model
     public function menu(): BelongsTo
     {
         return $this->belongsTo(Menu::class);
-    }
-
-    public function attributeGroup(): BelongsTo
-    {
-        return $this->belongsTo(CatalogAttributeGroup::class, 'attribute_group_id');
     }
 
     public function items(): HasMany

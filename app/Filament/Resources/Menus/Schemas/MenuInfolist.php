@@ -12,18 +12,20 @@ class MenuInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('title'),
-                TextEntry::make('term.name')
-                    ->numeric(),
-                TextEntry::make('type'),
-                TextEntry::make('href'),
+                TextEntry::make('title')
+                    ->label('Tiêu đề'),
+                TextEntry::make('href')
+                    ->label('Đường dẫn'),
+                TextEntry::make('type')
+                    ->label('Kiểu'),
                 TextEntry::make('order')
+                    ->label('Thứ tự')
                     ->numeric(),
                 IconEntry::make('active')
+                    ->label('Hiển thị')
                     ->boolean(),
                 TextEntry::make('created_at')
-                    ->dateTime(),
-                TextEntry::make('updated_at')
+                    ->label('Ngày tạo')
                     ->dateTime(),
             ]);
     }

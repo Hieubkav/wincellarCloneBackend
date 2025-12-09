@@ -13,19 +13,17 @@ class MenuBlockInfolist
         return $schema
             ->components([
                 TextEntry::make('menu.title')
-                    ->numeric(),
-                TextEntry::make('title'),
-                TextEntry::make('attributeGroup.name')
-                    ->numeric(),
-                TextEntry::make('max_terms')
-                    ->numeric(),
+                    ->label('Menu cha'),
+                TextEntry::make('title')
+                    ->label('Tiêu đề cột'),
                 TextEntry::make('order')
+                    ->label('Thứ tự')
                     ->numeric(),
                 IconEntry::make('active')
+                    ->label('Hiển thị')
                     ->boolean(),
                 TextEntry::make('created_at')
-                    ->dateTime(),
-                TextEntry::make('updated_at')
+                    ->label('Ngày tạo')
                     ->dateTime(),
             ]);
     }

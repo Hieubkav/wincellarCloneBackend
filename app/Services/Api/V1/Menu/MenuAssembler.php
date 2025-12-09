@@ -33,42 +33,20 @@ class MenuAssembler
     {
         $data = [
             'id' => $menu->id,
-            'label' => $menu->title,
-            'href' => $this->getMenuHref($menu),
+            'label' => $menu->title ?? '',
+            'href' => $menu->href ?? '#',
             'type' => $menu->type,
         ];
 
-        // Add children for mega menu type
-        if ($menu->type === 'mega' && $menu->blocks->isNotEmpty()) {
-            $data['children'] = $this->transformBlocks($menu->blocks);
-        }
-
-        return $data;
-    }
-
-    /**
-     * Get menu href
-     */
-    private function getMenuHref(Menu $menu): string
-    {
-        // Priority 1: Manual href
-        if ($menu->href) {
-            return $menu->href;
-        }
-
-        // Priority 2: Auto href from term
-        if ($menu->term) {
-            $group = $menu->term->group;
-            if ($group) {
-                return '/san-pham?' . http_build_query([
-                    'filter' => [
-                        $group->code => $menu->term->slug,
-                    ],
-                ]);
+        // Add children for mega menu type (only active blocks)
+        if ($menu->type === 'mega') {
+            $activeBlocks = $menu->blocks->filter(fn ($block) => $block->active);
+            if ($activeBlocks->isNotEmpty()) {
+                $data['children'] = $this->transformBlocks($activeBlocks);
             }
         }
 
-        return '#';
+        return $data;
     }
 
     /**
@@ -79,9 +57,16 @@ class MenuAssembler
         $children = [];
 
         foreach ($blocks as $block) {
+            // Only include active items
+            $activeItems = $block->items->filter(fn ($item) => $item->active);
+            
+            if ($activeItems->isEmpty()) {
+                continue;
+            }
+
             $children[] = [
-                'label' => $block->title,
-                'children' => $this->transformBlockItems($block->items),
+                'label' => $block->title ?? '',
+                'children' => $this->transformBlockItems($activeItems),
             ];
         }
 
@@ -97,13 +82,13 @@ class MenuAssembler
 
         foreach ($items as $item) {
             $itemData = [
-                'label' => $item->displayLabel(),
-                'href' => $item->displayHref() ?? '#',
+                'label' => $item->label ?? '',
+                'href' => $item->href ?? '#',
             ];
 
             // Add badge if exists
             if ($item->badge) {
-                $itemData['isHot'] = $item->badge === 'HOT';
+                $itemData['isHot'] = strtoupper($item->badge) === 'HOT';
                 $itemData['badge'] = $item->badge;
             }
 

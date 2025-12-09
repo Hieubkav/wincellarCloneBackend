@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CatalogTerm extends Model
 {
@@ -60,15 +59,5 @@ class CatalogTerm extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    public function menus(): HasMany
-    {
-        return $this->hasMany(Menu::class, 'term_id');
-    }
-
-    public function menuBlockItems(): HasMany
-    {
-        return $this->hasMany(MenuBlockItem::class, 'term_id');
     }
 }

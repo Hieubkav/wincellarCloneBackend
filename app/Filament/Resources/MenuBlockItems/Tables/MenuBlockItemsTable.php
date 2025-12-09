@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\MenuBlockItems\Tables;
 
-
-use App\Filament\Resources\BaseResource;use Filament\Actions\BulkActionGroup;
+use App\Filament\Resources\BaseResource;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -19,8 +19,7 @@ class MenuBlockItemsTable
     public static function configure(Table $table): Table
     {
         return $table
-            // Eager loading để tránh N+1 query
-            ->modifyQueryUsing(fn ($query) => $query->with(['block.menu', 'term']))
+            ->modifyQueryUsing(fn ($query) => $query->with('block.menu'))
             ->defaultSort('order', 'asc')
             ->reorderable('order')
             ->columns([
@@ -33,7 +32,7 @@ class MenuBlockItemsTable
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('block.title')
-                    ->label('Khối menu')
+                    ->label('Cột')
                     ->badge()
                     ->color('info')
                     ->icon('heroicon-o-rectangle-group')
@@ -41,29 +40,33 @@ class MenuBlockItemsTable
                 ImageColumn::make('icon_image')
                     ->label('Icon')
                     ->disk('public')
-                    ->width(50)
-                    ->height(50)
+                    ->width(40)
+                    ->height(40)
                     ->defaultImageUrl(fn () => null)
-                    ->circular(),
+                    ->circular()
+                    ->toggleable(),
                 TextColumn::make('label')
-                    ->label('Nhãn hiển thị')
+                    ->label('Nhãn')
                     ->searchable()
                     ->sortable()
                     ->weight('medium')
                     ->icon('heroicon-o-tag')
-                    ->color('primary')
-                    ->placeholder('(Từ thuật ngữ)')
-                    ->description(fn ($record) => $record->href ? "→ {$record->href}" : '(Auto từ term)'),
-                TextColumn::make('term.name')
-                    ->label('Thuật ngữ')
-                    ->badge()
-                    ->color('purple')
-                    ->sortable()
-                    ->toggleable(),
+                    ->color('primary'),
+                TextColumn::make('href')
+                    ->label('Đường dẫn')
+                    ->searchable()
+                    ->limit(30)
+                    ->tooltip(fn ($record) => $record->href)
+                    ->color('gray'),
                 TextColumn::make('badge')
-                    ->label('Badge đặc biệt')
+                    ->label('Badge')
                     ->badge()
-                    ->color('success')
+                    ->color(fn ($state) => match(strtoupper($state ?? '')) {
+                        'HOT' => 'danger',
+                        'NEW' => 'success',
+                        'SALE' => 'warning',
+                        default => 'gray'
+                    })
                     ->searchable()
                     ->sortable()
                     ->placeholder('—'),
@@ -72,32 +75,16 @@ class MenuBlockItemsTable
                     ->boolean()
                     ->sortable()
                     ->alignCenter(),
-                TextColumn::make('created_at')
-                    ->label('Tạo lúc')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->label('Cập nhật')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('menu_block_id')
-                    ->label('Lọc theo Khối menu')
+                    ->label('Lọc theo Cột')
                     ->relationship('block', 'title')
                     ->searchable()
                     ->preload()
                     ->multiple(),
-                SelectFilter::make('term_id')
-                    ->label('Lọc theo Thuật ngữ')
-                    ->relationship('term', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->multiple(),
                 TernaryFilter::make('active')
-                    ->label('Trạng thái hiển thị')
+                    ->label('Trạng thái')
                     ->placeholder('Tất cả')
                     ->trueLabel('Đang hiển thị')
                     ->falseLabel('Đã ẩn'),

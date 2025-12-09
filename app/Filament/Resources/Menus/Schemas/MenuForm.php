@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Menus\Schemas;
 
-use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -16,51 +15,34 @@ class MenuForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('Thông tin cơ bản')
+                Section::make('Thông tin Menu')
                     ->columns(2)
                     ->schema([
                         TextInput::make('title')
-                            ->label('Tiêu đề menu')
-                            ->maxLength(255),
-                        Select::make('term_id')
-                            ->label('Thuật ngữ liên kết')
-                            ->relationship('term', 'name')
-                            ->searchable()
-                            ->preload(),
+                            ->label('Tiêu đề')
+                            ->required()
+                            ->maxLength(255)
+                            ->placeholder('VD: Rượu vang, Liên hệ'),
+                        TextInput::make('href')
+                            ->label('Đường dẫn')
+                            ->required()
+                            ->maxLength(2048)
+                            ->placeholder('VD: /filter?type=1, /contact')
+                            ->helperText('Nhập link thủ công'),
                         Select::make('type')
                             ->label('Kiểu menu')
                             ->options([
-                                'standard' => 'Menu thường',
-                                'mega' => 'Menu mở rộng (Mega)',
+                                'standard' => 'Link đơn (không dropdown)',
+                                'mega' => 'Mega menu (có nhiều cột)',
                             ])
                             ->required()
-                            ->default('standard'),
-                        TextInput::make('href')
-                            ->label('Đường dẫn')
-                            ->maxLength(2048),
-                        TextInput::make('order')
-                            ->label('Thứ tự hiển thị')
-                            ->required()
-                            ->numeric()
-                            ->default(0)
-                            ->minValue(0),
+                            ->default('standard')
+                            ->helperText('Mega menu sẽ hiển thị các Block con'),
                         Toggle::make('active')
-                            ->label('Đang hiển thị')
+                            ->label('Hiển thị')
                             ->required()
                             ->default(true)
                             ->inline(false),
-                    ]),
-                Section::make('Cấu hình bổ sung')
-                    ->collapsed()
-                    ->schema([
-                        KeyValue::make('config')
-                            ->label('Cấu hình')
-                            ->keyLabel('Tên trường')
-                            ->valueLabel('Giá trị')
-                            ->nullable()
-                            ->reorderable()
-                            ->addButtonLabel('Thêm cấu hình')
-                            ->columnSpanFull(),
                     ]),
             ]);
     }

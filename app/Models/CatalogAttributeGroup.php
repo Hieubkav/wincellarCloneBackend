@@ -43,12 +43,6 @@ class CatalogAttributeGroup extends Model
             ->orderBy('position');
     }
 
-    public function menuBlocks(): HasMany
-    {
-        return $this->hasMany(MenuBlock::class, 'attribute_group_id')
-            ->orderBy('order');
-    }
-
     public function productTypes(): BelongsToMany
     {
         return $this->belongsToMany(ProductType::class, 'catalog_attribute_group_product_type', 'group_id', 'type_id')

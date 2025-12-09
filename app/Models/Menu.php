@@ -6,7 +6,6 @@ use App\Observers\MenuObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[ObservedBy(MenuObserver::class)]
@@ -19,10 +18,8 @@ class Menu extends Model
      */
     protected $fillable = [
         'title',
-        'term_id',
         'type',
         'href',
-        'config',
         'order',
         'active',
     ];
@@ -33,15 +30,9 @@ class Menu extends Model
     protected function casts(): array
     {
         return [
-            'config' => 'array',
             'order' => 'int',
             'active' => 'bool',
         ];
-    }
-
-    public function term(): BelongsTo
-    {
-        return $this->belongsTo(CatalogTerm::class, 'term_id');
     }
 
     public function blocks(): HasMany

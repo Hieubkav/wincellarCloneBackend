@@ -12,20 +12,22 @@ class MenuBlockItemInfolist
     {
         return $schema
             ->components([
-                TextEntry::make('menu_block_id')
-                    ->numeric(),
-                TextEntry::make('term.name')
-                    ->numeric(),
-                TextEntry::make('label'),
-                TextEntry::make('href'),
-                TextEntry::make('badge'),
+                TextEntry::make('block.title')
+                    ->label('Thuộc cột'),
+                TextEntry::make('label')
+                    ->label('Nhãn'),
+                TextEntry::make('href')
+                    ->label('Đường dẫn'),
+                TextEntry::make('badge')
+                    ->label('Badge'),
                 TextEntry::make('order')
+                    ->label('Thứ tự')
                     ->numeric(),
                 IconEntry::make('active')
+                    ->label('Hiển thị')
                     ->boolean(),
                 TextEntry::make('created_at')
-                    ->dateTime(),
-                TextEntry::make('updated_at')
+                    ->label('Ngày tạo')
                     ->dateTime(),
             ]);
     }

@@ -19,48 +19,37 @@ class MenuBlockItemForm
         return $schema
             ->columns(1)
             ->components([
-                Section::make('Thông tin cơ bản')
-                    ->description('Chọn 1 trong 2 mode: (1) Chọn Thuật ngữ từ taxonomy → auto label/href, hoặc (2) Nhập thủ công Label + Đường dẫn')
+                Section::make('Thông tin Item')
                     ->columns(2)
                     ->schema([
                         Select::make('menu_block_id')
-                            ->label('Khối menu')
+                            ->label('Thuộc cột')
                             ->relationship('block', 'title')
                             ->searchable()
                             ->preload()
                             ->required(),
-                        Select::make('term_id')
-                            ->label('Thuật ngữ (Mode 1: Auto)')
-                            ->helperText('Chọn thuật ngữ từ catalog → tự động lấy tên và tạo link filter')
-                            ->relationship('term', 'name')
-                            ->searchable()
-                            ->preload(),
                         TextInput::make('label')
-                            ->label('Nhãn hiển thị (Mode 2: Thủ công)')
-                            ->helperText('Để trống nếu dùng thuật ngữ ở trên')
-                            ->maxLength(255),
-                        TextInput::make('href')
-                            ->label('Đường dẫn (Mode 2: Thủ công)')
-                            ->helperText('VD: tel:+84938123456, mailto:abc@xyz.com, https://...')
-                            ->maxLength(2048),
-                        TextInput::make('badge')
-                            ->label('Nhãn đặc biệt')
-                            ->maxLength(50)
-                            ->placeholder('VD: Mới, Hot, Sale'),
-                        TextInput::make('order')
-                            ->label('Thứ tự hiển thị')
+                            ->label('Nhãn hiển thị')
                             ->required()
-                            ->numeric()
-                            ->default(0)
-                            ->minValue(0),
+                            ->maxLength(255)
+                            ->placeholder('VD: Vang đỏ, Pháp, Cabernet'),
+                        TextInput::make('href')
+                            ->label('Đường dẫn')
+                            ->required()
+                            ->maxLength(2048)
+                            ->placeholder('VD: /filter?type=1&category=2')
+                            ->helperText('Nhập link thủ công'),
+                        TextInput::make('badge')
+                            ->label('Badge')
+                            ->maxLength(50)
+                            ->placeholder('VD: HOT, NEW, SALE'),
                         Toggle::make('active')
-                            ->label('Đang hiển thị')
+                            ->label('Hiển thị')
                             ->required()
                             ->default(true)
-                            ->inline(false)
-                            ->columnSpanFull(),
+                            ->inline(false),
                     ]),
-                Section::make('Icon')
+                Section::make('Icon (tùy chọn)')
                     ->collapsed()
                     ->schema([
                         FileUpload::make('icon_image')
