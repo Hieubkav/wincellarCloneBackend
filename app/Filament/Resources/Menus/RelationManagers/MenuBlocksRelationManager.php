@@ -2,11 +2,14 @@
 
 namespace App\Filament\Resources\Menus\RelationManagers;
 
+use App\Filament\Resources\MenuBlocks\MenuBlockResource;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -81,6 +84,62 @@ class MenuBlocksRelationManager extends RelationManager
                     ->modalHeading('Thêm cột mega menu'),
             ])
             ->recordActions([
+                Action::make('editItems')
+                    ->label('Sửa items')
+                    ->icon('heroicon-o-pencil-square')
+                    ->iconButton()
+                    ->color('primary')
+                    ->modalHeading(fn ($record) => "Sửa items: {$record->title}")
+                    ->modalSubmitActionLabel('Lưu')
+                    ->modalCancelActionLabel('Hủy')
+                    ->fillForm(fn ($record) => [
+                        'items' => $record->items->map(fn ($item) => [
+                            'id' => $item->id,
+                            'label' => $item->label,
+                            'href' => $item->href,
+                        ])->toArray(),
+                    ])
+                    ->form([
+                        Repeater::make('items')
+                            ->label('')
+                            ->schema([
+                                TextInput::make('label')
+                                    ->label('Tiêu đề')
+                                    ->required(),
+                                TextInput::make('href')
+                                    ->label('URL'),
+                            ])
+                            ->columns(2)
+                            ->reorderable()
+                            ->addActionLabel('Thêm item'),
+                    ])
+                    ->action(function ($record, array $data) {
+                        $existingIds = collect($data['items'])->pluck('id')->filter()->toArray();
+                        $record->items()->whereNotIn('id', $existingIds)->delete();
+
+                        foreach ($data['items'] as $index => $itemData) {
+                            if (isset($itemData['id'])) {
+                                $record->items()->where('id', $itemData['id'])->update([
+                                    'label' => $itemData['label'],
+                                    'href' => $itemData['href'],
+                                    'order' => $index,
+                                ]);
+                            } else {
+                                $record->items()->create([
+                                    'label' => $itemData['label'],
+                                    'href' => $itemData['href'],
+                                    'order' => $index,
+                                ]);
+                            }
+                        }
+                    }),
+                Action::make('open')
+                    ->label('Mở')
+                    ->icon('heroicon-o-arrow-top-right-on-square')
+                    ->iconButton()
+                    ->color('info')
+                    ->url(fn ($record) => MenuBlockResource::getUrl('edit', ['record' => $record]))
+                    ->openUrlInNewTab(),
                 EditAction::make()->iconButton()->color('warning'),
                 DeleteAction::make()->iconButton()->color('danger'),
             ])

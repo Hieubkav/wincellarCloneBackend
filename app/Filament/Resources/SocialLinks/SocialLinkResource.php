@@ -10,7 +10,7 @@ use App\Filament\Resources\SocialLinks\Pages\EditSocialLink;
 use App\Filament\Resources\SocialLinks\Pages\ListSocialLinks;
 use App\Models\Image;
 use App\Models\SocialLink;
-use Filament\Resources\Resource;
+use App\Filament\Resources\BaseResource;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
@@ -31,7 +31,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
-class SocialLinkResource extends Resource
+class SocialLinkResource extends BaseResource
 {
     protected static ?string $model = SocialLink::class;
 
