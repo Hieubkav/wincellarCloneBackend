@@ -5,7 +5,7 @@ description: Implement Lexical Editor with automatic image management using Lara
 
 # Lexical Editor Image Management
 
-Complete guide for implementing Lexical Editor with automatic image management using Laravel Observers. This skill transforms base64 images from rich text editors into optimized storage files and automatically cleans up unused images.
+Complete guide for implementing Lexical Editor with automatic image management using a **reusable Trait approach**. This skill transforms base64 images from rich text editors into optimized storage files and automatically cleans up unused images.
 
 ## When to use this Skill
 
@@ -15,72 +15,99 @@ Use this Skill when you need to:
 - Automatically delete unused images from storage
 - Manage media files in rich text content
 - Optimize storage usage in Laravel applications
-- Build Observer-based image lifecycle management
+- Build reusable image lifecycle management across multiple models
 - Handle cleanup of old images when content is updated or deleted
 
-## Quick Start
+## Quick Start (Trait Approach - Recommended)
 
 ### Step 1: Install Lexical Editor Package
 
 ```bash
 composer require malzariey/filament-lexical-editor
-npm install --save-dev @lexical/react @lexical/plain-text
 ```
 
-### Step 2: Create Model and Migration
+### Step 2: Create RichEditorMedia Model & Migration
 
 ```bash
-php artisan make:model Post -m
+php artisan make:model RichEditorMedia -m
 ```
 
-Add content field to migration:
+**Migration:**
 ```php
-$table->text('content')->nullable(); // For Lexical Editor HTML
-$table->string('image')->nullable();
-$table->string('pdf')->nullable();
+Schema::create('rich_editor_media', function (Blueprint $table) {
+    $table->id();
+    $table->string('model_type');
+    $table->unsignedBigInteger('model_id');
+    $table->string('field_name');
+    $table->string('file_path');
+    $table->string('disk')->default('public');
+    $table->timestamps();
+    $table->index(['model_type', 'model_id']);
+});
 ```
 
-### Step 3: Register Observer
-
-```bash
-php artisan make:observer PostObserver --model=Post
-```
-
-Register in `EventServiceProvider`:
+**Model:**
 ```php
-use App\Models\Post;
-use App\Observers\PostObserver;
-
-public function boot(): void
+class RichEditorMedia extends Model
 {
-    Post::observe(PostObserver::class);
+    protected $fillable = ['model_type', 'model_id', 'field_name', 'file_path', 'disk'];
+
+    public function model(): MorphTo
+    {
+        return $this->morphTo();
+    }
 }
 ```
 
-### Step 4: Configure Filament Resource
+### Step 3: Create HasRichEditorMedia Trait
 
-In your `PostResource.php`:
+Create `app/Models/Concerns/HasRichEditorMedia.php`:
+
+See [references/trait-implementation.md](./references/trait-implementation.md) for complete trait code.
+
+### Step 4: Create Observer for RichEditorMedia
+
 ```php
-use Malzariey\FilamentLexicalEditor\FilamentLexicalEditor;
-use Malzariey\FilamentLexicalEditor\Enums\ToolbarItem;
-
-FilamentLexicalEditor::make('content')
-    ->label('Nội dung')
-    ->required()
-    ->columnSpanFull()
-    ->enabledToolbars([
-        ToolbarItem::BOLD,
-        ToolbarItem::ITALIC,
-        ToolbarItem::IMAGE,
-        ToolbarItem::H1,
-        ToolbarItem::H2,
-        // ... other toolbar items
-    ])
+// app/Observers/RichEditorMediaObserver.php
+class RichEditorMediaObserver
+{
+    public function deleted(RichEditorMedia $media): void
+    {
+        if ($media->file_path && Storage::disk($media->disk)->exists($media->file_path)) {
+            Storage::disk($media->disk)->delete($media->file_path);
+        }
+    }
+}
 ```
 
-### Step 5: Apply Observer Logic
+Register in `AppServiceProvider`:
+```php
+RichEditorMedia::observe(RichEditorMediaObserver::class);
+```
 
-See [observer-implementation.md](./observer-implementation.md) for complete Observer code.
+### Step 5: Apply Trait to Model
+
+```php
+use App\Models\Concerns\HasRichEditorMedia;
+
+class Product extends Model
+{
+    use HasRichEditorMedia;
+    
+    protected array $richEditorFields = ['description']; // Fields using Lexical Editor
+}
+```
+
+### Step 6: Configure Filament Resource
+
+```php
+use Malzariey\FilamentLexicalEditor\LexicalEditor;
+
+LexicalEditor::make('description')
+    ->label('Mô tả')
+    ->helperText('Ảnh paste/upload sẽ tự lưu ra file, không lưu base64 vào DB.')
+    ->columnSpanFull()
+```
 
 ## How It Works
 
@@ -88,63 +115,61 @@ See [observer-implementation.md](./observer-implementation.md) for complete Obse
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│        Lexical Editor (Frontend)                    │
-│  - User uploads image in editor                     │
-│  - Image converted to base64                        │
-│  - HTML content stored with base64 images           │
+│        Lexical Editor (Filament Admin)              │
+│  - User paste/upload image in editor                │
+│  - Image embedded as base64 in HTML                 │
 └──────────────────┬──────────────────────────────────┘
                    │
                    ▼
 ┌─────────────────────────────────────────────────────┐
-│      Laravel Observer (Backend)                     │
-│  - Listen to Model saving events                    │
-│  - Extract base64 images from content               │
-│  - Convert base64 to actual files                   │
-│  - Save files to storage                            │
-│  - Replace base64 with file URLs                    │
+│      HasRichEditorMedia Trait (Model)               │
+│  - bootHasRichEditorMedia() registers events        │
+│  - saving: convertBase64ImagesToFiles()             │
+│  - saved: cleanupRemovedRichEditorImages()          │
+│  - saved: syncRichEditorMedia()                     │
 └──────────────────┬──────────────────────────────────┘
                    │
                    ▼
 ┌─────────────────────────────────────────────────────┐
-│      File Storage                                   │
-│  storage/app/public/uploads/content/                │
-│  - lexical-1701234567-abc123.jpg                    │
-│  - lexical-1701234568-def456.png                    │
+│      File Storage (Dated directories)               │
+│  storage/app/public/uploads/{model}/content/Y/m/d/  │
+│  - product-lexical-1734123456-abc12345.jpg          │
+│  - product-lexical-1734123457-def67890.png          │
 └──────────────────┬──────────────────────────────────┘
                    │
                    ▼
 ┌─────────────────────────────────────────────────────┐
-│      Database (Model)                               │
-│  - content: HTML with file URLs instead of base64   │
-│  - <img src="/storage/uploads/content/image.jpg">   │
+│      RichEditorMedia Table (Tracking)               │
+│  - Tracks all images per model/field                │
+│  - Enables orphan detection & bulk cleanup          │
 └─────────────────────────────────────────────────────┘
 ```
 
 ### Workflow Events
 
-1. **Creating**: Auto-generate slug from title
-2. **Saving**: Convert all base64 images to storage files
-3. **Updating**: 
-   - Delete old main image if replaced
-   - Delete old PDF if replaced
+1. **updating**: Snapshot old content for comparison
+2. **saving**: Convert all base64 images to storage files
+3. **saved**: 
    - Compare old/new content and delete unused images
-4. **Deleted**: Clean up all associated files
+   - Sync tracking table with current images
+4. **deleted/forceDeleted**: Clean up all associated files
 
 ## Implementation Details
 
 ### Base64 Conversion Process
 
-The Observer scans content for base64 images using regex pattern:
+The trait scans content for base64 images using regex pattern:
 ```
-data:image/{type};base64,{data}
+data:image/(png|jpg|jpeg|gif|webp|svg+xml);base64,{data}
 ```
 
 For each match:
-1. Extract MIME type (png, jpg, gif, etc.)
+1. Extract MIME type (png, jpg, gif, webp, svg)
 2. Decode base64 data to binary
-3. Generate unique filename: `lexical-{timestamp}-{uniqid}.{ext}`
-4. Save to `storage/app/public/uploads/content/`
-5. Replace base64 string with file URL
+3. Validate size (max 5MB)
+4. Generate unique filename: `{model}-lexical-{timestamp}-{random8}.{ext}`
+5. Save to dated directory: `uploads/{model}/content/Y/m/d/`
+6. Replace base64 string with `/storage/...` URL
 
 Example:
 ```html
@@ -152,15 +177,15 @@ Example:
 <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA...">
 
 <!-- After (file URL) -->
-<img src="/storage/uploads/content/lexical-1701234567-abc123.png">
+<img src="/storage/uploads/products/content/2025/12/11/product-lexical-1734123456-abc12345.png">
 ```
 
 ### Image Cleanup Strategy
 
-The Observer intelligently tracks images:
-- **Old images**: Extracted from previous content version
-- **New images**: Extracted from current content version
-- **Unused images**: Images in old but not in new = deleted
+The trait intelligently tracks images:
+- **snapshotRichEditorContent()**: Captures old content before update
+- **extractImagePathsFromContent()**: Parses HTML, data-url, and JSON formats
+- **cleanupRemovedRichEditorImages()**: Deletes images no longer in content
 
 This prevents accidental deletion of images still in use while cleaning up removed images.
 
@@ -168,19 +193,19 @@ This prevents accidental deletion of images still in use while cleaning up remov
 
 ```
 storage/app/public/
-├── uploads/
-│   ├── main-photo.jpg          # Main post image
-│   ├── document.pdf            # PDF file
-│   └── content/
-│       ├── lexical-17012345-1a2b.jpg
-│       ├── lexical-17012346-3c4d.png
-│       └── lexical-17012347-5e6f.gif
-└── service-content/            # For ServicePost model
-    ├── service-lexical-1701234-7g8h.jpg
-    └── service-lexical-1701235-9i0j.png
+└── uploads/
+    ├── products/
+    │   └── content/
+    │       └── 2025/12/11/
+    │           ├── product-lexical-1734123456-abc12345.jpg
+    │           └── product-lexical-1734123457-def67890.png
+    └── articles/
+        └── content/
+            └── 2025/12/11/
+                └── article-lexical-1734123458-ghi12345.jpg
 ```
 
-Keep different content types in separate directories to:
+Benefits of dated directory structure:
 - Track which images belong to which model
 - Prevent accidental deletion of shared images
 - Organize cleanup commands by type
