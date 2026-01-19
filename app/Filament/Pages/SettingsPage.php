@@ -10,6 +10,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Section;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Schemas\Schema;
@@ -130,47 +133,102 @@ class SettingsPage extends Page implements HasForms
                         Tab::make('Watermark')
                             ->icon('heroicon-o-shield-check')
                             ->schema([
-                                Select::make('product_watermark_image_id')
-                                    ->label('Watermark sản phẩm')
-                                    ->options(
-                                        Image::where('active', true)
-                                            ->get()
-                                            ->mapWithKeys(function ($image) {
-                                                $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
-                                                $fileName = basename($image->file_path);
-                                                
-                                                return [
-                                                    $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                        <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
-                                                        <span style="font-size: 0.875rem;">' . $fileName . '</span>
-                                                    </div>'
-                                                ];
-                                            })
-                                    )
-                                    ->allowHtml()
-                                    ->searchable(),
-                                Select::make('product_watermark_position')
-                                    ->label('Vị trí watermark')
+                                Radio::make('product_watermark_type')
+                                    ->label('Loại watermark')
                                     ->options([
-                                        'none' => 'Không hiển thị',
-                                        'top_left' => 'Góc trên trái',
-                                        'top_right' => 'Góc trên phải',
-                                        'bottom_left' => 'Góc dưới trái',
-                                        'bottom_right' => 'Góc dưới phải',
+                                        'image' => 'Hình ảnh',
+                                        'text' => 'Chữ',
                                     ])
-                                    ->default('none'),
-                                Select::make('product_watermark_size')
-                                    ->label('Kích thước watermark')
-                                    ->options([
-                                        '64x64' => '64 x 64 px',
-                                        '96x96' => '96 x 96 px',
-                                        '128x128' => '128 x 128 px',
-                                        '160x160' => '160 x 160 px',
-                                        '192x192' => '192 x 192 px',
+                                    ->default('image')
+                                    ->inline()
+                                    ->live()
+                                    ->columnSpanFull(),
+
+                                Section::make('Watermark hình ảnh')
+                                    ->schema([
+                                        Select::make('product_watermark_image_id')
+                                            ->label('Chọn hình ảnh')
+                                            ->options(
+                                                Image::where('active', true)
+                                                    ->get()
+                                                    ->mapWithKeys(function ($image) {
+                                                        $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
+                                                        $fileName = basename($image->file_path);
+                                                        
+                                                        return [
+                                                            $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                                <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                                <span style="font-size: 0.875rem;">' . $fileName . '</span>
+                                                            </div>'
+                                                        ];
+                                                    })
+                                            )
+                                            ->allowHtml()
+                                            ->searchable(),
+                                        Select::make('product_watermark_position')
+                                            ->label('Vị trí')
+                                            ->options([
+                                                'none' => 'Không hiển thị',
+                                                'top_left' => 'Góc trên trái',
+                                                'top_right' => 'Góc trên phải',
+                                                'bottom_left' => 'Góc dưới trái',
+                                                'bottom_right' => 'Góc dưới phải',
+                                            ])
+                                            ->default('none'),
+                                        Select::make('product_watermark_size')
+                                            ->label('Kích thước')
+                                            ->options([
+                                                '64x64' => '64 x 64 px',
+                                                '96x96' => '96 x 96 px',
+                                                '128x128' => '128 x 128 px',
+                                                '160x160' => '160 x 160 px',
+                                                '192x192' => '192 x 192 px',
+                                            ])
+                                            ->default('128x128'),
                                     ])
-                                    ->default('128x128'),
+                                    ->columns(3)
+                                    ->visible(fn ($get) => $get('product_watermark_type') === 'image'),
+
+                                Section::make('Watermark chữ')
+                                    ->schema([
+                                        TextInput::make('product_watermark_text')
+                                            ->label('Nội dung chữ')
+                                            ->placeholder('VD: logo')
+                                            ->maxLength(100),
+                                        Select::make('product_watermark_text_size')
+                                            ->label('Kích thước chữ')
+                                            ->options([
+                                                'small' => 'Nhỏ',
+                                                'medium' => 'Vừa',
+                                                'large' => 'Lớn',
+                                                'xlarge' => 'Rất lớn',
+                                            ])
+                                            ->default('medium'),
+                                        Select::make('product_watermark_text_position')
+                                            ->label('Vị trí')
+                                            ->options([
+                                                'top' => 'Trên',
+                                                'center' => 'Giữa',
+                                                'bottom' => 'Dưới',
+                                            ])
+                                            ->default('center'),
+                                        Select::make('product_watermark_text_opacity')
+                                            ->label('Độ trong suốt')
+                                            ->options([
+                                                20 => '20%',
+                                                30 => '30%',
+                                                40 => '40%',
+                                                50 => '50%',
+                                                60 => '60%',
+                                                70 => '70%',
+                                                80 => '80%',
+                                            ])
+                                            ->default(50),
+                                    ])
+                                    ->columns(4)
+                                    ->visible(fn ($get) => $get('product_watermark_type') === 'text'),
                             ])
-                            ->columns(3),
+                            ->columns(1),
                         Tab::make('SEO')
                             ->icon('heroicon-o-magnifying-glass')
                             ->schema([
