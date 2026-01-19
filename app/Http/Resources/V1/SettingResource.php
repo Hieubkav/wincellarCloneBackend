@@ -29,6 +29,11 @@ class SettingResource extends JsonResource
             'product_watermark_url' => $this->productWatermarkImage?->url,
             'product_watermark_position' => $this->product_watermark_position,
             'product_watermark_size' => $this->product_watermark_size,
+            'product_watermark_type' => $this->product_watermark_type ?? 'image',
+            'product_watermark_text' => $this->product_watermark_text,
+            'product_watermark_text_size' => $this->product_watermark_text_size ?? 'medium',
+            'product_watermark_text_position' => $this->product_watermark_text_position ?? 'center',
+            'product_watermark_text_opacity' => $this->product_watermark_text_opacity ?? 50,
             
             // SEO meta defaults (for pages without custom meta)
             'meta_defaults' => [
