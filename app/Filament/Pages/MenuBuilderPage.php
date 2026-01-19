@@ -55,7 +55,11 @@ namespace App\Filament\Pages;
  
      public function mount(): void
      {
-         $this->menus = Menu::with(['blocks.items'])->orderBy('order')->get();
+        // Chỉ lấy mega menu vì Menu Builder dùng để build mega menu
+        $this->menus = Menu::with(['blocks.items'])
+            ->where('type', 'mega')
+            ->orderBy('order')
+            ->get();
  
          if ($this->menus->isNotEmpty()) {
              $this->selectMenu($this->menus->first()->id);
@@ -92,7 +96,10 @@ namespace App\Filament\Pages;
          if ($this->selectedMenuId) {
              $this->selectMenu($this->selectedMenuId);
          }
-         $this->menus = Menu::with(['blocks.items'])->orderBy('order')->get();
+        $this->menus = Menu::with(['blocks.items'])
+            ->where('type', 'mega')
+            ->orderBy('order')
+            ->get();
      }
  
      public function resetEditing(): void
