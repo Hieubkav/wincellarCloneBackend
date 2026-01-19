@@ -198,10 +198,13 @@ class SettingsPage extends Page implements HasForms
                                         Select::make('product_watermark_text_size')
                                             ->label('Kích thước chữ')
                                             ->options([
+                                                'xxsmall' => 'Rất nhỏ',
+                                                'xsmall' => 'Nhỏ hơn',
                                                 'small' => 'Nhỏ',
                                                 'medium' => 'Vừa',
                                                 'large' => 'Lớn',
                                                 'xlarge' => 'Rất lớn',
+                                                'xxlarge' => 'Cực lớn',
                                             ])
                                             ->default('medium'),
                                         Select::make('product_watermark_text_position')
@@ -215,13 +218,19 @@ class SettingsPage extends Page implements HasForms
                                         Select::make('product_watermark_text_opacity')
                                             ->label('Độ trong suốt')
                                             ->options([
+                                                5 => '5%',
+                                                10 => '10%',
+                                                15 => '15%',
                                                 20 => '20%',
+                                                25 => '25%',
                                                 30 => '30%',
                                                 40 => '40%',
                                                 50 => '50%',
                                                 60 => '60%',
                                                 70 => '70%',
                                                 80 => '80%',
+                                                90 => '90%',
+                                                100 => '100%',
                                             ])
                                             ->default(50),
                                     ])
