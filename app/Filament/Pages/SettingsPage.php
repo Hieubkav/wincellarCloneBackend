@@ -4,7 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Models\Image;
 use App\Models\Setting;
-use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -50,146 +51,139 @@ class SettingsPage extends Page implements HasForms
     {
         return $schema
             ->schema([
-                Section::make('Thông tin website')
-                    ->description('Thông tin cơ bản hiển thị trên website')
-                    ->icon('heroicon-o-globe-alt')
-                    ->columns(2)
-                    ->schema([
-                        TextInput::make('site_name')
-                            ->label('Tên website')
-                            ->maxLength(255),
-                        TextInput::make('hotline')
-                            ->label('Số hotline')
-                            ->maxLength(255),
-                        TextInput::make('email')
-                            ->label('Email liên hệ')
-                            ->email()
-                            ->maxLength(255),
-                        TextInput::make('address')
-                            ->label('Địa chỉ')
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-                        Textarea::make('hours')
-                            ->label('Giờ làm việc')
-                            ->rows(3)
-                            ->columnSpanFull(),
-                    ]),
-                Section::make('Bản đồ')
-                    ->description('Nhúng Google Map để hiển thị vị trí')
-                    ->icon('heroicon-o-map-pin')
-                    ->collapsible()
-                    ->schema([
-                        Textarea::make('google_map_embed')
-                            ->label('Google Map nhúng (iframe code)')
-                            ->placeholder('<iframe src="https://www.google.com/maps/embed?..." width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>')
-                            ->rows(4),
-                    ]),
-                Section::make('Hình ảnh & Branding')
-                    ->description('Logo và favicon của website')
-                    ->icon('heroicon-o-photo')
-                    ->columns(2)
-                    ->schema([
-                        Select::make('logo_image_id')
-                            ->label('Logo')
-                            ->options(
-                                Image::where('active', true)
-                                    ->get()
-                                    ->mapWithKeys(function ($image) {
-                                        $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
-                                        $fileName = basename($image->file_path);
-                                        
-                                        return [
-                                            $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
-                                                <span style="font-size: 0.875rem;">' . $fileName . '</span>
-                                            </div>'
-                                        ];
-                                    })
-                            )
-                            ->allowHtml()
-                            ->searchable(),
-                        Select::make('favicon_image_id')
-                            ->label('Favicon')
-                            ->options(
-                                Image::where('active', true)
-                                    ->get()
-                                    ->mapWithKeys(function ($image) {
-                                        $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
-                                        $fileName = basename($image->file_path);
-                                        
-                                        return [
-                                            $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
-                                                <span style="font-size: 0.875rem;">' . $fileName . '</span>
-                                            </div>'
-                                        ];
-                                    })
-                            )
-                            ->allowHtml()
-                            ->searchable(),
-                    ]),
-                Section::make('Watermark sản phẩm')
-                    ->description('Cấu hình watermark cho hình ảnh sản phẩm')
-                    ->icon('heroicon-o-shield-check')
-                    ->collapsible()
-                    ->columns(3)
-                    ->schema([
-                        Select::make('product_watermark_image_id')
-                            ->label('Watermark sản phẩm')
-                            ->options(
-                                Image::where('active', true)
-                                    ->get()
-                                    ->mapWithKeys(function ($image) {
-                                        $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
-                                        $fileName = basename($image->file_path);
-                                        
-                                        return [
-                                            $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
-                                                <span style="font-size: 0.875rem;">' . $fileName . '</span>
-                                            </div>'
-                                        ];
-                                    })
-                            )
-                            ->allowHtml()
-                            ->searchable(),
-                        Select::make('product_watermark_position')
-                            ->label('Vị trí watermark')
-                            ->options([
-                                'none' => 'Không hiển thị',
-                                'top_left' => 'Góc trên trái',
-                                'top_right' => 'Góc trên phải',
-                                'bottom_left' => 'Góc dưới trái',
-                                'bottom_right' => 'Góc dưới phải',
+                Tabs::make('Cài đặt')
+                    ->persistTabInQueryString()
+                    ->tabs([
+                        Tab::make('Thông tin')
+                            ->icon('heroicon-o-globe-alt')
+                            ->schema([
+                                TextInput::make('site_name')
+                                    ->label('Tên website')
+                                    ->maxLength(255),
+                                TextInput::make('hotline')
+                                    ->label('Số hotline')
+                                    ->maxLength(255),
+                                TextInput::make('email')
+                                    ->label('Email liên hệ')
+                                    ->email()
+                                    ->maxLength(255),
+                                TextInput::make('address')
+                                    ->label('Địa chỉ')
+                                    ->maxLength(500),
+                                Textarea::make('hours')
+                                    ->label('Giờ làm việc')
+                                    ->rows(3),
                             ])
-                            ->default('none'),
-                        Select::make('product_watermark_size')
-                            ->label('Kích thước watermark')
-                            ->options([
-                                '64x64' => '64 x 64 px',
-                                '96x96' => '96 x 96 px',
-                                '128x128' => '128 x 128 px',
-                                '160x160' => '160 x 160 px',
-                                '192x192' => '192 x 192 px',
+                            ->columns(2),
+                        Tab::make('Bản đồ')
+                            ->icon('heroicon-o-map-pin')
+                            ->schema([
+                                Textarea::make('google_map_embed')
+                                    ->label('Google Map nhúng (iframe code)')
+                                    ->placeholder('<iframe src="https://www.google.com/maps/embed?..." width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>')
+                                    ->rows(6),
+                            ]),
+                        Tab::make('Branding')
+                            ->icon('heroicon-o-photo')
+                            ->schema([
+                                Select::make('logo_image_id')
+                                    ->label('Logo')
+                                    ->options(
+                                        Image::where('active', true)
+                                            ->get()
+                                            ->mapWithKeys(function ($image) {
+                                                $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
+                                                $fileName = basename($image->file_path);
+                                                
+                                                return [
+                                                    $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                        <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                        <span style="font-size: 0.875rem;">' . $fileName . '</span>
+                                                    </div>'
+                                                ];
+                                            })
+                                    )
+                                    ->allowHtml()
+                                    ->searchable(),
+                                Select::make('favicon_image_id')
+                                    ->label('Favicon')
+                                    ->options(
+                                        Image::where('active', true)
+                                            ->get()
+                                            ->mapWithKeys(function ($image) {
+                                                $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
+                                                $fileName = basename($image->file_path);
+                                                
+                                                return [
+                                                    $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                        <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                        <span style="font-size: 0.875rem;">' . $fileName . '</span>
+                                                    </div>'
+                                                ];
+                                            })
+                                    )
+                                    ->allowHtml()
+                                    ->searchable(),
                             ])
-                            ->default('128x128'),
-                    ]),
-                Section::make('SEO mặc định')
-                    ->description('Cấu hình meta tags mặc định cho website')
-                    ->icon('heroicon-o-magnifying-glass')
-                    ->collapsible()
-                    ->collapsed()
-                    ->schema([
-                        TextInput::make('meta_default_title')
-                            ->label('Tiêu đề SEO mặc định')
-                            ->maxLength(255),
-                        Textarea::make('meta_default_description')
-                            ->label('Mô tả SEO mặc định')
-                            ->rows(2)
-                            ->maxLength(255),
-                        TextInput::make('meta_default_keywords')
-                            ->label('Từ khóa SEO mặc định')
-                            ->maxLength(255),
+                            ->columns(2),
+                        Tab::make('Watermark')
+                            ->icon('heroicon-o-shield-check')
+                            ->schema([
+                                Select::make('product_watermark_image_id')
+                                    ->label('Watermark sản phẩm')
+                                    ->options(
+                                        Image::where('active', true)
+                                            ->get()
+                                            ->mapWithKeys(function ($image) {
+                                                $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
+                                                $fileName = basename($image->file_path);
+                                                
+                                                return [
+                                                    $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                        <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                        <span style="font-size: 0.875rem;">' . $fileName . '</span>
+                                                    </div>'
+                                                ];
+                                            })
+                                    )
+                                    ->allowHtml()
+                                    ->searchable(),
+                                Select::make('product_watermark_position')
+                                    ->label('Vị trí watermark')
+                                    ->options([
+                                        'none' => 'Không hiển thị',
+                                        'top_left' => 'Góc trên trái',
+                                        'top_right' => 'Góc trên phải',
+                                        'bottom_left' => 'Góc dưới trái',
+                                        'bottom_right' => 'Góc dưới phải',
+                                    ])
+                                    ->default('none'),
+                                Select::make('product_watermark_size')
+                                    ->label('Kích thước watermark')
+                                    ->options([
+                                        '64x64' => '64 x 64 px',
+                                        '96x96' => '96 x 96 px',
+                                        '128x128' => '128 x 128 px',
+                                        '160x160' => '160 x 160 px',
+                                        '192x192' => '192 x 192 px',
+                                    ])
+                                    ->default('128x128'),
+                            ])
+                            ->columns(3),
+                        Tab::make('SEO')
+                            ->icon('heroicon-o-magnifying-glass')
+                            ->schema([
+                                TextInput::make('meta_default_title')
+                                    ->label('Tiêu đề SEO mặc định')
+                                    ->maxLength(255),
+                                Textarea::make('meta_default_description')
+                                    ->label('Mô tả SEO mặc định')
+                                    ->rows(3)
+                                    ->maxLength(255),
+                                TextInput::make('meta_default_keywords')
+                                    ->label('Từ khóa SEO mặc định')
+                                    ->maxLength(255),
+                            ]),
                     ]),
             ])
             ->statePath('data');
