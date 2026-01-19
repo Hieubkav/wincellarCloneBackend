@@ -4,7 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\Image;
 use App\Models\Setting;
-use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -50,7 +50,9 @@ class SettingsPage extends Page implements HasForms
     {
         return $schema
             ->schema([
-                Grid::make()
+                Section::make('Thông tin website')
+                    ->description('Thông tin cơ bản hiển thị trên website')
+                    ->icon('heroicon-o-globe-alt')
                     ->columns(2)
                     ->schema([
                         TextInput::make('site_name')
@@ -71,14 +73,21 @@ class SettingsPage extends Page implements HasForms
                             ->label('Giờ làm việc')
                             ->rows(3)
                             ->columnSpanFull(),
+                    ]),
+                Section::make('Bản đồ')
+                    ->description('Nhúng Google Map để hiển thị vị trí')
+                    ->icon('heroicon-o-map-pin')
+                    ->collapsible()
+                    ->schema([
                         Textarea::make('google_map_embed')
                             ->label('Google Map nhúng (iframe code)')
                             ->placeholder('<iframe src="https://www.google.com/maps/embed?..." width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>')
-                            ->rows(4)
-                            ->columnSpanFull(),
+                            ->rows(4),
                     ]),
-                Grid::make()
-                    ->columns(3)
+                Section::make('Hình ảnh & Branding')
+                    ->description('Logo và favicon của website')
+                    ->icon('heroicon-o-photo')
+                    ->columns(2)
                     ->schema([
                         Select::make('logo_image_id')
                             ->label('Logo')
@@ -118,6 +127,13 @@ class SettingsPage extends Page implements HasForms
                             )
                             ->allowHtml()
                             ->searchable(),
+                    ]),
+                Section::make('Watermark sản phẩm')
+                    ->description('Cấu hình watermark cho hình ảnh sản phẩm')
+                    ->icon('heroicon-o-shield-check')
+                    ->collapsible()
+                    ->columns(3)
+                    ->schema([
                         Select::make('product_watermark_image_id')
                             ->label('Watermark sản phẩm')
                             ->options(
@@ -158,22 +174,22 @@ class SettingsPage extends Page implements HasForms
                             ])
                             ->default('128x128'),
                     ]),
-                Grid::make()
-                    ->columns(2)
+                Section::make('SEO mặc định')
+                    ->description('Cấu hình meta tags mặc định cho website')
+                    ->icon('heroicon-o-magnifying-glass')
+                    ->collapsible()
+                    ->collapsed()
                     ->schema([
                         TextInput::make('meta_default_title')
                             ->label('Tiêu đề SEO mặc định')
-                            ->maxLength(255)
-                            ->columnSpanFull(),
+                            ->maxLength(255),
                         Textarea::make('meta_default_description')
                             ->label('Mô tả SEO mặc định')
                             ->rows(2)
-                            ->maxLength(255)
-                            ->columnSpanFull(),
+                            ->maxLength(255),
                         TextInput::make('meta_default_keywords')
                             ->label('Từ khóa SEO mặc định')
-                            ->maxLength(255)
-                            ->columnSpanFull(),
+                            ->maxLength(255),
                     ]),
             ])
             ->statePath('data');
