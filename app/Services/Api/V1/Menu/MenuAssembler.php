@@ -42,7 +42,7 @@ class MenuAssembler
         if ($menu->type === 'mega') {
             $activeBlocks = $menu->blocks->filter(fn ($block) => $block->active);
             if ($activeBlocks->isNotEmpty()) {
-                $data['children'] = $this->transformBlocks($activeBlocks);
+                $data['children'] = $this->transformBlocks($activeBlocks, $menu);
             }
         }
 
@@ -51,10 +51,28 @@ class MenuAssembler
 
     /**
      * Transform MenuBlocks collection to API response format
+     *
+     * @param \Illuminate\Support\Collection<int, \App\Models\MenuBlock> $blocks
+     * @param Menu $parentMenu Parent menu for "View All" link
      */
-    private function transformBlocks(Collection $blocks): array
+    private function transformBlocks(Collection $blocks, Menu $parentMenu): array
     {
         $children = [];
+
+        // Best Practice: Add "View All [Parent]" as first item
+        if ($parentMenu->href && $parentMenu->href !== '#') {
+            $children[] = [
+                'label' => '',
+                'isViewAll' => true,
+                'children' => [
+                    [
+                        'label' => 'Xem tất cả ' . ($parentMenu->title ?? ''),
+                        'href' => $parentMenu->href,
+                        'isViewAll' => true,
+                    ],
+                ],
+            ];
+        }
 
         foreach ($blocks as $block) {
             // Only include active items
