@@ -9,6 +9,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Schemas\Schema;
@@ -180,9 +181,11 @@ class SettingsPage extends Page implements HasForms
                                     ->label('Mô tả SEO mặc định')
                                     ->rows(3)
                                     ->maxLength(255),
-                                TextInput::make('meta_default_keywords')
+                                TagsInput::make('meta_default_keywords')
                                     ->label('Từ khóa SEO mặc định')
-                                    ->maxLength(255),
+                                    ->placeholder('Nhập từ khóa và nhấn Enter')
+                                    ->splitKeys(['Tab', ','])
+                                    ->reorderable(),
                             ]),
                     ]),
             ])

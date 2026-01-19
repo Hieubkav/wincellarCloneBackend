@@ -42,6 +42,7 @@ class Setting extends Model
     {
         return [
             'extra' => 'array',
+            'meta_default_keywords' => 'array',
         ];
     }
 
