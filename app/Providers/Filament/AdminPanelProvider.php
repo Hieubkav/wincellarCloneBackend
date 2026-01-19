@@ -58,11 +58,17 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make('Sản phẩm'),
-                NavigationGroup::make('Nội dung'),
-                NavigationGroup::make('Điều hướng'),
-                NavigationGroup::make('Phân tích'),
-                NavigationGroup::make('Cấu hình'),
+                NavigationGroup::make('Sản phẩm')
+                    ->icon('heroicon-o-cube'),
+                NavigationGroup::make('Nội dung')
+                    ->icon('heroicon-o-document-text'),
+                NavigationGroup::make('Điều hướng')
+                    ->icon('heroicon-o-map'),
+                NavigationGroup::make('Phân tích')
+                    ->icon('heroicon-o-chart-bar'),
+                NavigationGroup::make('Cấu hình')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->collapsed(),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
