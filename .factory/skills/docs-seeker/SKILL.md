@@ -1,207 +1,161 @@
 ---
 name: docs-seeker
 description: "Searching internet for technical documentation using llms.txt standard, GitHub repositories via Repomix, and parallel exploration. Use when user needs: (1) Latest documentation for libraries/frameworks, (2) Documentation in llms.txt format, (3) GitHub repository analysis, (4) Documentation without direct llms.txt support, (5) Multiple documentation sources in parallel"
-version: 1.0.0
+version: 2.0.0
 ---
 
-# Documentation Discovery & Analysis
+# Documentation Discovery
 
-## Overview
+Find technical documentation through: **llms.txt** → **Repomix** → **Research**
 
-Intelligent discovery and analysis of technical documentation through multiple strategies:
+## Decision Flow
 
-1. **llms.txt-first**: Search for standardized AI-friendly documentation
-2. **Repository analysis**: Use Repomix to analyze GitHub repositories
-3. **Parallel exploration**: Deploy multiple Explorer agents for comprehensive coverage
-4. **Fallback research**: Use Researcher agents when other methods unavailable
-
-## Core Workflow
-
-### Phase 1: Initial Discovery
-
-1. **Identify target**
-   - Extract library/framework name from user request
-   - Note version requirements (default: latest)
-   - Clarify scope if ambiguous
-   - Identify if target is GitHub repository or website
-
-2. **Search for llms.txt (PRIORITIZE context7.com)**
-
-   **First: Try context7.com patterns**
-
-   For GitHub repositories:
-   ```
-   Pattern: https://context7.com/{org}/{repo}/llms.txt
-   Examples:
-   - https://github.com/imagick/imagick → https://context7.com/imagick/imagick/llms.txt
-   - https://github.com/vercel/next.js → https://context7.com/vercel/next.js/llms.txt
-   - https://github.com/better-auth/better-auth → https://context7.com/better-auth/better-auth/llms.txt
-   ```
-
-   For websites:
-   ```
-   Pattern: https://context7.com/websites/{normalized-domain-path}/llms.txt
-   Examples:
-   - https://docs.imgix.com/ → https://context7.com/websites/imgix/llms.txt
-   - https://docs.byteplus.com/en/docs/ModelArk/ → https://context7.com/websites/byteplus_en_modelark/llms.txt
-   - https://docs.haystack.deepset.ai/docs → https://context7.com/websites/haystack_deepset_ai/llms.txt
-   - https://ffmpeg.org/doxygen/8.0/ → https://context7.com/websites/ffmpeg_doxygen_8_0/llms.txt
-   ```
-
-   **Topic-specific searches** (when user asks about specific feature):
-   ```
-   Pattern: https://context7.com/{path}/llms.txt?topic={query}
-   Examples:
-   - https://context7.com/shadcn-ui/ui/llms.txt?topic=date
-   - https://context7.com/shadcn-ui/ui/llms.txt?topic=button
-   - https://context7.com/vercel/next.js/llms.txt?topic=cache
-   - https://context7.com/websites/ffmpeg_doxygen_8_0/llms.txt?topic=compress
-   ```
-
-   **Fallback: Traditional llms.txt search**
-   ```
-   WebSearch: "[library name] llms.txt site:[docs domain]"
-   ```
-   Common patterns:
-   - `https://docs.[library].com/llms.txt`
-   - `https://[library].dev/llms.txt`
-   - `https://[library].io/llms.txt`
-
-   → Found? Proceed to Phase 2
-   → Not found? Proceed to Phase 3
-
-### Phase 2: llms.txt Processing
-
-**Single URL:**
-- WebFetch to retrieve content
-- Extract and present information
-
-**Multiple URLs (3+):**
-- **CRITICAL**: Launch multiple Explorer agents in parallel
-- One agent per major documentation section (max 5 in first batch)
-- Each agent reads assigned URLs
-- Aggregate findings into consolidated report
-
-Example:
 ```
-Launch 3 Explorer agents simultaneously:
-- Agent 1: getting-started.md, installation.md
-- Agent 2: api-reference.md, core-concepts.md
-- Agent 3: examples.md, best-practices.md
+1. Try context7.com llms.txt
+   ├─ Found → Process URLs with Explorer agents
+   └─ Not found ↓
+2. Find GitHub repository
+   ├─ Found → Use Repomix
+   └─ Not found ↓
+3. Deploy Researcher agents
 ```
 
-### Phase 3: Repository Analysis
+---
 
-**When llms.txt not found:**
+## Method 1: llms.txt (Priority)
 
-1. Find GitHub repository via WebSearch
-2. Use Repomix to pack repository:
-   ```bash
-   npm install -g repomix  # if needed
-   git clone [repo-url] /tmp/docs-analysis
-   cd /tmp/docs-analysis
-   repomix --output repomix-output.xml
-   ```
-3. Read repomix-output.xml and extract documentation
+### context7.com Patterns
 
-**Repomix benefits:**
-- Entire repository in single AI-friendly file
-- Preserves directory structure
-- Optimized for AI consumption
+| Source | Pattern |
+|--------|---------|
+| GitHub repo | `https://context7.com/{org}/{repo}/llms.txt` |
+| Website | `https://context7.com/websites/{normalized-path}/llms.txt` |
+| Topic search | `...llms.txt?topic={query}` |
 
-### Phase 4: Fallback Research
+**Examples:**
+```
+github.com/vercel/next.js     → context7.com/vercel/next.js/llms.txt
+docs.imgix.com                → context7.com/websites/imgix/llms.txt
+shadcn/ui + date picker       → context7.com/shadcn-ui/ui/llms.txt?topic=date
+```
 
-**When no GitHub repository exists:**
-- Launch multiple Researcher agents in parallel
-- Focus areas: official docs, tutorials, API references, community guides
-- Aggregate findings into consolidated report
+### Fallback: WebSearch
+```
+"[library] llms.txt site:[docs domain]"
+```
 
-## Agent Distribution Guidelines
+### Processing URLs
 
-- **1-3 URLs**: Single Explorer agent
-- **4-10 URLs**: 3-5 Explorer agents (2-3 URLs each)
-- **11+ URLs**: 5-7 Explorer agents (prioritize most relevant)
+| URL Count | Strategy |
+|-----------|----------|
+| 1-3 | Single Explorer agent |
+| 4-10 | 3-5 Explorer agents |
+| 11+ | 5-7 agents in phases |
 
-## Version Handling
+**Launch all agents in single message** (parallel, not sequential).
 
-**Latest (default):**
-- Search without version specifier
-- Use current documentation paths
+---
 
-**Specific version:**
-- Include version in search: `[library] v[version] llms.txt`
-- Check versioned paths: `/v[version]/llms.txt`
-- For repositories: checkout specific tag/branch
+## Method 2: Repomix
+
+When llms.txt unavailable, analyze GitHub repository directly.
+
+### Quick Commands
+
+```bash
+# Remote (recommended - no clone needed)
+npx repomix --remote https://github.com/owner/repo
+
+# Docs only
+npx repomix --remote [url] --include "docs/**,*.md"
+
+# Source only
+npx repomix --remote [url] --include "src/**" --exclude "**/*.test.*"
+
+# Specific version
+npx repomix --remote [url] --remote-branch v2.0.0
+
+# With security check
+npx repomix --remote [url] --security-check
+```
+
+### Key Options
+
+| Option | Purpose |
+|--------|---------|
+| `--remote [url]` | Analyze without cloning |
+| `--remote-branch [ref]` | Specific branch/tag/commit |
+| `--include "pattern"` | Only include matching files |
+| `--exclude "pattern"` | Skip matching files |
+| `--style markdown` | Human-readable output |
+| `--security-check` | Scan for secrets |
+| `--copy` | Copy to clipboard |
+
+### Language-Specific Patterns
+
+```bash
+# JavaScript/TypeScript
+--include "src/**,lib/**,*.md" --exclude "node_modules/**,dist/**,*.test.*"
+
+# Python
+--include "src/**,*.py,*.md" --exclude "__pycache__/**,venv/**"
+
+# Go
+--include "**/*.go,go.mod,*.md" --exclude "vendor/**,*_test.go"
+
+# PHP/Laravel
+--include "app/**,config/**,routes/**,*.md" --exclude "vendor/**,storage/**"
+```
+
+### Error Handling
+
+| Problem | Solution |
+|---------|----------|
+| Repo too large | `--include "docs/**,*.md"` |
+| Timeout | Clone with `--depth 1`, then local repomix |
+| Private repo | Clone with token, then local repomix |
+| Not installed | Use `npx repomix` |
+
+---
+
+## Method 3: Research (Fallback)
+
+When no structured docs exist, deploy 3-4 Researcher agents:
+
+1. **Official sources**: Package registry, website, releases
+2. **Tutorials**: Blog posts, guides
+3. **Community**: Stack Overflow, GitHub discussions
+4. **API/Reference**: Auto-generated docs, code examples
+
+---
 
 ## Output Format
 
 ```markdown
-# Documentation for [Library] [Version]
+# [Library] Documentation
 
 ## Source
-- Method: [llms.txt / Repository / Research]
-- URLs: [list of sources]
-- Date accessed: [current date]
+- Method: llms.txt / Repomix / Research
+- URL: [source]
+- Version: [version]
+- Date: [date]
 
-## Key Information
-[Extracted relevant information organized by topic]
+## Content
+[Organized by topic, not by agent]
 
-## Additional Resources
-[Related links, examples, references]
-
-## Notes
-[Any limitations, missing information, or caveats]
+## Limitations
+[Missing sections, version caveats]
 ```
 
-## Quick Reference
+---
 
-**Tool selection:**
-- WebSearch → Find llms.txt URLs, GitHub repositories
-- WebFetch → Read single documentation pages
-- Task (Explore) → Multiple URLs, parallel exploration
-- Task (Researcher) → Scattered documentation, diverse sources
-- Repomix → Complete codebase analysis
+## Best Practices
 
-**Popular llms.txt locations (try context7.com first):**
-- Astro: https://context7.com/withastro/astro/llms.txt
-- Next.js: https://context7.com/vercel/next.js/llms.txt
-- Remix: https://context7.com/remix-run/remix/llms.txt
-- shadcn/ui: https://context7.com/shadcn-ui/ui/llms.txt
-- Better Auth: https://context7.com/better-auth/better-auth/llms.txt
-
-**Fallback to official sites if context7.com unavailable:**
-- Astro: https://docs.astro.build/llms.txt
-- Next.js: https://nextjs.org/llms.txt
-- Remix: https://remix.run/llms.txt
-- SvelteKit: https://kit.svelte.dev/llms.txt
-
-## Error Handling
-
-- **llms.txt not accessible** → Try alternative domains → Repository analysis
-- **Repository not found** → Search official website → Use Researcher agents
-- **Repomix fails** → Try /docs directory only → Manual exploration
-- **Multiple conflicting sources** → Prioritize official → Note versions
-
-## Key Principles
-
-1. **Prioritize context7.com for llms.txt** — Most comprehensive and up-to-date aggregator
-2. **Use topic parameters when applicable** — Enables targeted searches with ?topic=...
-3. **Use parallel agents aggressively** — Faster results, better coverage
-4. **Verify official sources as fallback** — Use when context7.com unavailable
-5. **Report methodology** — Tell user which approach was used
-6. **Handle versions explicitly** — Don't assume latest
-
-## Detailed Documentation
-
-For comprehensive guides, examples, and best practices:
-
-**Workflows:**
-- [WORKFLOWS.md](./WORKFLOWS.md) — Detailed workflow examples and strategies
-
-**Reference guides:**
-- [Tool Selection](./references/tool-selection.md) — Complete guide to choosing and using tools
-- [Documentation Sources](./references/documentation-sources.md) — Common sources and patterns across ecosystems
-- [Error Handling](./references/error-handling.md) — Troubleshooting and resolution strategies
-- [Best Practices](./references/best-practices.md) — 8 essential principles for effective discovery
-- [Performance](./references/performance.md) — Optimization techniques and benchmarks
-- [Limitations](./references/limitations.md) — Boundaries and success criteria
+1. **context7.com first** - fastest path to documentation
+2. **Use ?topic= when applicable** - reduces noise
+3. **Parallel agents** - never sequential for 3+ URLs
+4. **Verify official sources** - check domain, version, date
+5. **Aggregate by topic** - synthesize, don't concatenate
+6. **Report methodology** - tell user how you found info
+7. **Handle versions explicitly** - don't assume latest
+8. **Fail fast** - 30s timeout, then try next method
