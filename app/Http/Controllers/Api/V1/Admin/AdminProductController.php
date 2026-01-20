@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Image;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
@@ -100,6 +101,9 @@ class AdminProductController extends Controller
             'type_id' => ['nullable', 'exists:product_types,id'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['exists:product_categories,id'],
+            'cover_image_path' => ['nullable', 'string', 'max:255'],
+            'term_ids' => ['nullable', 'array'],
+            'term_ids.*' => ['integer', 'exists:catalog_terms,id'],
         ]);
 
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
@@ -109,6 +113,14 @@ class AdminProductController extends Controller
 
         if (!empty($validated['category_ids'])) {
             $product->categories()->sync($validated['category_ids']);
+        }
+
+        if ($request->filled('cover_image_path')) {
+            $this->attachCoverImage($product, $request->input('cover_image_path'));
+        }
+
+        if ($request->has('term_ids')) {
+            $this->syncTerms($product, $request->input('term_ids', []));
         }
 
         return response()->json([
@@ -132,12 +144,26 @@ class AdminProductController extends Controller
             'type_id' => ['nullable', 'exists:product_types,id'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['exists:product_categories,id'],
+            'cover_image_path' => ['nullable', 'string', 'max:255'],
+            'term_ids' => ['nullable', 'array'],
+            'term_ids.*' => ['integer', 'exists:catalog_terms,id'],
         ]);
 
         $product->update($validated);
 
         if (isset($validated['category_ids'])) {
             $product->categories()->sync($validated['category_ids']);
+        }
+
+        if ($request->has('cover_image_path')) {
+            $coverPath = $request->input('cover_image_path');
+            if ($coverPath) {
+                $this->attachCoverImage($product, $coverPath);
+            }
+        }
+
+        if ($request->has('term_ids')) {
+            $this->syncTerms($product, $request->input('term_ids', []));
         }
 
         return response()->json([
@@ -171,5 +197,24 @@ class AdminProductController extends Controller
             'message' => "Đã xóa {$count} sản phẩm",
             'count' => $count,
         ]);
+    }
+
+    private function attachCoverImage(Product $product, string $filePath): void
+    {
+        $product->images()->where('order', 0)->delete();
+
+        Image::create([
+            'file_path' => $filePath,
+            'disk' => 'public',
+            'model_type' => Product::class,
+            'model_id' => $product->id,
+            'order' => 0,
+        ]);
+    }
+
+    private function syncTerms(Product $product, array $termIds): void
+    {
+        $termIds = array_filter(array_map('intval', $termIds));
+        $product->terms()->sync($termIds);
     }
 }
