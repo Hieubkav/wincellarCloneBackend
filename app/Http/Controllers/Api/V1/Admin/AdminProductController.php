@@ -106,6 +106,7 @@ class AdminProductController extends Controller
             'cover_image_path' => ['nullable', 'string', 'max:255'],
             'image_paths' => ['nullable', 'array'],
             'image_paths.*' => ['string', 'max:255'],
+            'extra_attrs' => ['nullable', 'array'],
             'term_ids' => ['nullable', 'array'],
             'term_ids.*' => ['integer', 'exists:catalog_terms,id'],
         ]);
@@ -155,6 +156,7 @@ class AdminProductController extends Controller
             'cover_image_path' => ['nullable', 'string', 'max:255'],
             'image_paths' => ['nullable', 'array'],
             'image_paths.*' => ['string', 'max:255'],
+            'extra_attrs' => ['nullable', 'array'],
             'term_ids' => ['nullable', 'array'],
             'term_ids.*' => ['integer', 'exists:catalog_terms,id'],
         ]);
