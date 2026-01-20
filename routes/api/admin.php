@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\AdminArticleController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
 
 Route::prefix('admin')
     ->as('admin.')
@@ -30,4 +31,7 @@ Route::prefix('admin')
         Route::put('articles/{id}', [AdminArticleController::class, 'update'])->name('articles.update');
         Route::delete('articles/{id}', [AdminArticleController::class, 'destroy'])->name('articles.destroy');
         Route::post('articles/bulk-delete', [AdminArticleController::class, 'bulkDestroy'])->name('articles.bulk-destroy');
+
+        // Upload
+        Route::post('upload/image', [AdminUploadController::class, 'uploadImage'])->name('upload.image');
     });
