@@ -97,11 +97,15 @@ class AdminProductController extends Controller
             'description' => ['nullable', 'string'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'original_price' => ['nullable', 'numeric', 'min:0'],
+            'volume_ml' => ['nullable', 'integer', 'min:0'],
+            'alcohol_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'active' => ['boolean'],
             'type_id' => ['nullable', 'exists:product_types,id'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['exists:product_categories,id'],
             'cover_image_path' => ['nullable', 'string', 'max:255'],
+            'image_paths' => ['nullable', 'array'],
+            'image_paths.*' => ['string', 'max:255'],
             'term_ids' => ['nullable', 'array'],
             'term_ids.*' => ['integer', 'exists:catalog_terms,id'],
         ]);
@@ -115,7 +119,9 @@ class AdminProductController extends Controller
             $product->categories()->sync($validated['category_ids']);
         }
 
-        if ($request->filled('cover_image_path')) {
+        if ($request->has('image_paths')) {
+            $this->syncProductImages($product, $request->input('image_paths', []));
+        } elseif ($request->filled('cover_image_path')) {
             $this->attachCoverImage($product, $request->input('cover_image_path'));
         }
 
@@ -140,11 +146,15 @@ class AdminProductController extends Controller
             'description' => ['nullable', 'string'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'original_price' => ['nullable', 'numeric', 'min:0'],
+            'volume_ml' => ['nullable', 'integer', 'min:0'],
+            'alcohol_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'active' => ['boolean'],
             'type_id' => ['nullable', 'exists:product_types,id'],
             'category_ids' => ['nullable', 'array'],
             'category_ids.*' => ['exists:product_categories,id'],
             'cover_image_path' => ['nullable', 'string', 'max:255'],
+            'image_paths' => ['nullable', 'array'],
+            'image_paths.*' => ['string', 'max:255'],
             'term_ids' => ['nullable', 'array'],
             'term_ids.*' => ['integer', 'exists:catalog_terms,id'],
         ]);
@@ -155,7 +165,9 @@ class AdminProductController extends Controller
             $product->categories()->sync($validated['category_ids']);
         }
 
-        if ($request->has('cover_image_path')) {
+        if ($request->has('image_paths')) {
+            $this->syncProductImages($product, $request->input('image_paths', []));
+        } elseif ($request->has('cover_image_path')) {
             $coverPath = $request->input('cover_image_path');
             if ($coverPath) {
                 $this->attachCoverImage($product, $coverPath);
@@ -210,6 +222,23 @@ class AdminProductController extends Controller
             'model_id' => $product->id,
             'order' => 0,
         ]);
+    }
+
+    private function syncProductImages(Product $product, array $paths): void
+    {
+        $paths = array_values(array_filter($paths));
+
+        $product->images()->delete();
+
+        foreach ($paths as $index => $path) {
+            Image::create([
+                'file_path' => $path,
+                'disk' => 'public',
+                'model_type' => Product::class,
+                'model_id' => $product->id,
+                'order' => $index,
+            ]);
+        }
     }
 
     private function syncTerms(Product $product, array $termIds): void

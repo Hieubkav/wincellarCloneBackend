@@ -34,4 +34,5 @@ Route::prefix('admin')
 
         // Upload
         Route::post('upload/image', [AdminUploadController::class, 'uploadImage'])->name('upload.image');
+        Route::post('upload/image-url', [AdminUploadController::class, 'uploadImageFromUrl'])->name('upload.image-url');
     });
