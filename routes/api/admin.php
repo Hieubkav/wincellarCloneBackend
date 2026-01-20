@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\AdminArticleController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductTypeController;
+use App\Http\Controllers\Api\V1\Admin\AdminCatalogBaselineController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
 
@@ -39,6 +40,9 @@ Route::prefix('admin')
         Route::post('product-types', [AdminProductTypeController::class, 'store'])->name('product-types.store');
         Route::put('product-types/{id}', [AdminProductTypeController::class, 'update'])->name('product-types.update');
         Route::delete('product-types/{id}', [AdminProductTypeController::class, 'destroy'])->name('product-types.destroy');
+
+        // Catalog Baseline
+        Route::post('catalog/baseline/seed', [AdminCatalogBaselineController::class, 'seed'])->name('catalog.baseline.seed');
 
         // Upload
         Route::post('upload/image', [AdminUploadController::class, 'uploadImage'])->name('upload.image');
