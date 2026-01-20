@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\AdminArticleController;
+use App\Http\Controllers\Api\V1\Admin\AdminProductTypeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
 
@@ -31,6 +32,13 @@ Route::prefix('admin')
         Route::put('articles/{id}', [AdminArticleController::class, 'update'])->name('articles.update');
         Route::delete('articles/{id}', [AdminArticleController::class, 'destroy'])->name('articles.destroy');
         Route::post('articles/bulk-delete', [AdminArticleController::class, 'bulkDestroy'])->name('articles.bulk-destroy');
+
+        // Product Types CRUD
+        Route::get('product-types', [AdminProductTypeController::class, 'index'])->name('product-types.index');
+        Route::get('product-types/{id}', [AdminProductTypeController::class, 'show'])->name('product-types.show');
+        Route::post('product-types', [AdminProductTypeController::class, 'store'])->name('product-types.store');
+        Route::put('product-types/{id}', [AdminProductTypeController::class, 'update'])->name('product-types.update');
+        Route::delete('product-types/{id}', [AdminProductTypeController::class, 'destroy'])->name('product-types.destroy');
 
         // Upload
         Route::post('upload/image', [AdminUploadController::class, 'uploadImage'])->name('upload.image');
