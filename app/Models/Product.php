@@ -39,6 +39,7 @@ class Product extends Model
         'price',
         'original_price',
         'volume_ml',
+        'alcohol_percent',
         'badges',
         'extra_attrs',
         'active',
@@ -58,6 +59,7 @@ class Product extends Model
             'price' => 'int',
             'original_price' => 'int',
             'volume_ml' => 'int',
+            'alcohol_percent' => 'float',
         ];
     }
 

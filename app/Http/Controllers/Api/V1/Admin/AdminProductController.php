@@ -75,6 +75,10 @@ class AdminProductController extends Controller
                 'description' => $product->description,
                 'price' => $product->price,
                 'original_price' => $product->original_price,
+                'volume_ml' => $product->volume_ml,
+                'alcohol_percent' => $product->alcohol_percent,
+                'extra_attrs' => $product->extra_attrs,
+                'term_ids' => $product->terms->pluck('id'),
                 'active' => $product->active,
                 'type_id' => $product->type_id,
                 'category_ids' => $product->categories->pluck('id'),
@@ -82,6 +86,7 @@ class AdminProductController extends Controller
                 'images' => $product->images->map(fn($img) => [
                     'id' => $img->id,
                     'url' => $img->url,
+                    'path' => $img->file_path,
                 ]),
                 'created_at' => $product->created_at?->toIso8601String(),
                 'updated_at' => $product->updated_at?->toIso8601String(),
