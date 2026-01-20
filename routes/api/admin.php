@@ -1,6 +1,7 @@
  <?php
- 
- use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
+<?php
+
+use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
  use App\Http\Controllers\Api\V1\Admin\AdminProductController;
  use App\Http\Controllers\Api\V1\Admin\AdminArticleController;
  use Illuminate\Support\Facades\Route;
