@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\AdminArticleController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductTypeController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogAttributeGroupController;
+use App\Http\Controllers\Api\V1\Admin\AdminCatalogTermController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogBaselineController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
@@ -48,6 +49,14 @@ Route::prefix('admin')
         Route::post('catalog-attribute-groups', [AdminCatalogAttributeGroupController::class, 'store'])->name('catalog-attribute-groups.store');
         Route::put('catalog-attribute-groups/{id}', [AdminCatalogAttributeGroupController::class, 'update'])->name('catalog-attribute-groups.update');
         Route::delete('catalog-attribute-groups/{id}', [AdminCatalogAttributeGroupController::class, 'destroy'])->name('catalog-attribute-groups.destroy');
+
+        // Catalog Terms CRUD
+        Route::get('catalog-terms', [AdminCatalogTermController::class, 'index'])->name('catalog-terms.index');
+        Route::get('catalog-terms/{id}', [AdminCatalogTermController::class, 'show'])->name('catalog-terms.show');
+        Route::post('catalog-terms', [AdminCatalogTermController::class, 'store'])->name('catalog-terms.store');
+        Route::put('catalog-terms/{id}', [AdminCatalogTermController::class, 'update'])->name('catalog-terms.update');
+        Route::delete('catalog-terms/{id}', [AdminCatalogTermController::class, 'destroy'])->name('catalog-terms.destroy');
+        Route::post('catalog-terms/reorder', [AdminCatalogTermController::class, 'reorder'])->name('catalog-terms.reorder');
 
         // Catalog Baseline
         Route::post('catalog/baseline/seed', [AdminCatalogBaselineController::class, 'seed'])->name('catalog.baseline.seed');
