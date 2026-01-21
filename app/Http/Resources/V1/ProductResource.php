@@ -72,6 +72,7 @@ class ProductResource extends JsonResource
 
             // Product attributes
             'volume_ml' => $this->volume_ml,
+            'alcohol_percent' => $this->alcohol_percent,
             'badges' => $this->badges ?? [],
 
             // Extra attributes (nhập tay từ admin: dung tích custom, độ cồn custom, v.v.)

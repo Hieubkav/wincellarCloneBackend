@@ -38,8 +38,6 @@ class Product extends Model
         'description',
         'price',
         'original_price',
-        'volume_ml',
-        'alcohol_percent',
         'badges',
         'extra_attrs',
         'active',
@@ -58,9 +56,29 @@ class Product extends Model
             'active' => 'bool',
             'price' => 'int',
             'original_price' => 'int',
-            'volume_ml' => 'int',
-            'alcohol_percent' => 'float',
         ];
+    }
+
+    public function getVolumeMlAttribute(): ?int
+    {
+        $value = data_get($this->extra_attrs, 'dung_tich.value');
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return is_numeric($value) ? (int) $value : null;
+    }
+
+    public function getAlcoholPercentAttribute(): ?float
+    {
+        $value = data_get($this->extra_attrs, '1abv.value');
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return is_numeric($value) ? (float) $value : null;
     }
 
     public function categories(): BelongsToMany

@@ -194,10 +194,14 @@ class ProductFacetAggregator
      */
     private function alcoholRange(): array
     {
-        $builder = $this->newAggregateBuilder()->whereNotNull('products.alcohol_percent');
+        $jsonPath = '$."1abv".value';
+        $expression = "CAST(JSON_UNQUOTE(JSON_EXTRACT(products.extra_attrs, '$.\"1abv\".value')) AS DECIMAL(10,2))";
 
-        $min = (clone $builder)->min('products.alcohol_percent');
-        $max = (clone $builder)->max('products.alcohol_percent');
+        $builder = $this->newAggregateBuilder()
+            ->whereRaw('JSON_EXTRACT(products.extra_attrs, ?) IS NOT NULL', [$jsonPath]);
+
+        $min = (clone $builder)->min(DB::raw($expression));
+        $max = (clone $builder)->max(DB::raw($expression));
 
         return [
             'min' => $min !== null ? (float) $min : null,

@@ -27,6 +27,25 @@ class ProductFactory extends Factory
             ? collect(['SALE', 'HOT', 'NEW', 'LIMITED'])->shuffle()->take($this->faker->numberBetween(1, 2))->all()
             : null;
 
+        $extraAttrs = [];
+        $volume = $this->faker->randomElement([null, 375, 500, 700, 750, 1000]);
+        if ($volume !== null) {
+            $extraAttrs['dung_tich'] = [
+                'label' => 'Dung tích',
+                'value' => $volume,
+                'type' => 'number',
+            ];
+        }
+
+        $alcohol = $this->faker->randomElement([null, $this->faker->randomFloat(1, 11, 16)]);
+        if ($alcohol !== null) {
+            $extraAttrs['1abv'] = [
+                'label' => '%ABV',
+                'value' => $alcohol,
+                'type' => 'number',
+            ];
+        }
+
         return [
             'name' => $name,
             'slug' => Str::slug($name) . '-' . $this->faker->unique()->numberBetween(100, 999),
@@ -35,9 +54,8 @@ class ProductFactory extends Factory
             'description' => $this->faker->paragraphs(3, true),
             'price' => $price,
             'original_price' => $originalPrice,
-            'alcohol_percent' => $this->faker->randomElement([null, $this->faker->randomFloat(1, 11, 16)]),
-            'volume_ml' => $this->faker->randomElement([null, 375, 500, 700, 750, 1000]),
             'badges' => $badges,
+            'extra_attrs' => $extraAttrs ?: null,
             'active' => $this->faker->boolean(92),
             'meta_title' => "{$name} | Wincellar",
             'meta_description' => $this->faker->sentence(20),

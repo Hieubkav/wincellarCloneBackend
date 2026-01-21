@@ -72,6 +72,27 @@ class ProductSeeder extends Seeder
                 $badges = array_merge($badges ?? [], ['SALE']);
             }
 
+            $extraAttrs = [];
+            if (! $isAccessory) {
+                $volume = $context->randomVolume();
+                if ($volume !== null) {
+                    $extraAttrs['dung_tich'] = [
+                        'label' => 'Dung tích',
+                        'value' => $volume,
+                        'type' => 'number',
+                    ];
+                }
+
+                $alcohol = $context->randomAlcohol();
+                if ($alcohol !== null) {
+                    $extraAttrs['1abv'] = [
+                        'label' => '%ABV',
+                        'value' => $alcohol,
+                        'type' => 'number',
+                    ];
+                }
+            }
+
             $productRows[] = [
                 'id' => $productId,
                 'name' => $name,
@@ -80,9 +101,8 @@ class ProductSeeder extends Seeder
                 'description' => $faker->paragraphs(random_int(2, 4), true),
                 'price' => $price,
                 'original_price' => $originalPrice,
-                'alcohol_percent' => $isAccessory ? null : $context->randomAlcohol(),
-                'volume_ml' => $isAccessory ? null : $context->randomVolume(),
                 'badges' => $badges ? json_encode($badges) : null,
+                'extra_attrs' => $extraAttrs ? json_encode($extraAttrs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null,
                 'active' => random_int(1, 100) > 7,
                 'meta_title' => "{$name} | Wincellar",
                 'meta_description' => $faker->sentence(20),
