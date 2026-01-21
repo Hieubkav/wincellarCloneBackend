@@ -38,9 +38,14 @@ class AdminCatalogAttributeGroupController extends Controller
         return response()->json([
             'data' => $groups->map(function ($group) {
                 $termIds = $group->terms->pluck('id')->toArray();
-                $productsCount = $termIds 
-                    ? \App\Models\Product::whereJsonContains('term_ids', $termIds)->count()
-                    : 0;
+                
+                // Count products that have any of these terms
+                $productsCount = 0;
+                if (!empty($termIds)) {
+                    $productsCount = \App\Models\Product::whereHas('terms', function ($query) use ($termIds) {
+                        $query->whereIn('catalog_terms.id', $termIds);
+                    })->count();
+                }
 
                 return [
                     'id' => $group->id,
