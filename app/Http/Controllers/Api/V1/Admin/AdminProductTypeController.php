@@ -13,6 +13,7 @@ class AdminProductTypeController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = ProductType::query()
+            ->withCount('products')
             ->orderBy('order')
             ->orderBy('id');
 
@@ -34,6 +35,7 @@ class AdminProductTypeController extends Controller
                 'slug' => $type->slug,
                 'order' => $type->order,
                 'active' => $type->active,
+                'products_count' => $type->products_count,
                 'created_at' => $type->created_at?->toIso8601String(),
                 'updated_at' => $type->updated_at?->toIso8601String(),
             ]),
