@@ -149,7 +149,7 @@ class AdminCatalogAttributeGroupController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'filter_type' => ['sometimes', 'string', 'in:checkbox,radio,range,color'],
             'input_type' => ['nullable', 'string', 'in:select,text,number'],
-            'is_filterable' => ['boolean'],
+            'is_filterable' => ['sometimes', 'boolean'],
             'position' => ['nullable', 'integer', 'min:0'],
             'display_config' => ['nullable', 'array'],
             'icon_path' => ['nullable', 'string', 'max:255'],
