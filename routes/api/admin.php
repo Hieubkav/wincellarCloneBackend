@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\AdminArticleController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductTypeController;
+use App\Http\Controllers\Api\V1\Admin\AdminCatalogAttributeGroupController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogBaselineController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
@@ -40,6 +41,13 @@ Route::prefix('admin')
         Route::post('product-types', [AdminProductTypeController::class, 'store'])->name('product-types.store');
         Route::put('product-types/{id}', [AdminProductTypeController::class, 'update'])->name('product-types.update');
         Route::delete('product-types/{id}', [AdminProductTypeController::class, 'destroy'])->name('product-types.destroy');
+
+        // Catalog Attribute Groups CRUD
+        Route::get('catalog-attribute-groups', [AdminCatalogAttributeGroupController::class, 'index'])->name('catalog-attribute-groups.index');
+        Route::get('catalog-attribute-groups/{id}', [AdminCatalogAttributeGroupController::class, 'show'])->name('catalog-attribute-groups.show');
+        Route::post('catalog-attribute-groups', [AdminCatalogAttributeGroupController::class, 'store'])->name('catalog-attribute-groups.store');
+        Route::put('catalog-attribute-groups/{id}', [AdminCatalogAttributeGroupController::class, 'update'])->name('catalog-attribute-groups.update');
+        Route::delete('catalog-attribute-groups/{id}', [AdminCatalogAttributeGroupController::class, 'destroy'])->name('catalog-attribute-groups.destroy');
 
         // Catalog Baseline
         Route::post('catalog/baseline/seed', [AdminCatalogBaselineController::class, 'seed'])->name('catalog.baseline.seed');
