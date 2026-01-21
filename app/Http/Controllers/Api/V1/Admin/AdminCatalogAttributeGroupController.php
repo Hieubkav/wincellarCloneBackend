@@ -134,6 +134,15 @@ class AdminCatalogAttributeGroupController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $group = CatalogAttributeGroup::findOrFail($id);
+        
+        // Convert empty strings to null for nullable fields
+        $data = $request->all();
+        foreach (['input_type', 'icon_path', 'position'] as $field) {
+            if (isset($data[$field]) && $data[$field] === '') {
+                $data[$field] = null;
+            }
+        }
+        $request->merge($data);
 
         $validated = $request->validate([
             'code' => ['sometimes', 'string', 'max:255', Rule::unique('catalog_attribute_groups', 'code')->ignore($id)],
