@@ -36,23 +36,31 @@ class AdminCatalogAttributeGroupController extends Controller
         $groups = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $groups->map(fn ($group) => [
-                'id' => $group->id,
-                'code' => $group->code,
-                'name' => $group->name,
-                'filter_type' => $group->filter_type,
-                'input_type' => $group->input_type,
-                'is_filterable' => $group->is_filterable,
-                'position' => $group->position,
-                'icon_path' => $group->icon_path,
-                'terms_count' => $group->terms->count(),
-                'product_types' => $group->productTypes->map(fn ($type) => [
-                    'id' => $type->id,
-                    'name' => $type->name,
-                ])->toArray(),
-                'created_at' => $group->created_at?->toIso8601String(),
-                'updated_at' => $group->updated_at?->toIso8601String(),
-            ]),
+            'data' => $groups->map(function ($group) {
+                $termIds = $group->terms->pluck('id')->toArray();
+                $productsCount = $termIds 
+                    ? \App\Models\Product::whereJsonContains('term_ids', $termIds)->count()
+                    : 0;
+
+                return [
+                    'id' => $group->id,
+                    'code' => $group->code,
+                    'name' => $group->name,
+                    'filter_type' => $group->filter_type,
+                    'input_type' => $group->input_type,
+                    'is_filterable' => $group->is_filterable,
+                    'position' => $group->position,
+                    'icon_path' => $group->icon_path,
+                    'terms_count' => $group->terms->count(),
+                    'products_count' => $productsCount,
+                    'product_types' => $group->productTypes->map(fn ($type) => [
+                        'id' => $type->id,
+                        'name' => $type->name,
+                    ])->toArray(),
+                    'created_at' => $group->created_at?->toIso8601String(),
+                    'updated_at' => $group->updated_at?->toIso8601String(),
+                ];
+            }),
             'meta' => [
                 'current_page' => $groups->currentPage(),
                 'last_page' => $groups->lastPage(),
