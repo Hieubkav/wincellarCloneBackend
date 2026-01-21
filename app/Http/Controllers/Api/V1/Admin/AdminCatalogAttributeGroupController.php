@@ -113,11 +113,11 @@ class AdminCatalogAttributeGroupController extends Controller
             'code' => ['required', 'string', 'max:255', 'unique:catalog_attribute_groups,code'],
             'name' => ['required', 'string', 'max:255'],
             'filter_type' => ['required', 'string', 'in:checkbox,radio,range,color'],
-            'input_type' => ['nullable', 'string', 'in:select,text,number'],
+            'input_type' => ['nullable', Rule::in(['select', 'text', 'number'])],
             'is_filterable' => ['boolean'],
             'position' => ['nullable', 'integer', 'min:0'],
             'display_config' => ['nullable', 'array'],
-            'icon_path' => ['nullable', 'string', 'max:255'],
+            'icon_path' => ['nullable', 'max:255'],
         ]);
 
         $validated['is_filterable'] = $validated['is_filterable'] ?? true;
@@ -135,6 +135,11 @@ class AdminCatalogAttributeGroupController extends Controller
     {
         $group = CatalogAttributeGroup::findOrFail($id);
         
+        \Log::info('Update attribute group request:', [
+            'id' => $id,
+            'data' => $request->all(),
+        ]);
+        
         // Convert empty strings to null for nullable fields
         $data = $request->all();
         foreach (['input_type', 'icon_path', 'position'] as $field) {
@@ -143,16 +148,20 @@ class AdminCatalogAttributeGroupController extends Controller
             }
         }
         $request->merge($data);
+        
+        \Log::info('After converting empty strings:', [
+            'data' => $request->all(),
+        ]);
 
         $validated = $request->validate([
             'code' => ['sometimes', 'string', 'max:255', Rule::unique('catalog_attribute_groups', 'code')->ignore($id)],
             'name' => ['sometimes', 'string', 'max:255'],
             'filter_type' => ['sometimes', 'string', 'in:checkbox,radio,range,color'],
-            'input_type' => ['nullable', 'string', 'in:select,text,number'],
+            'input_type' => ['nullable', Rule::in(['select', 'text', 'number'])],
             'is_filterable' => ['sometimes', 'boolean'],
             'position' => ['nullable', 'integer', 'min:0'],
             'display_config' => ['nullable', 'array'],
-            'icon_path' => ['nullable', 'string', 'max:255'],
+            'icon_path' => ['nullable', 'max:255'],
         ]);
 
         $group->update($validated);
