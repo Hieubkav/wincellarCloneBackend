@@ -186,6 +186,7 @@ class ProductFilterController extends Controller
                     'filter_type' => $group->filter_type,
                     'input_type' => $group->input_type,
                     'icon_url' => $group->icon_path ? asset('storage/' . $group->icon_path) : null,
+                    'icon_name' => $group->icon_path, // Lucide icon name
                     'range' => [
                         'min' => (float) ($stats->min_val ?? 0),
                         'max' => (float) ($stats->max_val ?? 100),
@@ -219,6 +220,7 @@ class ProductFilterController extends Controller
                 'input_type' => $group->input_type,
                 'display_config' => $displayConfig,
                 'icon_url' => $group->icon_path ? asset('storage/' . $group->icon_path) : null,
+                'icon_name' => $group->icon_path, // Lucide icon name
                 'options' => $terms,
             ];
         }
