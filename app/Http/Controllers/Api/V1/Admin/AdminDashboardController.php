@@ -100,11 +100,11 @@ class AdminDashboardController extends Controller
             $chartData[] = [
                 'date' => $date,
                 'label' => Carbon::parse($date)->format('d/m'),
-                'visitors' => $visitorData[$date] ?? 0,
-                'page_views' => $dayData?->total_events ?? 0,
-                'product_views' => $dayData?->product_views ?? 0,
-                'article_views' => $dayData?->article_views ?? 0,
-                'cta_clicks' => $dayData?->cta_clicks ?? 0,
+                'visitors' => (int) ($visitorData[$date] ?? 0),
+                'page_views' => (int) ($dayData?->total_events ?? 0),
+                'product_views' => (int) ($dayData?->product_views ?? 0),
+                'article_views' => (int) ($dayData?->article_views ?? 0),
+                'cta_clicks' => (int) ($dayData?->cta_clicks ?? 0),
             ];
         }
 
