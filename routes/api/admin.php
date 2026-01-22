@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\V1\Admin\AdminImageController;
 use App\Http\Controllers\Api\V1\Admin\AdminSocialLinkController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
+use App\Http\Controllers\Api\V1\Admin\AdminSettingController;
+use App\Http\Controllers\Api\V1\Admin\AdminMenuController;
 
 Route::prefix('admin')
     ->as('admin.')
@@ -106,4 +108,27 @@ Route::prefix('admin')
         Route::delete('social-links/{id}', [AdminSocialLinkController::class, 'destroy'])->name('social-links.destroy');
         Route::post('social-links/bulk-delete', [AdminSocialLinkController::class, 'bulkDestroy'])->name('social-links.bulk-destroy');
         Route::post('social-links/reorder', [AdminSocialLinkController::class, 'reorder'])->name('social-links.reorder');
+
+        // Settings (singleton)
+        Route::get('settings', [AdminSettingController::class, 'show'])->name('settings.show');
+        Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
+
+        // Menus CRUD
+        Route::get('menus', [AdminMenuController::class, 'index'])->name('menus.index');
+        Route::get('menus/{id}', [AdminMenuController::class, 'show'])->name('menus.show');
+        Route::post('menus', [AdminMenuController::class, 'store'])->name('menus.store');
+        Route::put('menus/{id}', [AdminMenuController::class, 'update'])->name('menus.update');
+        Route::delete('menus/{id}', [AdminMenuController::class, 'destroy'])->name('menus.destroy');
+        Route::post('menus/bulk-delete', [AdminMenuController::class, 'bulkDestroy'])->name('menus.bulk-destroy');
+        Route::post('menus/reorder', [AdminMenuController::class, 'reorder'])->name('menus.reorder');
+
+        // Menu Blocks
+        Route::post('menus/{menuId}/blocks', [AdminMenuController::class, 'storeBlock'])->name('menus.blocks.store');
+        Route::put('menus/{menuId}/blocks/{blockId}', [AdminMenuController::class, 'updateBlock'])->name('menus.blocks.update');
+        Route::delete('menus/{menuId}/blocks/{blockId}', [AdminMenuController::class, 'destroyBlock'])->name('menus.blocks.destroy');
+
+        // Menu Block Items
+        Route::post('menu-blocks/{blockId}/items', [AdminMenuController::class, 'storeItem'])->name('menu-blocks.items.store');
+        Route::put('menu-blocks/{blockId}/items/{itemId}', [AdminMenuController::class, 'updateItem'])->name('menu-blocks.items.update');
+        Route::delete('menu-blocks/{blockId}/items/{itemId}', [AdminMenuController::class, 'destroyItem'])->name('menu-blocks.items.destroy');
     });
