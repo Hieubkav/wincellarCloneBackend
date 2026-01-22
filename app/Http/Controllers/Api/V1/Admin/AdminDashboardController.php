@@ -78,7 +78,8 @@ class AdminDashboardController extends Controller
                 DB::raw('COUNT(DISTINCT visitor_id) as unique_visitors'),
                 DB::raw("SUM(CASE WHEN event_type = 'product_view' THEN 1 ELSE 0 END) as product_views"),
                 DB::raw("SUM(CASE WHEN event_type = 'article_view' THEN 1 ELSE 0 END) as article_views"),
-                DB::raw("SUM(CASE WHEN event_type = 'cta_contact' THEN 1 ELSE 0 END) as cta_clicks")
+                DB::raw("SUM(CASE WHEN event_type = 'cta_contact' THEN 1 ELSE 0 END) as cta_clicks"),
+                DB::raw("SUM(CASE WHEN event_type = 'page_view' THEN 1 ELSE 0 END) as page_views_count")
             )
             ->where('occurred_at', '>=', $startDate)
             ->groupBy(DB::raw('DATE(occurred_at)'))

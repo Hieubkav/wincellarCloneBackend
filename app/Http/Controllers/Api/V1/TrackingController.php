@@ -73,6 +73,7 @@ class TrackingController extends Controller
                     TrackingEvent::TYPE_PRODUCT_VIEW,
                     TrackingEvent::TYPE_ARTICLE_VIEW,
                     TrackingEvent::TYPE_CTA_CONTACT,
+                    TrackingEvent::TYPE_PAGE_VIEW,
                 ]),
             ],
             'product_id' => ['nullable', 'integer', 'exists:products,id'],
