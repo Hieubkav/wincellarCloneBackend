@@ -8,7 +8,6 @@ use App\Models\Article;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
 use App\Models\TrackingEvent;
-use App\Models\Visitor;
 use App\Models\VisitorSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -41,7 +40,9 @@ class AdminDashboardController extends Controller
                 'types' => ProductType::where('active', true)->count(),
                 'traffic' => [
                     'today' => [
-                        'visitors' => Visitor::whereBetween('first_seen_at', [$todayStart, $todayEnd])->count(),
+                        'visitors' => TrackingEvent::whereBetween('occurred_at', [$todayStart, $todayEnd])
+                            ->distinct('visitor_id')
+                            ->count('visitor_id'),
                         'sessions' => VisitorSession::whereBetween('started_at', [$todayStart, $todayEnd])->count(),
                         'page_views' => TrackingEvent::whereBetween('occurred_at', [$todayStart, $todayEnd])->count(),
                         'product_views' => TrackingEvent::whereBetween('occurred_at', [$todayStart, $todayEnd])
@@ -54,15 +55,21 @@ class AdminDashboardController extends Controller
                             ->where('event_type', TrackingEvent::TYPE_CTA_CONTACT)->count(),
                     ],
                     'yesterday' => [
-                        'visitors' => Visitor::whereDate('first_seen_at', $yesterday)->count(),
+                        'visitors' => TrackingEvent::whereDate('occurred_at', $yesterday)
+                            ->distinct('visitor_id')
+                            ->count('visitor_id'),
                         'page_views' => TrackingEvent::whereDate('occurred_at', $yesterday)->count(),
                     ],
                     'last_7_days' => [
-                        'visitors' => Visitor::where('first_seen_at', '>=', $lastWeek)->count(),
+                        'visitors' => TrackingEvent::where('occurred_at', '>=', $lastWeek)
+                            ->distinct('visitor_id')
+                            ->count('visitor_id'),
                         'page_views' => TrackingEvent::where('occurred_at', '>=', $lastWeek)->count(),
                     ],
                     'last_30_days' => [
-                        'visitors' => Visitor::where('first_seen_at', '>=', $lastMonth)->count(),
+                        'visitors' => TrackingEvent::where('occurred_at', '>=', $lastMonth)
+                            ->distinct('visitor_id')
+                            ->count('visitor_id'),
                         'page_views' => TrackingEvent::where('occurred_at', '>=', $lastMonth)->count(),
                     ],
                 ],
