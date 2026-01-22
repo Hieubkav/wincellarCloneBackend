@@ -3,487 +3,237 @@
         "id": 7,
         "code": "giong_nho",
         "name": "Giống nho",
-        "filter_type": "chon_nhieu",
+        "filter_type": "checkbox",
         "input_type": null,
         "is_filterable": true,
         "position": 1,
         "display_config": null,
-        "icon_path": "01KBZ6D98E48JJYZ9AES5R2KWE.svg",
+        "icon_path": "Grape",
         "created_at": "2025-11-30T00:56:05.000000Z",
-        "updated_at": "2025-12-08T14:38:51.000000Z",
+        "updated_at": "2026-01-22T15:42:19.000000Z",
         "terms": [
             {
                 "id": 226,
-                "group_id": 7,
-                "name": "Merlot",
                 "slug": "merlot",
+                "name": "Merlot",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 1,
-                "created_at": "2025-11-30T10:03:51.000000Z",
-                "updated_at": "2025-11-30T10:03:51.000000Z"
+                "position": 1
             },
             {
                 "id": 227,
-                "group_id": 7,
-                "name": "Pinot Noir",
                 "slug": "pinot-noir",
+                "name": "Pinot Noir",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 2,
-                "created_at": "2025-11-30T10:04:28.000000Z",
-                "updated_at": "2025-11-30T10:04:28.000000Z"
+                "position": 2
             },
             {
                 "id": 228,
-                "group_id": 7,
-                "name": "Chardonnay",
                 "slug": "chardonnay",
+                "name": "Chardonnay",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 3,
-                "created_at": "2025-11-30T10:04:35.000000Z",
-                "updated_at": "2025-11-30T10:04:35.000000Z"
+                "position": 3
             },
             {
                 "id": 247,
-                "group_id": 7,
-                "name": "Tempranillo",
                 "slug": "tempranillo",
+                "name": "Tempranillo",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 4,
-                "created_at": "2025-12-02T10:19:23.000000Z",
-                "updated_at": "2025-12-02T10:19:23.000000Z"
+                "position": 4
             },
             {
                 "id": 258,
-                "group_id": 7,
-                "name": "Primitivo",
                 "slug": "primitivo",
+                "name": "Primitivo",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 5,
-                "created_at": "2025-12-02T10:36:48.000000Z",
-                "updated_at": "2025-12-02T10:36:48.000000Z"
-            }
-        ],
-        "product_types": [
-            {
-                "id": 18,
-                "name": "Rượu vang & sâm panh",
-                "slug": "ruou-vang-sam-panh",
-                "description": null,
-                "order": 1,
-                "active": true,
-                "created_at": "2025-11-28T16:19:20.000000Z",
-                "updated_at": "2025-11-28T16:19:20.000000Z",
-                "pivot": {
-                    "group_id": 7,
-                    "type_id": 18,
-                    "position": 0
-                }
+                "position": 5
             }
         ]
     },
     {
         "id": 8,
         "code": "thuong_hieu",
-        "name": "Thương Hiệu ",
-        "filter_type": "chon_don",
+        "name": "Thương Hiệu",
+        "filter_type": "radio",
         "input_type": null,
         "is_filterable": true,
         "position": 2,
         "display_config": null,
-        "icon_path": "01KBZ6JV1Z2FDBHZY8GB0S9BWT.svg",
+        "icon_path": "Award",
         "created_at": "2025-11-30T07:19:21.000000Z",
-        "updated_at": "2025-12-08T14:41:53.000000Z",
+        "updated_at": "2026-01-22T15:42:56.000000Z",
         "terms": [
             {
                 "id": 229,
-                "group_id": 8,
-                "name": "Château Margaux",
                 "slug": "chateau-margaux",
+                "name": "Château Margaux",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 1,
-                "created_at": "2025-11-30T10:06:35.000000Z",
-                "updated_at": "2025-11-30T10:06:35.000000Z"
+                "position": 1
             },
             {
                 "id": 230,
-                "group_id": 8,
-                "name": "Penfolds",
                 "slug": "penfolds",
+                "name": "Penfolds",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 2,
-                "created_at": "2025-11-30T10:06:44.000000Z",
-                "updated_at": "2025-11-30T10:06:44.000000Z"
+                "position": 2
             },
             {
                 "id": 231,
-                "group_id": 8,
-                "name": "Torres",
                 "slug": "torres",
+                "name": "Torres",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 3,
-                "created_at": "2025-11-30T10:06:54.000000Z",
-                "updated_at": "2025-11-30T10:06:54.000000Z"
-            }
-        ],
-        "product_types": [
-            {
-                "id": 18,
-                "name": "Rượu vang & sâm panh",
-                "slug": "ruou-vang-sam-panh",
-                "description": null,
-                "order": 1,
-                "active": true,
-                "created_at": "2025-11-28T16:19:20.000000Z",
-                "updated_at": "2025-11-28T16:19:20.000000Z",
-                "pivot": {
-                    "group_id": 8,
-                    "type_id": 18,
-                    "position": 0
-                }
-            },
-            {
-                "id": 19,
-                "name": "Rượu mạnh",
-                "slug": "ruou-manh",
-                "description": null,
-                "order": 2,
-                "active": true,
-                "created_at": "2025-11-28T16:19:43.000000Z",
-                "updated_at": "2025-11-28T16:19:43.000000Z",
-                "pivot": {
-                    "group_id": 8,
-                    "type_id": 19,
-                    "position": 0
-                }
-            },
-            {
-                "id": 20,
-                "name": "Rượu sake\/soju\/umeshu",
-                "slug": "ruou-sakesojuumeshu",
-                "description": null,
-                "order": 3,
-                "active": true,
-                "created_at": "2025-11-28T16:20:04.000000Z",
-                "updated_at": "2025-11-28T16:20:04.000000Z",
-                "pivot": {
-                    "group_id": 8,
-                    "type_id": 20,
-                    "position": 0
-                }
+                "position": 3
             }
         ]
     },
     {
         "id": 9,
         "code": "dung_tich",
-        "name": "Dung tích ",
-        "filter_type": "nhap_tay",
+        "name": "Dung tích",
+        "filter_type": "range",
         "input_type": "number",
         "is_filterable": true,
         "position": 3,
         "display_config": null,
-        "icon_path": "01KBZ6R5RB777FBRM9E8KYQA5J.svg",
+        "icon_path": "Thermometer",
         "created_at": "2025-11-30T07:23:41.000000Z",
-        "updated_at": "2025-12-08T14:44:48.000000Z",
-        "terms": [],
-        "product_types": [
-            {
-                "id": 18,
-                "name": "Rượu vang & sâm panh",
-                "slug": "ruou-vang-sam-panh",
-                "description": null,
-                "order": 1,
-                "active": true,
-                "created_at": "2025-11-28T16:19:20.000000Z",
-                "updated_at": "2025-11-28T16:19:20.000000Z",
-                "pivot": {
-                    "group_id": 9,
-                    "type_id": 18,
-                    "position": 0
-                }
-            },
-            {
-                "id": 19,
-                "name": "Rượu mạnh",
-                "slug": "ruou-manh",
-                "description": null,
-                "order": 2,
-                "active": true,
-                "created_at": "2025-11-28T16:19:43.000000Z",
-                "updated_at": "2025-11-28T16:19:43.000000Z",
-                "pivot": {
-                    "group_id": 9,
-                    "type_id": 19,
-                    "position": 0
-                }
-            },
-            {
-                "id": 20,
-                "name": "Rượu sake\/soju\/umeshu",
-                "slug": "ruou-sakesojuumeshu",
-                "description": null,
-                "order": 3,
-                "active": true,
-                "created_at": "2025-11-28T16:20:04.000000Z",
-                "updated_at": "2025-11-28T16:20:04.000000Z",
-                "pivot": {
-                    "group_id": 9,
-                    "type_id": 20,
-                    "position": 0
-                }
-            }
-        ]
+        "updated_at": "2026-01-22T15:43:35.000000Z",
+        "terms": []
     },
     {
         "id": 10,
         "code": "1abv",
         "name": "%1abv",
-        "filter_type": "nhap_tay",
+        "filter_type": "range",
         "input_type": "number",
         "is_filterable": true,
         "position": 4,
         "display_config": null,
-        "icon_path": "01KBZ6XDMMEKY3WTMTCR9ZC55D.svg",
+        "icon_path": "Percent",
         "created_at": "2025-11-30T09:29:42.000000Z",
-        "updated_at": "2025-12-08T14:47:39.000000Z",
-        "terms": [],
-        "product_types": [
-            {
-                "id": 18,
-                "name": "Rượu vang & sâm panh",
-                "slug": "ruou-vang-sam-panh",
-                "description": null,
-                "order": 1,
-                "active": true,
-                "created_at": "2025-11-28T16:19:20.000000Z",
-                "updated_at": "2025-11-28T16:19:20.000000Z",
-                "pivot": {
-                    "group_id": 10,
-                    "type_id": 18,
-                    "position": 0
-                }
-            },
-            {
-                "id": 19,
-                "name": "Rượu mạnh",
-                "slug": "ruou-manh",
-                "description": null,
-                "order": 2,
-                "active": true,
-                "created_at": "2025-11-28T16:19:43.000000Z",
-                "updated_at": "2025-11-28T16:19:43.000000Z",
-                "pivot": {
-                    "group_id": 10,
-                    "type_id": 19,
-                    "position": 0
-                }
-            },
-            {
-                "id": 20,
-                "name": "Rượu sake\/soju\/umeshu",
-                "slug": "ruou-sakesojuumeshu",
-                "description": null,
-                "order": 3,
-                "active": true,
-                "created_at": "2025-11-28T16:20:04.000000Z",
-                "updated_at": "2025-11-28T16:20:04.000000Z",
-                "pivot": {
-                    "group_id": 10,
-                    "type_id": 20,
-                    "position": 0
-                }
-            }
-        ]
+        "updated_at": "2026-01-22T15:43:48.000000Z",
+        "terms": []
     },
     {
         "id": 11,
         "code": "huong_vi",
         "name": "Hương vị",
-        "filter_type": "chon_nhieu",
+        "filter_type": "checkbox",
         "input_type": null,
         "is_filterable": true,
         "position": 5,
         "display_config": null,
-        "icon_path": "01KBZ74XVXSPH1JJ984V7YZWGG.svg",
+        "icon_path": "Coffee",
         "created_at": "2025-11-30T09:37:31.000000Z",
-        "updated_at": "2025-12-08T14:51:45.000000Z",
+        "updated_at": "2026-01-22T15:44:11.000000Z",
         "terms": [
             {
                 "id": 232,
-                "group_id": 11,
-                "name": "dâu",
                 "slug": "dau",
+                "name": "dâu",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 1,
-                "created_at": "2025-11-30T10:12:33.000000Z",
-                "updated_at": "2025-11-30T10:12:33.000000Z"
+                "position": 1
             },
             {
                 "id": 233,
-                "group_id": 11,
-                "name": "Hoa hồng",
                 "slug": "hoa-hong",
+                "name": "Hoa hồng",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 2,
-                "created_at": "2025-11-30T10:12:39.000000Z",
-                "updated_at": "2025-11-30T10:12:39.000000Z"
+                "position": 2
             },
             {
                 "id": 234,
-                "group_id": 11,
-                "name": "anh đào",
                 "slug": "anh-dao",
+                "name": "anh đào",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 3,
-                "created_at": "2025-11-30T10:12:46.000000Z",
-                "updated_at": "2025-11-30T10:12:46.000000Z"
+                "position": 3
             },
             {
                 "id": 235,
-                "group_id": 11,
-                "name": "Tiêu đen",
                 "slug": "tieu-den",
+                "name": "Tiêu đen",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 4,
-                "created_at": "2025-11-30T10:12:55.000000Z",
-                "updated_at": "2025-11-30T10:12:55.000000Z"
+                "position": 4
             },
             {
                 "id": 236,
-                "group_id": 11,
-                "name": "Gỗ sồi",
                 "slug": "go-soi",
+                "name": "Gỗ sồi",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 5,
-                "created_at": "2025-11-30T10:13:03.000000Z",
-                "updated_at": "2025-11-30T10:13:03.000000Z"
+                "position": 5
             },
             {
                 "id": 237,
-                "group_id": 11,
-                "name": "khói",
                 "slug": "khoi",
+                "name": "khói",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 6,
-                "created_at": "2025-11-30T10:13:15.000000Z",
-                "updated_at": "2025-11-30T10:13:15.000000Z"
+                "position": 6
             },
             {
                 "id": 238,
-                "group_id": 11,
-                "name": "Bạc hà",
                 "slug": "bac-ha",
+                "name": "Bạc hà",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 7,
-                "created_at": "2025-11-30T10:13:32.000000Z",
-                "updated_at": "2025-11-30T10:13:32.000000Z"
-            }
-        ],
-        "product_types": [
-            {
-                "id": 18,
-                "name": "Rượu vang & sâm panh",
-                "slug": "ruou-vang-sam-panh",
-                "description": null,
-                "order": 1,
-                "active": true,
-                "created_at": "2025-11-28T16:19:20.000000Z",
-                "updated_at": "2025-11-28T16:19:20.000000Z",
-                "pivot": {
-                    "group_id": 11,
-                    "type_id": 18,
-                    "position": 0
-                }
-            },
-            {
-                "id": 19,
-                "name": "Rượu mạnh",
-                "slug": "ruou-manh",
-                "description": null,
-                "order": 2,
-                "active": true,
-                "created_at": "2025-11-28T16:19:43.000000Z",
-                "updated_at": "2025-11-28T16:19:43.000000Z",
-                "pivot": {
-                    "group_id": 11,
-                    "type_id": 19,
-                    "position": 0
-                }
-            },
-            {
-                "id": 20,
-                "name": "Rượu sake\/soju\/umeshu",
-                "slug": "ruou-sakesojuumeshu",
-                "description": null,
-                "order": 3,
-                "active": true,
-                "created_at": "2025-11-28T16:20:04.000000Z",
-                "updated_at": "2025-11-28T16:20:04.000000Z",
-                "pivot": {
-                    "group_id": 11,
-                    "type_id": 20,
-                    "position": 0
-                }
+                "position": 7
             }
         ]
     },
@@ -491,90 +241,50 @@
         "id": 12,
         "code": "tuoi_ruou",
         "name": "Tuổi rượu",
-        "filter_type": "nhap_tay",
+        "filter_type": "range",
         "input_type": "number",
         "is_filterable": true,
         "position": 6,
         "display_config": null,
-        "icon_path": "01KBZ75GXSZ89MWQRY1K1QZGDA.svg",
+        "icon_path": "Hourglass",
         "created_at": "2025-11-30T09:40:08.000000Z",
-        "updated_at": "2025-12-08T14:52:05.000000Z",
-        "terms": [],
-        "product_types": [
-            {
-                "id": 19,
-                "name": "Rượu mạnh",
-                "slug": "ruou-manh",
-                "description": null,
-                "order": 2,
-                "active": true,
-                "created_at": "2025-11-28T16:19:43.000000Z",
-                "updated_at": "2025-11-28T16:19:43.000000Z",
-                "pivot": {
-                    "group_id": 12,
-                    "type_id": 19,
-                    "position": 0
-                }
-            }
-        ]
+        "updated_at": "2026-01-22T15:44:33.000000Z",
+        "terms": []
     },
     {
         "id": 13,
         "code": "thung_u",
         "name": "Thùng ủ",
-        "filter_type": "chon_nhieu",
+        "filter_type": "checkbox",
         "input_type": null,
         "is_filterable": true,
         "position": 7,
         "display_config": null,
-        "icon_path": "01KBZ762X8K1V44RRW526FGJGZ.svg",
+        "icon_path": "Square",
         "created_at": "2025-11-30T09:41:07.000000Z",
-        "updated_at": "2025-12-08T14:52:23.000000Z",
+        "updated_at": "2026-01-22T15:46:09.000000Z",
         "terms": [
             {
                 "id": 239,
-                "group_id": 13,
-                "name": "Thùng gỗ sồi",
                 "slug": "thung-go-soi",
+                "name": "Thùng gỗ sồi",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 1,
-                "created_at": "2025-11-30T10:16:00.000000Z",
-                "updated_at": "2025-11-30T10:16:00.000000Z"
+                "position": 1
             },
             {
                 "id": 240,
-                "group_id": 13,
-                "name": "Thùng thép không gỉ",
                 "slug": "thung-thep-khong-gi",
+                "name": "Thùng thép không gỉ",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 2,
-                "created_at": "2025-11-30T10:16:15.000000Z",
-                "updated_at": "2025-11-30T10:16:15.000000Z"
-            }
-        ],
-        "product_types": [
-            {
-                "id": 19,
-                "name": "Rượu mạnh",
-                "slug": "ruou-manh",
-                "description": null,
-                "order": 2,
-                "active": true,
-                "created_at": "2025-11-28T16:19:43.000000Z",
-                "updated_at": "2025-11-28T16:19:43.000000Z",
-                "pivot": {
-                    "group_id": 13,
-                    "type_id": 19,
-                    "position": 0
-                }
+                "position": 2
             }
         ]
     },
@@ -582,130 +292,80 @@
         "id": 14,
         "code": "chat_lieu",
         "name": "Chất liệu",
-        "filter_type": "chon_nhieu",
+        "filter_type": "checkbox",
         "input_type": null,
         "is_filterable": true,
         "position": 8,
         "display_config": null,
-        "icon_path": "01KBZ76RBF7CYZGBAMQV8JY016.svg",
+        "icon_path": "Package",
         "created_at": "2025-11-30T09:42:09.000000Z",
-        "updated_at": "2025-12-08T14:52:45.000000Z",
+        "updated_at": "2026-01-22T15:46:51.000000Z",
         "terms": [
             {
                 "id": 241,
-                "group_id": 14,
-                "name": "Thép không gỉ",
                 "slug": "thep-khong-gi",
+                "name": "Thép không gỉ",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 1,
-                "created_at": "2025-11-30T10:17:45.000000Z",
-                "updated_at": "2025-11-30T10:17:45.000000Z"
+                "position": 1
             },
             {
                 "id": 242,
-                "group_id": 14,
-                "name": "Thủy tinh",
                 "slug": "thuy-tinh",
+                "name": "Thủy tinh",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 2,
-                "created_at": "2025-11-30T10:17:52.000000Z",
-                "updated_at": "2025-11-30T10:17:52.000000Z"
+                "position": 2
             },
             {
                 "id": 243,
-                "group_id": 14,
-                "name": "Pha lê",
                 "slug": "pha-le",
+                "name": "Pha lê",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 3,
-                "created_at": "2025-11-30T10:17:59.000000Z",
-                "updated_at": "2025-11-30T10:17:59.000000Z"
+                "position": 3
             },
             {
                 "id": 244,
-                "group_id": 14,
-                "name": "Gỗ",
                 "slug": "go",
+                "name": "Gỗ",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 4,
-                "created_at": "2025-11-30T10:18:09.000000Z",
-                "updated_at": "2025-11-30T10:18:09.000000Z"
+                "position": 4
             },
             {
                 "id": 245,
-                "group_id": 14,
-                "name": "Nhựa cao cấp",
                 "slug": "nhua-cao-cap",
+                "name": "Nhựa cao cấp",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 5,
-                "created_at": "2025-11-30T10:18:20.000000Z",
-                "updated_at": "2025-11-30T10:18:20.000000Z"
+                "position": 5
             },
             {
                 "id": 246,
-                "group_id": 14,
-                "name": "Kim loại mạ",
                 "slug": "kim-loai-ma",
+                "name": "Kim loại mạ",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 6,
-                "created_at": "2025-11-30T10:18:26.000000Z",
-                "updated_at": "2025-11-30T10:18:26.000000Z"
-            }
-        ],
-        "product_types": [
-            {
-                "id": 19,
-                "name": "Rượu mạnh",
-                "slug": "ruou-manh",
-                "description": null,
-                "order": 2,
-                "active": true,
-                "created_at": "2025-11-28T16:19:43.000000Z",
-                "updated_at": "2025-11-28T16:19:43.000000Z",
-                "pivot": {
-                    "group_id": 14,
-                    "type_id": 19,
-                    "position": 0
-                }
-            },
-            {
-                "id": 21,
-                "name": "Phụ Kiện",
-                "slug": "phu-kien",
-                "description": null,
-                "order": 4,
-                "active": true,
-                "created_at": "2025-11-28T16:22:15.000000Z",
-                "updated_at": "2025-11-28T16:22:15.000000Z",
-                "pivot": {
-                    "group_id": 14,
-                    "type_id": 21,
-                    "position": 0
-                }
+                "position": 6
             }
         ]
     },
@@ -713,216 +373,124 @@
         "id": 15,
         "code": "xuat_xu",
         "name": "Xuất xứ",
-        "filter_type": "chon_don",
+        "filter_type": "radio",
         "input_type": null,
         "is_filterable": true,
         "position": 9,
         "display_config": null,
-        "icon_path": "01KBZ77G2BNP5CESAP955JXSBB.svg",
+        "icon_path": "Flag",
         "created_at": "2025-12-02T10:24:06.000000Z",
-        "updated_at": "2025-12-08T14:53:10.000000Z",
+        "updated_at": "2026-01-22T15:47:05.000000Z",
         "terms": [
             {
                 "id": 248,
-                "group_id": 15,
-                "name": "Pháp",
                 "slug": "phap",
+                "name": "Pháp",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 1,
-                "created_at": "2025-12-02T10:25:47.000000Z",
-                "updated_at": "2025-12-02T10:25:47.000000Z"
+                "position": 1
             },
             {
                 "id": 249,
-                "group_id": 15,
-                "name": "Mỹ",
                 "slug": "my",
+                "name": "Mỹ",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 2,
-                "created_at": "2025-12-02T10:25:51.000000Z",
-                "updated_at": "2025-12-02T10:25:51.000000Z"
+                "position": 2
             },
             {
                 "id": 250,
-                "group_id": 15,
-                "name": "Ý",
                 "slug": "y",
+                "name": "Ý",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 3,
-                "created_at": "2025-12-02T10:35:00.000000Z",
-                "updated_at": "2025-12-02T10:35:00.000000Z"
+                "position": 3
             },
             {
                 "id": 251,
-                "group_id": 15,
-                "name": "Tây Ban Nha",
                 "slug": "tay-ban-nha",
+                "name": "Tây Ban Nha",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 4,
-                "created_at": "2025-12-02T10:35:06.000000Z",
-                "updated_at": "2025-12-02T10:35:06.000000Z"
+                "position": 4
             },
             {
                 "id": 252,
-                "group_id": 15,
-                "name": "Úc",
                 "slug": "uc",
+                "name": "Úc",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 5,
-                "created_at": "2025-12-02T10:35:13.000000Z",
-                "updated_at": "2025-12-02T10:35:13.000000Z"
+                "position": 5
             },
             {
                 "id": 253,
-                "group_id": 15,
-                "name": "Chile",
                 "slug": "chile",
+                "name": "Chile",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 6,
-                "created_at": "2025-12-02T10:35:20.000000Z",
-                "updated_at": "2025-12-02T10:35:20.000000Z"
+                "position": 6
             },
             {
                 "id": 254,
-                "group_id": 15,
-                "name": "Đức",
                 "slug": "duc",
+                "name": "Đức",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 7,
-                "created_at": "2025-12-02T10:35:41.000000Z",
-                "updated_at": "2025-12-02T10:35:41.000000Z"
+                "position": 7
             },
             {
                 "id": 255,
-                "group_id": 15,
-                "name": "Hungary",
                 "slug": "hungary",
+                "name": "Hungary",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 8,
-                "created_at": "2025-12-02T10:35:47.000000Z",
-                "updated_at": "2025-12-02T10:35:47.000000Z"
+                "position": 8
             },
             {
                 "id": 256,
-                "group_id": 15,
-                "name": "Anh",
                 "slug": "anh",
+                "name": "Anh",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 9,
-                "created_at": "2025-12-02T10:36:04.000000Z",
-                "updated_at": "2025-12-02T10:36:04.000000Z"
+                "position": 9
             },
             {
                 "id": 257,
-                "group_id": 15,
-                "name": "Scotland",
                 "slug": "scotland",
+                "name": "Scotland",
                 "description": null,
                 "icon_type": null,
                 "icon_value": null,
                 "metadata": null,
                 "is_active": true,
-                "position": 10,
-                "created_at": "2025-12-02T10:36:36.000000Z",
-                "updated_at": "2025-12-02T10:36:36.000000Z"
-            }
-        ],
-        "product_types": [
-            {
-                "id": 18,
-                "name": "Rượu vang & sâm panh",
-                "slug": "ruou-vang-sam-panh",
-                "description": null,
-                "order": 1,
-                "active": true,
-                "created_at": "2025-11-28T16:19:20.000000Z",
-                "updated_at": "2025-11-28T16:19:20.000000Z",
-                "pivot": {
-                    "group_id": 15,
-                    "type_id": 18,
-                    "position": 0
-                }
-            },
-            {
-                "id": 19,
-                "name": "Rượu mạnh",
-                "slug": "ruou-manh",
-                "description": null,
-                "order": 2,
-                "active": true,
-                "created_at": "2025-11-28T16:19:43.000000Z",
-                "updated_at": "2025-11-28T16:19:43.000000Z",
-                "pivot": {
-                    "group_id": 15,
-                    "type_id": 19,
-                    "position": 0
-                }
-            },
-            {
-                "id": 20,
-                "name": "Rượu sake\/soju\/umeshu",
-                "slug": "ruou-sakesojuumeshu",
-                "description": null,
-                "order": 3,
-                "active": true,
-                "created_at": "2025-11-28T16:20:04.000000Z",
-                "updated_at": "2025-11-28T16:20:04.000000Z",
-                "pivot": {
-                    "group_id": 15,
-                    "type_id": 20,
-                    "position": 0
-                }
-            },
-            {
-                "id": 21,
-                "name": "Phụ Kiện",
-                "slug": "phu-kien",
-                "description": null,
-                "order": 4,
-                "active": true,
-                "created_at": "2025-11-28T16:22:15.000000Z",
-                "updated_at": "2025-11-28T16:22:15.000000Z",
-                "pivot": {
-                    "group_id": 15,
-                    "type_id": 21,
-                    "position": 0
-                }
+                "position": 10
             }
         ]
     }
