@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\V1\Admin\AdminCatalogAttributeGroupController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogTermController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogBaselineController;
 use App\Http\Controllers\Api\V1\Admin\AdminCategoryController;
+use App\Http\Controllers\Api\V1\Admin\AdminHomeComponentController;
+use App\Http\Controllers\Api\V1\Admin\AdminImageController;
+use App\Http\Controllers\Api\V1\Admin\AdminSocialLinkController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
 
@@ -77,4 +80,30 @@ Route::prefix('admin')
         // Upload
         Route::post('upload/image', [AdminUploadController::class, 'uploadImage'])->name('upload.image');
         Route::post('upload/image-url', [AdminUploadController::class, 'uploadImageFromUrl'])->name('upload.image-url');
+
+        // Home Components CRUD
+        Route::get('home-components', [AdminHomeComponentController::class, 'index'])->name('home-components.index');
+        Route::get('home-components/{id}', [AdminHomeComponentController::class, 'show'])->name('home-components.show');
+        Route::post('home-components', [AdminHomeComponentController::class, 'store'])->name('home-components.store');
+        Route::put('home-components/{id}', [AdminHomeComponentController::class, 'update'])->name('home-components.update');
+        Route::delete('home-components/{id}', [AdminHomeComponentController::class, 'destroy'])->name('home-components.destroy');
+        Route::post('home-components/bulk-delete', [AdminHomeComponentController::class, 'bulkDestroy'])->name('home-components.bulk-destroy');
+        Route::post('home-components/reorder', [AdminHomeComponentController::class, 'reorder'])->name('home-components.reorder');
+
+        // Images CRUD
+        Route::get('images', [AdminImageController::class, 'index'])->name('images.index');
+        Route::get('images/{id}', [AdminImageController::class, 'show'])->name('images.show');
+        Route::post('images', [AdminImageController::class, 'store'])->name('images.store');
+        Route::put('images/{id}', [AdminImageController::class, 'update'])->name('images.update');
+        Route::delete('images/{id}', [AdminImageController::class, 'destroy'])->name('images.destroy');
+        Route::post('images/bulk-delete', [AdminImageController::class, 'bulkDestroy'])->name('images.bulk-destroy');
+
+        // Social Links CRUD
+        Route::get('social-links', [AdminSocialLinkController::class, 'index'])->name('social-links.index');
+        Route::get('social-links/{id}', [AdminSocialLinkController::class, 'show'])->name('social-links.show');
+        Route::post('social-links', [AdminSocialLinkController::class, 'store'])->name('social-links.store');
+        Route::put('social-links/{id}', [AdminSocialLinkController::class, 'update'])->name('social-links.update');
+        Route::delete('social-links/{id}', [AdminSocialLinkController::class, 'destroy'])->name('social-links.destroy');
+        Route::post('social-links/bulk-delete', [AdminSocialLinkController::class, 'bulkDestroy'])->name('social-links.bulk-destroy');
+        Route::post('social-links/reorder', [AdminSocialLinkController::class, 'reorder'])->name('social-links.reorder');
     });
