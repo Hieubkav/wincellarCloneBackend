@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminProductTypeController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogAttributeGroupController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogTermController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogBaselineController;
+use App\Http\Controllers\Api\V1\Admin\AdminCategoryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
 
@@ -35,6 +36,14 @@ Route::prefix('admin')
         Route::put('articles/{id}', [AdminArticleController::class, 'update'])->name('articles.update');
         Route::delete('articles/{id}', [AdminArticleController::class, 'destroy'])->name('articles.destroy');
         Route::post('articles/bulk-delete', [AdminArticleController::class, 'bulkDestroy'])->name('articles.bulk-destroy');
+
+        // Categories CRUD
+        Route::get('categories', [AdminCategoryController::class, 'index'])->name('categories.index');
+        Route::get('categories/{id}', [AdminCategoryController::class, 'show'])->name('categories.show');
+        Route::post('categories', [AdminCategoryController::class, 'store'])->name('categories.store');
+        Route::put('categories/{id}', [AdminCategoryController::class, 'update'])->name('categories.update');
+        Route::delete('categories/{id}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
+        Route::post('categories/bulk-delete', [AdminCategoryController::class, 'bulkDestroy'])->name('categories.bulk-destroy');
 
         // Product Types CRUD
         Route::get('product-types', [AdminProductTypeController::class, 'index'])->name('product-types.index');
