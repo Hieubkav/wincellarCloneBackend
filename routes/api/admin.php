@@ -42,6 +42,10 @@ Route::prefix('admin')
         Route::post('product-types', [AdminProductTypeController::class, 'store'])->name('product-types.store');
         Route::put('product-types/{id}', [AdminProductTypeController::class, 'update'])->name('product-types.update');
         Route::delete('product-types/{id}', [AdminProductTypeController::class, 'destroy'])->name('product-types.destroy');
+        // Product Types - Attribute Groups Management
+        Route::post('product-types/{id}/attribute-groups', [AdminProductTypeController::class, 'attachAttributeGroup'])->name('product-types.attach-attribute-group');
+        Route::delete('product-types/{id}/attribute-groups/{groupId}', [AdminProductTypeController::class, 'detachAttributeGroup'])->name('product-types.detach-attribute-group');
+        Route::put('product-types/{id}/attribute-groups/sync', [AdminProductTypeController::class, 'syncAttributeGroups'])->name('product-types.sync-attribute-groups');
 
         // Catalog Attribute Groups CRUD
         Route::get('catalog-attribute-groups', [AdminCatalogAttributeGroupController::class, 'index'])->name('catalog-attribute-groups.index');

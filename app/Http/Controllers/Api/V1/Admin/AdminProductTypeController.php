@@ -50,7 +50,9 @@ class AdminProductTypeController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $type = ProductType::findOrFail($id);
+        $type = ProductType::with(['attributeGroups' => function ($query) {
+            $query->orderBy('catalog_attribute_group_product_type.position');
+        }])->findOrFail($id);
 
         return response()->json([
             'data' => [
@@ -61,6 +63,14 @@ class AdminProductTypeController extends Controller
                 'active' => $type->active,
                 'created_at' => $type->created_at?->toIso8601String(),
                 'updated_at' => $type->updated_at?->toIso8601String(),
+                'attribute_groups' => $type->attributeGroups->map(fn ($group) => [
+                    'id' => $group->id,
+                    'code' => $group->code,
+                    'name' => $group->name,
+                    'filter_type' => $group->filter_type,
+                    'icon_path' => $group->icon_path,
+                    'position' => $group->pivot->position,
+                ]),
             ],
         ]);
     }
@@ -120,6 +130,59 @@ class AdminProductTypeController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Xóa phân loại thành công',
+        ]);
+    }
+
+    public function attachAttributeGroup(Request $request, int $id): JsonResponse
+    {
+        $type = ProductType::findOrFail($id);
+
+        $validated = $request->validate([
+            'group_id' => ['required', 'integer', 'exists:catalog_attribute_groups,id'],
+            'position' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $type->attributeGroups()->syncWithoutDetaching([
+            $validated['group_id'] => ['position' => $validated['position'] ?? 0],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã liên kết nhóm thuộc tính',
+        ]);
+    }
+
+    public function detachAttributeGroup(int $id, int $groupId): JsonResponse
+    {
+        $type = ProductType::findOrFail($id);
+        $type->attributeGroups()->detach($groupId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã gỡ liên kết nhóm thuộc tính',
+        ]);
+    }
+
+    public function syncAttributeGroups(Request $request, int $id): JsonResponse
+    {
+        $type = ProductType::findOrFail($id);
+
+        $validated = $request->validate([
+            'groups' => ['required', 'array'],
+            'groups.*.id' => ['required', 'integer', 'exists:catalog_attribute_groups,id'],
+            'groups.*.position' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $syncData = [];
+        foreach ($validated['groups'] as $group) {
+            $syncData[$group['id']] = ['position' => $group['position'] ?? 0];
+        }
+
+        $type->attributeGroups()->sync($syncData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã cập nhật danh sách nhóm thuộc tính',
         ]);
     }
 }
