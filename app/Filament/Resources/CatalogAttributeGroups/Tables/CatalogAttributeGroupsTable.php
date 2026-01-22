@@ -49,6 +49,11 @@ class CatalogAttributeGroupsTable
                     ->label('Name')
                     ->searchable()
                     ->weight('medium'),
+                TextColumn::make('code')
+                    ->label('Mã')
+                    ->searchable()
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('filter_type')
                     ->label('Kiểu lọc')
                     ->sortable()

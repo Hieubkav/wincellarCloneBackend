@@ -34,7 +34,8 @@ class ProductTypesTable
                     ->sortable()
                     ->badge()
                     ->copyable()
-                    ->tooltip('Click để copy'),
+                    ->tooltip('Click để copy')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('products_count')
                     ->label('Số sản phẩm')
                     ->badge()

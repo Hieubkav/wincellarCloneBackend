@@ -10,6 +10,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -39,6 +40,10 @@ class AttributeGroupsRelationManager extends RelationManager
             ->defaultSort('catalog_attribute_group_product_type.position')
             ->reorderable('catalog_attribute_group_product_type.position')
             ->columns([
+                ImageColumn::make('icon_path')
+                    ->label('Icon')
+                    ->disk('public')
+                    ->openUrlInNewTab(),
                 TextColumn::make('name')
                     ->label('Tên')
                     ->searchable()
@@ -46,6 +51,7 @@ class AttributeGroupsRelationManager extends RelationManager
                 TextColumn::make('filter_type')
                     ->label('Kiểu lọc')
                     ->badge()
+                    ->sortable()
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'chon_don' => 'Chọn đơn',
                         'chon_nhieu' => 'Chọn nhiều',
@@ -53,8 +59,9 @@ class AttributeGroupsRelationManager extends RelationManager
                         default => $state,
                     }),
                 TextColumn::make('code')
-                    ->label('Code')
-                    ->badge(),
+                    ->label('Mã')
+                    ->badge()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('pivot.position')
                     ->label('Vị trí')
                     ->numeric()
