@@ -68,12 +68,14 @@ class AdminDashboardController extends Controller
     public function trafficChart(Request $request): JsonResponse
     {
         $days = min($request->integer('days', 7), 90);
-        $startDate = Carbon::now()->subDays($days - 1)->startOfDay();
+        // Đảm bảo luôn bao gồm cả ngày hôm nay
+        $startDate = Carbon::today()->subDays($days - 1);
 
         $dailyData = TrackingEvent::query()
             ->select(
                 DB::raw('DATE(occurred_at) as date'),
                 DB::raw('COUNT(*) as total_events'),
+                DB::raw('COUNT(DISTINCT visitor_id) as unique_visitors'),
                 DB::raw("SUM(CASE WHEN event_type = 'product_view' THEN 1 ELSE 0 END) as product_views"),
                 DB::raw("SUM(CASE WHEN event_type = 'article_view' THEN 1 ELSE 0 END) as article_views"),
                 DB::raw("SUM(CASE WHEN event_type = 'cta_contact' THEN 1 ELSE 0 END) as cta_clicks")
@@ -83,24 +85,16 @@ class AdminDashboardController extends Controller
             ->orderBy('date')
             ->get();
 
-        $visitorData = Visitor::query()
-            ->select(
-                DB::raw('DATE(first_seen_at) as date'),
-                DB::raw('COUNT(*) as visitors')
-            )
-            ->where('first_seen_at', '>=', $startDate)
-            ->groupBy(DB::raw('DATE(first_seen_at)'))
-            ->pluck('visitors', 'date');
-
         $chartData = [];
         for ($i = 0; $i < $days; $i++) {
-            $date = Carbon::now()->subDays($days - 1 - $i)->format('Y-m-d');
+            // Tính từ startDate và cộng dần lên
+            $date = Carbon::parse($startDate)->addDays($i)->format('Y-m-d');
             $dayData = $dailyData->firstWhere('date', $date);
             
             $chartData[] = [
                 'date' => $date,
                 'label' => Carbon::parse($date)->format('d/m'),
-                'visitors' => (int) ($visitorData[$date] ?? 0),
+                'visitors' => (int) ($dayData?->unique_visitors ?? 0),
                 'page_views' => (int) ($dayData?->total_events ?? 0),
                 'product_views' => (int) ($dayData?->product_views ?? 0),
                 'article_views' => (int) ($dayData?->article_views ?? 0),
