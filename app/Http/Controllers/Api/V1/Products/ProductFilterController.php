@@ -157,8 +157,8 @@ class ProductFilterController extends Controller
         $termCounts = static::getTermProductCounts($type);
 
         foreach ($attributeGroups as $group) {
-            // Nhập tay + số: trả về min/max từ extra_attrs
-            if ($group->filter_type === 'nhap_tay' && $group->input_type === 'number') {
+            // Range hoặc Nhập tay + số: trả về min/max từ extra_attrs
+            if (($group->filter_type === 'nhap_tay' || $group->filter_type === 'range') && $group->input_type === 'number') {
                 // Build JSON path với quoted key để xử lý ký tự đặc biệt (e.g., "do-cao")
                 $jsonPath = '$."'.$group->code.'"';
                 $jsonPathValue = '$."'.$group->code.'".value';
@@ -179,20 +179,19 @@ class ProductFilterController extends Controller
                 )
                     ->first();
 
-                if ($stats && ($stats->min_val !== null || $stats->max_val !== null)) {
-                    $filters[] = [
-                        'code' => $group->code,
-                        'name' => $group->name,
-                        'filter_type' => $group->filter_type,
-                        'input_type' => $group->input_type,
-                        'icon_url' => $group->icon_path ? asset('storage/' . $group->icon_path) : null,
-                        'range' => [
-                            'min' => (float) ($stats->min_val ?? 0),
-                            'max' => (float) ($stats->max_val ?? 100),
-                        ],
-                        'options' => [],
-                    ];
-                }
+                // Luôn trả về filter ngay cả khi chưa có data, để frontend hiển thị input/range
+                $filters[] = [
+                    'code' => $group->code,
+                    'name' => $group->name,
+                    'filter_type' => $group->filter_type,
+                    'input_type' => $group->input_type,
+                    'icon_url' => $group->icon_path ? asset('storage/' . $group->icon_path) : null,
+                    'range' => [
+                        'min' => (float) ($stats->min_val ?? 0),
+                        'max' => (float) ($stats->max_val ?? 100),
+                    ],
+                    'options' => [],
+                ];
 
                 continue;
             }
