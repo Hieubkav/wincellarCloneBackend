@@ -19,8 +19,11 @@ class AdminDashboardController extends Controller
 {
     public function stats(): JsonResponse
     {
-        $today = Carbon::today();
-        $yesterday = Carbon::yesterday();
+        $tz = config('app.timezone', 'Asia/Ho_Chi_Minh');
+        $today = Carbon::today($tz);
+        $yesterday = Carbon::yesterday($tz);
+        $todayStart = $today->copy()->startOfDay();
+        $todayEnd = $today->copy()->endOfDay();
         $lastWeek = Carbon::now()->subDays(7);
         $lastMonth = Carbon::now()->subDays(30);
 
@@ -38,14 +41,16 @@ class AdminDashboardController extends Controller
                 'types' => ProductType::where('active', true)->count(),
                 'traffic' => [
                     'today' => [
-                        'visitors' => Visitor::whereDate('first_seen_at', $today)->count(),
-                        'sessions' => VisitorSession::whereDate('started_at', $today)->count(),
-                        'page_views' => TrackingEvent::whereDate('occurred_at', $today)->count(),
-                        'product_views' => TrackingEvent::whereDate('occurred_at', $today)
-                            ->where('event_type', TrackingEvent::TYPE_PRODUCT_VIEW)->count(),
-                        'article_views' => TrackingEvent::whereDate('occurred_at', $today)
-                            ->where('event_type', TrackingEvent::TYPE_ARTICLE_VIEW)->count(),
-                        'cta_clicks' => TrackingEvent::whereDate('occurred_at', $today)
+                        'visitors' => Visitor::whereBetween('first_seen_at', [$todayStart, $todayEnd])->count(),
+                        'sessions' => VisitorSession::whereBetween('started_at', [$todayStart, $todayEnd])->count(),
+                        'page_views' => TrackingEvent::whereBetween('occurred_at', [$todayStart, $todayEnd])->count(),
+                        'product_views' => TrackingEvent::whereBetween('occurred_at', [$todayStart, $todayEnd])
+                            ->where('event_type', TrackingEvent::TYPE_PRODUCT_VIEW)
+                            ->count(),
+                        'article_views' => TrackingEvent::whereBetween('occurred_at', [$todayStart, $todayEnd])
+                            ->where('event_type', TrackingEvent::TYPE_ARTICLE_VIEW)
+                            ->count(),
+                        'cta_clicks' => TrackingEvent::whereBetween('occurred_at', [$todayStart, $todayEnd])
                             ->where('event_type', TrackingEvent::TYPE_CTA_CONTACT)->count(),
                     ],
                     'yesterday' => [
@@ -68,38 +73,42 @@ class AdminDashboardController extends Controller
     public function trafficChart(Request $request): JsonResponse
     {
         $days = min($request->integer('days', 7), 90);
-        // Đảm bảo luôn bao gồm cả ngày hôm nay
-        $startDate = Carbon::now('Asia/Ho_Chi_Minh')->startOfDay()->subDays($days - 1);
-
-        $dailyData = TrackingEvent::query()
-            ->select(
-                DB::raw('DATE(occurred_at) as date'),
-                DB::raw('COUNT(*) as total_events'),
-                DB::raw('COUNT(DISTINCT visitor_id) as unique_visitors'),
-                DB::raw("SUM(CASE WHEN event_type = 'product_view' THEN 1 ELSE 0 END) as product_views"),
-                DB::raw("SUM(CASE WHEN event_type = 'article_view' THEN 1 ELSE 0 END) as article_views"),
-                DB::raw("SUM(CASE WHEN event_type = 'cta_contact' THEN 1 ELSE 0 END) as cta_clicks"),
-                DB::raw("SUM(CASE WHEN event_type = 'page_view' THEN 1 ELSE 0 END) as page_views_count")
-            )
-            ->where('occurred_at', '>=', $startDate)
-            ->groupBy(DB::raw('DATE(occurred_at)'))
-            ->orderBy('date')
-            ->get();
+        $tz = config('app.timezone', 'Asia/Ho_Chi_Minh');
+        $now = Carbon::now($tz);
+        $startDate = $now->copy()->startOfDay()->subDays($days - 1);
+        $endDate = $now->copy()->endOfDay();
 
         $chartData = [];
         for ($i = 0; $i < $days; $i++) {
-            // Tính từ startDate và cộng dần lên
-            $date = $startDate->copy()->addDays($i)->format('Y-m-d');
-            $dayData = $dailyData->firstWhere('date', $date);
+            $dayStart = $startDate->copy()->addDays($i)->startOfDay();
+            $dayEnd = $dayStart->copy()->endOfDay();
+            $date = $dayStart->format('Y-m-d');
+            
+            $dayStats = TrackingEvent::query()
+                ->selectRaw('
+                    COUNT(*) as total_events,
+                    COUNT(DISTINCT visitor_id) as unique_visitors,
+                    SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as product_views,
+                    SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as article_views,
+                    SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as cta_clicks,
+                    SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as page_views_count
+                ', [
+                    TrackingEvent::TYPE_PRODUCT_VIEW,
+                    TrackingEvent::TYPE_ARTICLE_VIEW,
+                    TrackingEvent::TYPE_CTA_CONTACT,
+                    TrackingEvent::TYPE_PAGE_VIEW,
+                ])
+                ->whereBetween('occurred_at', [$dayStart, $dayEnd])
+                ->first();
             
             $chartData[] = [
                 'date' => $date,
-                'label' => Carbon::parse($date)->format('d/m'),
-                'visitors' => (int) ($dayData?->unique_visitors ?? 0),
-                'page_views' => (int) ($dayData?->total_events ?? 0),
-                'product_views' => (int) ($dayData?->product_views ?? 0),
-                'article_views' => (int) ($dayData?->article_views ?? 0),
-                'cta_clicks' => (int) ($dayData?->cta_clicks ?? 0),
+                'label' => $dayStart->format('d/m'),
+                'visitors' => (int) ($dayStats->unique_visitors ?? 0),
+                'page_views' => (int) ($dayStats->total_events ?? 0),
+                'product_views' => (int) ($dayStats->product_views ?? 0),
+                'article_views' => (int) ($dayStats->article_views ?? 0),
+                'cta_clicks' => (int) ($dayStats->cta_clicks ?? 0),
             ];
         }
 
