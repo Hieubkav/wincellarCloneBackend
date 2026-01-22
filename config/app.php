@@ -76,7 +76,7 @@ return [
     | is set to "UTC" by default as it is suitable for most use cases.
     |
     */
-
+    'timezone' => 'Asia/Ho_Chi_Minh',
     'timezone' => 'UTC',
 
     /*

@@ -69,7 +69,7 @@ class AdminDashboardController extends Controller
     {
         $days = min($request->integer('days', 7), 90);
         // Đảm bảo luôn bao gồm cả ngày hôm nay
-        $startDate = Carbon::today()->subDays($days - 1);
+        $startDate = Carbon::now('Asia/Ho_Chi_Minh')->startOfDay()->subDays($days - 1);
 
         $dailyData = TrackingEvent::query()
             ->select(
@@ -88,7 +88,7 @@ class AdminDashboardController extends Controller
         $chartData = [];
         for ($i = 0; $i < $days; $i++) {
             // Tính từ startDate và cộng dần lên
-            $date = Carbon::parse($startDate)->addDays($i)->format('Y-m-d');
+            $date = $startDate->copy()->addDays($i)->format('Y-m-d');
             $dayData = $dailyData->firstWhere('date', $date);
             
             $chartData[] = [
