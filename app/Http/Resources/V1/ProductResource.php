@@ -28,6 +28,7 @@ class ProductResource extends JsonResource
 
             // Images
             'main_image_url' => $this->cover_image_url ?: '/placeholder/wine-bottle.svg',
+            'cover_image_url' => $this->when($request->routeIs('api.v1.products.show'), $this->cover_image_url ?: '/placeholder/wine-bottle.svg'),
             'gallery' => $this->gallery_for_output,
 
             // Terms/Taxonomy
