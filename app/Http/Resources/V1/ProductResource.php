@@ -89,9 +89,7 @@ class ProductResource extends JsonResource
                         return [
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
-                            'icon_url' => $group?->icon_path
-                                ? Storage::disk('public')->url($group->icon_path)
-                                : null,
+                            'icon_name' => $group?->icon_path,
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,
@@ -203,9 +201,9 @@ class ProductResource extends JsonResource
     }
 
     /**
-     * Transform extra_attrs to include icon_url from CatalogAttributeGroup.
+     * Transform extra_attrs to include icon_name from CatalogAttributeGroup.
      *
-     * @return array<string, array{label: string, value: string|int|float, type: string, icon_url: string|null}>
+     * @return array<string, array{label: string, value: string|int|float, type: string, icon_name: string|null}>
      */
     protected function transformExtraAttrs(): array
     {
@@ -229,7 +227,7 @@ class ProductResource extends JsonResource
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',
                 'type' => $attr['type'] ?? 'text',
-                'icon_url' => $iconPath ? Storage::disk('public')->url($iconPath) : null,
+                'icon_name' => $iconPath,
             ];
         }
 
@@ -282,9 +280,7 @@ class ProductResource extends JsonResource
                         return [
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
-                            'icon_url' => $group?->icon_path
-                                ? Storage::disk('public')->url($group->icon_path)
-                                : null,
+                            'icon_name' => $group?->icon_path,
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,
@@ -323,7 +319,7 @@ class ProductResource extends JsonResource
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',
                 'type' => $attr['type'] ?? 'text',
-                'icon_url' => $iconPath ? Storage::disk('public')->url($iconPath) : null,
+                'icon_name' => $iconPath,
             ];
         }
 
