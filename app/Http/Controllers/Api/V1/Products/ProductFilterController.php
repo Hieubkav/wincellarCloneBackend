@@ -182,13 +182,17 @@ class ProductFilterController extends Controller
                     ->first();
 
                 // Luôn trả về filter ngay cả khi chưa có data, để frontend hiển thị input/range
+                // Phân biệt giữa file path và Lucide icon name
+                // File path thường có extension (.svg, .png) hoặc chứa dấu /
+                $isFilePath = $group->icon_path && (str_contains($group->icon_path, '/') || str_contains($group->icon_path, '.'));
+
                 $filters[] = [
                     'code' => $group->code,
                     'name' => $group->name,
                     'filter_type' => $group->filter_type,
                     'input_type' => $group->input_type,
-                    'icon_url' => $group->icon_path ? asset('storage/' . $group->icon_path) : null,
-                    'icon_name' => $group->icon_path, // Lucide icon name
+                    'icon_url' => $isFilePath ? asset('storage/' . $group->icon_path) : null,
+                    'icon_name' => !$isFilePath ? $group->icon_path : null, // Lucide icon name
                     'range' => [
                         'min' => (float) ($stats->min_val ?? 0),
                         'max' => (float) ($stats->max_val ?? 100),
@@ -215,14 +219,18 @@ class ProductFilterController extends Controller
                 $displayConfig = json_decode($displayConfig, true) ?? [];
             }
 
+            // Phân biệt giữa file path và Lucide icon name
+            // File path thường có extension (.svg, .png) hoặc chứa dấu /
+            $isFilePath = $group->icon_path && (str_contains($group->icon_path, '/') || str_contains($group->icon_path, '.'));
+
             $filters[] = [
                 'code' => $group->code,
                 'name' => $group->name,
                 'filter_type' => $group->filter_type,
                 'input_type' => $group->input_type,
                 'display_config' => $displayConfig,
-                'icon_url' => $group->icon_path ? asset('storage/' . $group->icon_path) : null,
-                'icon_name' => $group->icon_path, // Lucide icon name
+                'icon_url' => $isFilePath ? asset('storage/' . $group->icon_path) : null,
+                'icon_name' => !$isFilePath ? $group->icon_path : null, // Lucide icon name
                 'options' => $terms,
             ];
         }
