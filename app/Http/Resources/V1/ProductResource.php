@@ -89,7 +89,7 @@ class ProductResource extends JsonResource
                         return [
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
-                            'icon_name' => $group?->icon_path,
+                            'icon_url' => $group?->icon_path,
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,
@@ -280,7 +280,7 @@ class ProductResource extends JsonResource
                         return [
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
-                            'icon_name' => $group?->icon_path,
+                            'icon_url' => $group?->icon_path,
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,
