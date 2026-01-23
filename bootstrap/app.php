@@ -23,6 +23,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\PerformanceMonitor::class,
         ]);
         
+        // Add response compression for API routes (append to run after response is generated)
+        $middleware->api(append: [
+            \App\Http\Middleware\CompressApiResponse::class,
+        ]);
+        
         // Add cache headers for static assets (images, fonts, etc.)
         $middleware->web(append: [
             \App\Http\Middleware\AddStaticAssetCacheHeaders::class,

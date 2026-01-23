@@ -7,6 +7,7 @@ use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
+use App\Support\Product\TermCountCache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -154,7 +155,8 @@ class ProductFilterController extends Controller
 
         // Lấy term counts một lần cho tất cả terms (tối ưu performance)
         // Filter theo type nếu có để counts chính xác
-        $termCounts = static::getTermProductCounts($type);
+        // Using TermCountCache to prevent duplicate queries within same request
+        $termCounts = TermCountCache::getForType($type);
 
         foreach ($attributeGroups as $group) {
             // Range hoặc Nhập tay + số: trả về min/max từ extra_attrs
@@ -231,25 +233,17 @@ class ProductFilterController extends Controller
     /**
      * Đếm số sản phẩm active cho mỗi term.
      * Filter theo type nếu có để counts chính xác với filter set.
+     * 
+     * NOTE: This method is now deprecated in favor of TermCountCache::getForType()
+     * which provides in-memory caching to prevent duplicate queries.
+     * Kept for backwards compatibility but should use TermCountCache directly.
      *
+     * @deprecated Use TermCountCache::getForType($type) instead
      * @param  ProductType|null  $type  Filter theo type nếu có
      * @return array<int, int> Map của term_id => count
      */
     protected static function getTermProductCounts(?ProductType $type = null): array
     {
-        $query = \DB::table('product_term_assignments as pta')
-            ->join('products', 'products.id', '=', 'pta.product_id')
-            ->where('products.active', true);
-
-        // Filter theo type nếu có
-        if ($type) {
-            $query->where('products.type_id', $type->id);
-        }
-
-        return $query
-            ->selectRaw('pta.term_id, COUNT(DISTINCT pta.product_id) as cnt')
-            ->groupBy('pta.term_id')
-            ->pluck('cnt', 'term_id')
-            ->toArray();
+        return TermCountCache::getForType($type);
     }
 }
