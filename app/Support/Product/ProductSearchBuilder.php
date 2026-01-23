@@ -29,7 +29,7 @@ class ProductSearchBuilder
                 'products.slug',
                 'products.price',
                 'products.original_price',
-                'products.discount_percent',
+                // Note: discount_percent is computed property, not a column
                 'products.type_id',
                 'products.active',
                 'products.created_at',
