@@ -26,10 +26,18 @@ class ProductIndexRequest extends FormRequest
             'category.*' => ['integer', 'min:1'],
             'price_min' => ['nullable', 'integer', 'min:0'],
             'price_max' => ['nullable', 'integer', 'min:0'],
-            'page' => ['nullable', 'integer', 'min:1'],
-            'per_page' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'page' => ['nullable', 'integer', 'min:1', 'max:1000'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'sort' => ['nullable', 'string', 'max:25'],
             'cursor' => ['nullable', 'integer', 'min:0'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'per_page.max' => 'Maximum 100 items per page allowed. Use filters to narrow results.',
+            'page.max' => 'Maximum page number is 1000. Use filters or search to narrow results.',
         ];
     }
 

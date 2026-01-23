@@ -10,14 +10,39 @@ use Illuminate\Support\Str;
 class ProductSearchBuilder
 {
     /**
+     * Build product query with filters
+     * 
      * @param array<string, mixed> $filters
      * @param string|null $keyword
      * @param array<int|string, mixed>|null $withRelations
+     * @param bool $isList Whether this is for list view (select fewer columns) or detail view (select all)
      */
     public static function build(array $filters, ?string $keyword, ?array $withRelations = null, bool $isList = true): Builder
     {
+        // Select specific columns based on view type to reduce payload size
+        // List view: Exclude heavy columns (description, extra_attrs can be large JSON)
+        // Detail view: Select all columns
+        $columns = $isList 
+            ? [
+                'products.id',
+                'products.name',
+                'products.slug',
+                'products.price',
+                'products.original_price',
+                'products.discount_percent',
+                'products.type_id',
+                'products.active',
+                'products.created_at',
+                'products.updated_at',
+                // ❌ EXCLUDE heavy columns for list view:
+                // - description (TEXT, ~5-10KB per product)
+                // - extra_attrs (JSON, ~2-5KB per product)
+                // → Saves ~7-15KB per product * 24 products = ~168-360KB per request
+            ]
+            : ['products.*']; // Detail view needs all columns
+
         $query = Product::query()
-            ->select('products.*')
+            ->select($columns)
             ->active();
 
         $relations = $withRelations ?? ($isList ? [
