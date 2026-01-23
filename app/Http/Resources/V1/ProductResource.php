@@ -86,10 +86,16 @@ class ProductResource extends JsonResource
                     ->map(function ($terms, $groupCode) {
                         $group = $terms->first()?->group;
 
+                        $iconPath = $group?->icon_path;
+                        // Phân biệt: nếu icon_path là URL (bắt đầu với http//) thì dùng icon_url
+                        // Còn lại là tên Lucide icon thì dùng icon_name
+                        $isUrl = $iconPath && (str_starts_with($iconPath, 'http://') || str_starts_with($iconPath, 'https://') || str_starts_with($iconPath, '/'));
+
                         return [
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
-                            'icon_url' => $group?->icon_path,
+                            'icon_url' => $isUrl ? $iconPath : null,
+                            'icon_name' => !$isUrl ? $iconPath : null,
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,
@@ -277,10 +283,16 @@ class ProductResource extends JsonResource
                     ->map(function ($terms, $groupCode) {
                         $group = $terms->first()?->group;
 
+                        $iconPath = $group?->icon_path;
+                        // Phân biệt: nếu icon_path là URL (bắt đầu với http//) thì dùng icon_url
+                        // Còn lại là tên Lucide icon thì dùng icon_name
+                        $isUrl = $iconPath && (str_starts_with($iconPath, 'http://') || str_starts_with($iconPath, 'https://') || str_starts_with($iconPath, '/'));
+
                         return [
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
-                            'icon_url' => $group?->icon_path,
+                            'icon_url' => $isUrl ? $iconPath : null,
+                            'icon_name' => !$isUrl ? $iconPath : null,
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,
