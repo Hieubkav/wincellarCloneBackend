@@ -71,6 +71,28 @@ trait HasMediaGallery
         ]);
     }
 
+    public function syncImagesFromPaths(array $paths): void
+    {
+        $paths = array_values(array_filter($paths));
+
+        \Log::info('[syncImagesFromPaths] Model: ' . get_class($this) . '#' . $this->id);
+        \Log::info('[syncImagesFromPaths] Received paths count: ' . count($paths));
+        \Log::info('[syncImagesFromPaths] Paths: ' . json_encode($paths));
+        \Log::info('[syncImagesFromPaths] Current images count: ' . $this->images()->count());
+
+        $this->images()->delete();
+
+        foreach ($paths as $index => $path) {
+            $this->images()->create([
+                'file_path' => $path,
+                'disk' => 'public',
+                'order' => $index,
+            ]);
+        }
+
+        \Log::info('[syncImagesFromPaths] After sync, images count: ' . $this->images()->count());
+    }
+
     protected function mediaPlaceholderKey(): string
     {
         return 'default';

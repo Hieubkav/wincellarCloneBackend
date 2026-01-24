@@ -33,7 +33,6 @@ class AdminArticleController extends Controller
                 'id' => $a->id,
                 'title' => $a->title,
                 'slug' => $a->slug,
-                'excerpt' => $a->excerpt,
                 'active' => $a->active,
                 'cover_image_url' => $a->coverImage?->url,
                 'published_at' => $a->published_at?->toIso8601String(),
@@ -57,13 +56,13 @@ class AdminArticleController extends Controller
                 'id' => $article->id,
                 'title' => $article->title,
                 'slug' => $article->slug,
-                'excerpt' => $article->excerpt,
                 'content' => $article->content,
                 'active' => $article->active,
                 'cover_image_url' => $article->coverImage?->url,
                 'images' => $article->images->map(fn($img) => [
                     'id' => $img->id,
                     'url' => $img->url,
+                    'path' => $img->file_path,
                 ]),
                 'published_at' => $article->published_at?->toIso8601String(),
                 'created_at' => $article->created_at?->toIso8601String(),
@@ -77,17 +76,25 @@ class AdminArticleController extends Controller
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:articles,slug'],
-            'excerpt' => ['nullable', 'string', 'max:500'],
             'content' => ['nullable', 'string'],
             'active' => ['boolean'],
             'published_at' => ['nullable', 'date'],
+            'image_paths' => ['nullable', 'array'],
+            'image_paths.*' => ['string'],
         ]);
 
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['title']);
         $validated['active'] = $validated['active'] ?? true;
         $validated['published_at'] = $validated['published_at'] ?? now();
 
+        $imagePaths = $validated['image_paths'] ?? [];
+        unset($validated['image_paths']);
+
         $article = Article::create($validated);
+
+        if (!empty($imagePaths)) {
+            $article->syncImagesFromPaths($imagePaths);
+        }
 
         return response()->json([
             'success' => true,
@@ -103,13 +110,21 @@ class AdminArticleController extends Controller
         $validated = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'string', 'max:255', Rule::unique('articles', 'slug')->ignore($id)],
-            'excerpt' => ['nullable', 'string', 'max:500'],
             'content' => ['nullable', 'string'],
             'active' => ['boolean'],
             'published_at' => ['nullable', 'date'],
+            'image_paths' => ['nullable', 'array'],
+            'image_paths.*' => ['string'],
         ]);
 
+        $imagePaths = $validated['image_paths'] ?? null;
+        unset($validated['image_paths']);
+
         $article->update($validated);
+
+        if ($imagePaths !== null) {
+            $article->syncImagesFromPaths($imagePaths);
+        }
 
         return response()->json([
             'success' => true,
