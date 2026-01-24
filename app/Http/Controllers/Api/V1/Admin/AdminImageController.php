@@ -110,6 +110,7 @@ class AdminImageController extends Controller
     public function show(int $id): JsonResponse
     {
         $image = Image::findOrFail($id);
+        $usedBy = $this->getUsedByInfo($image);
 
         return response()->json([
             'data' => [
@@ -123,6 +124,7 @@ class AdminImageController extends Controller
                 'mime' => $image->mime,
                 'model_type' => $image->model_type,
                 'model_id' => $image->model_id,
+                'used_by' => $usedBy,
                 'order' => $image->order,
                 'active' => $image->active,
                 'extra_attributes' => $image->extra_attributes,
