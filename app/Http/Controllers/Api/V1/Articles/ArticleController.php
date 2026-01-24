@@ -21,6 +21,21 @@ class ArticleController extends Controller
             ->with(['coverImage'])
             ->active();
 
+        // Support fetching by IDs (for home components preview)
+        $ids = $request->input('ids');
+        if ($ids) {
+            // Handle comma-separated string or array
+            if (is_string($ids)) {
+                $ids = array_map('intval', array_filter(explode(',', $ids)));
+            } elseif (is_array($ids)) {
+                $ids = array_map('intval', array_filter($ids));
+            }
+            
+            if (!empty($ids)) {
+                $query->whereIn('articles.id', $ids);
+            }
+        }
+
         $this->applySorting($query, $request->input('sort'));
 
         $perPage = (int) $request->input('per_page', 12);

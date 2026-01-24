@@ -16,6 +16,9 @@ class ProductFilters
 
     private function applyAll(array $filters): Builder
     {
+        // Apply IDs filter first (for preview/admin use case)
+        $this->applyIdsFilter(Arr::get($filters, 'ids', []));
+
         $terms = Arr::get($filters, 'terms', []);
 
         // Apply dynamic attribute filters for all term groups
@@ -40,6 +43,27 @@ class ProductFilters
         $this->applyExtraAttrRanges(Arr::get($filters, 'range', []));
 
         return $this->query;
+    }
+
+    /**
+     * Apply IDs filter - useful for home components preview/fetching specific products
+     * 
+     * @param array|string $ids Array of IDs or comma-separated string
+     */
+    private function applyIdsFilter(array|string $ids): void
+    {
+        // Handle comma-separated string: "1,2,3" => [1,2,3]
+        if (is_string($ids)) {
+            $ids = array_map('trim', explode(',', $ids));
+        }
+
+        $filteredIds = $this->filterIds($ids);
+
+        if (empty($filteredIds)) {
+            return;
+        }
+
+        $this->query->whereIn('products.id', $filteredIds);
     }
 
     private function applyTermFilter(string $groupCode, array $termIds): void
