@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Image;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -63,6 +64,17 @@ class AdminUploadController extends Controller
             $image = $manager->read($file->getRealPath());
             $webp = $image->toWebp(quality: self::WEBP_QUALITY);
             Storage::disk('public')->put($path, $webp);
+            
+            // Create Image record
+            $imageModel = Image::create([
+                'file_path' => $path,
+                'disk' => 'public',
+                'mime' => 'image/webp',
+                'width' => $image->width(),
+                'height' => $image->height(),
+                'order' => 0,
+                'active' => true,
+            ]);
         } catch (\Throwable $e) {
             \Log::warning('Image upload failed', [
                 'file' => $file->getClientOriginalName(),
@@ -79,6 +91,7 @@ class AdminUploadController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
+                'id' => $imageModel->id,
                 'url' => $url,
                 'path' => $path,
                 'filename' => $filename,
@@ -134,6 +147,17 @@ class AdminUploadController extends Controller
             $image = $manager->read($body);
             $webp = $image->toWebp(quality: self::WEBP_QUALITY);
             Storage::disk('public')->put($path, $webp);
+            
+            // Create Image record
+            $imageModel = Image::create([
+                'file_path' => $path,
+                'disk' => 'public',
+                'mime' => 'image/webp',
+                'width' => $image->width(),
+                'height' => $image->height(),
+                'order' => 0,
+                'active' => true,
+            ]);
         } catch (\Throwable $e) {
             \Log::warning('Image URL upload failed', [
                 'url' => $validated['url'],
@@ -150,6 +174,7 @@ class AdminUploadController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
+                'id' => $imageModel->id,
                 'url' => $url,
                 'path' => $path,
                 'filename' => $filename,
