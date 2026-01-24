@@ -18,8 +18,8 @@ class AdminProductController extends Controller
     {
         $query = Product::query()
             ->where('active', true)
-            ->orderBy('name', 'asc')
-            ->select(['id', 'name', 'slug', 'price']);
+            ->with('coverImage')
+            ->orderBy('name', 'asc');
 
         if ($request->filled('q')) {
             $query->where('name', 'like', '%' . $request->input('q') . '%');
@@ -33,6 +33,11 @@ class AdminProductController extends Controller
                 'value' => $p->id,
                 'label' => $p->name . ' (#' . $p->id . ')',
                 'price' => $p->price,
+                'cover_image' => $p->coverImage ? [
+                    'id' => $p->coverImage->id,
+                    'url' => $p->coverImage->url,
+                    'alt' => $p->coverImage->alt,
+                ] : null,
             ]),
         ]);
     }
