@@ -21,7 +21,13 @@ class AdminProductController extends Controller
             ->with('coverImage')
             ->orderBy('name', 'asc');
 
-        if ($request->filled('q')) {
+        // Support fetching by IDs for preview
+        if ($request->filled('ids')) {
+            $ids = array_filter(array_map('intval', explode(',', $request->input('ids'))));
+            if (!empty($ids)) {
+                $query->whereIn('id', $ids);
+            }
+        } elseif ($request->filled('q')) {
             $query->where('name', 'like', '%' . $request->input('q') . '%');
         }
 

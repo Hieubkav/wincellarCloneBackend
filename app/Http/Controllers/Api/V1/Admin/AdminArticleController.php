@@ -15,10 +15,16 @@ class AdminArticleController extends Controller
     {
         $query = Article::query()
             ->where('active', true)
-            ->orderBy('title', 'asc')
-            ->select(['id', 'title', 'slug']);
+            ->with('coverImage')
+            ->orderBy('title', 'asc');
 
-        if ($request->filled('q')) {
+        // Support fetching by IDs for preview
+        if ($request->filled('ids')) {
+            $ids = array_filter(array_map('intval', explode(',', $request->input('ids'))));
+            if (!empty($ids)) {
+                $query->whereIn('id', $ids);
+            }
+        } elseif ($request->filled('q')) {
             $query->where('title', 'like', '%' . $request->input('q') . '%');
         }
 
@@ -29,6 +35,12 @@ class AdminArticleController extends Controller
             'data' => $articles->map(fn($a) => [
                 'value' => $a->id,
                 'label' => $a->title . ' (#' . $a->id . ')',
+                'cover_image' => $a->coverImage ? [
+                    'id' => $a->coverImage->id,
+                    'url' => $a->coverImage->url,
+                    'alt' => $a->coverImage->alt,
+                ] : null,
+                'published_at' => $a->published_at?->toIso8601String(),
             ]),
         ]);
     }
