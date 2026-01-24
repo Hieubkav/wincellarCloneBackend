@@ -11,6 +11,7 @@ class ProductIndexRequest extends FormRequest
     {
         return [
             'q' => ['nullable', 'string', 'min:1', 'max:120'],
+            'ids' => ['sometimes', 'string'],
             'terms' => ['sometimes', 'array'],
             // Dynamic attribute filters - wildcard validation for all catalog_attribute_groups
             'terms.*' => ['sometimes', 'array'],
