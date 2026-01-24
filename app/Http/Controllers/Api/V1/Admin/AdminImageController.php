@@ -34,20 +34,25 @@ class AdminImageController extends Controller
         $images = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $images->map(fn($img) => [
-                'id' => $img->id,
-                'file_path' => $img->file_path,
-                'url' => $img->url,
-                'alt' => $img->alt,
-                'width' => $img->width,
-                'height' => $img->height,
-                'mime' => $img->mime,
-                'model_type' => $img->model_type,
-                'model_id' => $img->model_id,
-                'order' => $img->order,
-                'active' => $img->active,
-                'created_at' => $img->created_at?->toIso8601String(),
-            ]),
+            'data' => $images->map(function($img) {
+                $usedBy = $this->getUsedByInfo($img);
+
+                return [
+                    'id' => $img->id,
+                    'file_path' => $img->file_path,
+                    'url' => $img->url,
+                    'alt' => $img->alt,
+                    'width' => $img->width,
+                    'height' => $img->height,
+                    'mime' => $img->mime,
+                    'model_type' => $img->model_type,
+                    'model_id' => $img->model_id,
+                    'used_by' => $usedBy,
+                    'order' => $img->order,
+                    'active' => $img->active,
+                    'created_at' => $img->created_at?->toIso8601String(),
+                ];
+            }),
             'meta' => [
                 'current_page' => $images->currentPage(),
                 'last_page' => $images->lastPage(),
@@ -55,6 +60,51 @@ class AdminImageController extends Controller
                 'total' => $images->total(),
             ],
         ]);
+    }
+
+    private function getUsedByInfo($image): ?array
+    {
+        if (!$image->model_type || !$image->model_id) {
+            return null;
+        }
+
+        try {
+            if ($image->model_type === 'App\\Models\\Product') {
+                $product = \App\Models\Product::find($image->model_id);
+                if ($product) {
+                    return [
+                        'type' => 'product',
+                        'label' => 'Sản phẩm',
+                        'name' => $product->name,
+                        'slug' => $product->slug,
+                        'url' => "/admin/products/{$product->id}/edit",
+                    ];
+                }
+            } elseif ($image->model_type === 'App\\Models\\Article') {
+                $article = \App\Models\Article::find($image->model_id);
+                if ($article) {
+                    return [
+                        'type' => 'article',
+                        'label' => 'Bài viết',
+                        'name' => $article->title,
+                        'slug' => $article->slug,
+                        'url' => "/admin/articles/{$article->id}/edit",
+                    ];
+                }
+            } elseif ($image->model_type === 'App\\Models\\Setting') {
+                return [
+                    'type' => 'setting',
+                    'label' => 'Cài đặt',
+                    'name' => 'Logo/Favicon/Watermark',
+                    'slug' => null,
+                    'url' => '/admin/settings',
+                ];
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Failed to get used_by info for image {$image->id}: " . $e->getMessage());
+        }
+
+        return null;
     }
 
     public function show(int $id): JsonResponse
