@@ -121,7 +121,11 @@ class HomeComponentAssembler
 
             // Also extract from simple format: ["126", "127", ...] used by Filament .simple()
             $ids['products'] = array_merge($ids['products'], $this->extractSimpleIds($config, 'products'));
+            // Support product_ids key from frontend admin (backward compatibility)
+            $ids['products'] = array_merge($ids['products'], $this->extractSimpleIds($config, 'product_ids'));
             $ids['articles'] = array_merge($ids['articles'], $this->extractSimpleIds($config, 'articles'));
+            // Support article_ids key from frontend admin (backward compatibility)
+            $ids['articles'] = array_merge($ids['articles'], $this->extractSimpleIds($config, 'article_ids'));
         }
 
         return array_map(
