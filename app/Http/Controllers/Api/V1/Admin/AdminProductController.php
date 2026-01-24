@@ -14,6 +14,29 @@ use Illuminate\Validation\Rule;
 
 class AdminProductController extends Controller
 {
+    public function listForSelect(Request $request): JsonResponse
+    {
+        $query = Product::query()
+            ->where('active', true)
+            ->orderBy('name', 'asc')
+            ->select(['id', 'name', 'slug', 'price']);
+
+        if ($request->filled('q')) {
+            $query->where('name', 'like', '%' . $request->input('q') . '%');
+        }
+
+        $limit = min($request->integer('limit', 50), 200);
+        $products = $query->limit($limit)->get();
+
+        return response()->json([
+            'data' => $products->map(fn($p) => [
+                'value' => $p->id,
+                'label' => $p->name . ' (#' . $p->id . ')',
+                'price' => $p->price,
+            ]),
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = Product::query()

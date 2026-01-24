@@ -27,6 +27,7 @@ Route::prefix('admin')
         Route::get('dashboard/recent-events', [AdminDashboardController::class, 'recentEvents'])->name('dashboard.recent-events');
 
         // Products CRUD
+        Route::get('products/list-for-select', [AdminProductController::class, 'listForSelect'])->name('products.list-for-select');
         Route::get('products', [AdminProductController::class, 'index'])->name('products.index');
         Route::get('products/{id}', [AdminProductController::class, 'show'])->name('products.show');
         Route::post('products', [AdminProductController::class, 'store'])->name('products.store');
@@ -35,6 +36,7 @@ Route::prefix('admin')
         Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
 
         // Articles CRUD
+        Route::get('articles/list-for-select', [AdminArticleController::class, 'listForSelect'])->name('articles.list-for-select');
         Route::get('articles', [AdminArticleController::class, 'index'])->name('articles.index');
         Route::get('articles/{id}', [AdminArticleController::class, 'show'])->name('articles.show');
         Route::post('articles', [AdminArticleController::class, 'store'])->name('articles.store');

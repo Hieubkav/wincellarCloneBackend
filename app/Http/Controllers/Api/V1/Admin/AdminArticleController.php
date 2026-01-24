@@ -11,6 +11,28 @@ use Illuminate\Validation\Rule;
 
 class AdminArticleController extends Controller
 {
+    public function listForSelect(Request $request): JsonResponse
+    {
+        $query = Article::query()
+            ->where('active', true)
+            ->orderBy('title', 'asc')
+            ->select(['id', 'title', 'slug']);
+
+        if ($request->filled('q')) {
+            $query->where('title', 'like', '%' . $request->input('q') . '%');
+        }
+
+        $limit = min($request->integer('limit', 50), 200);
+        $articles = $query->limit($limit)->get();
+
+        return response()->json([
+            'data' => $articles->map(fn($a) => [
+                'value' => $a->id,
+                'label' => $a->title . ' (#' . $a->id . ')',
+            ]),
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = Article::query()
