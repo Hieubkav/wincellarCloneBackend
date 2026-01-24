@@ -35,8 +35,13 @@ class AdminSettingController extends Controller
                 'favicon_image_url' => $setting->faviconImage?->url,
                 'product_watermark_image_id' => $setting->product_watermark_image_id,
                 'product_watermark_image_url' => $setting->productWatermarkImage?->url,
+                'product_watermark_type' => $setting->product_watermark_type ?? 'image',
                 'product_watermark_position' => $setting->product_watermark_position,
                 'product_watermark_size' => $setting->product_watermark_size,
+                'product_watermark_text' => $setting->product_watermark_text,
+                'product_watermark_text_size' => $setting->product_watermark_text_size ?? 'medium',
+                'product_watermark_text_position' => $setting->product_watermark_text_position ?? 'center',
+                'product_watermark_text_opacity' => $setting->product_watermark_text_opacity ?? 50,
                 'updated_at' => $setting->updated_at?->toIso8601String(),
             ],
         ]);
@@ -63,8 +68,13 @@ class AdminSettingController extends Controller
             'logo_image_id' => ['nullable', 'integer', 'exists:images,id'],
             'favicon_image_id' => ['nullable', 'integer', 'exists:images,id'],
             'product_watermark_image_id' => ['nullable', 'integer', 'exists:images,id'],
+            'product_watermark_type' => ['nullable', 'string', 'in:image,text'],
             'product_watermark_position' => ['nullable', 'string', 'in:none,top_left,top_right,bottom_left,bottom_right'],
             'product_watermark_size' => ['nullable', 'string', 'in:64x64,96x96,128x128,160x160,192x192'],
+            'product_watermark_text' => ['nullable', 'string', 'max:100'],
+            'product_watermark_text_size' => ['nullable', 'string', 'in:xxsmall,xsmall,small,medium,large,xlarge,xxlarge'],
+            'product_watermark_text_position' => ['nullable', 'string', 'in:top,center,bottom'],
+            'product_watermark_text_opacity' => ['nullable', 'integer', 'min:5', 'max:100'],
         ]);
 
         if (isset($validated['google_map_embed'])) {
