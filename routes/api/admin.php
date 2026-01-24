@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\V1\Admin\AdminHomeComponentController;
 use App\Http\Controllers\Api\V1\Admin\AdminImageController;
 use App\Http\Controllers\Api\V1\Admin\AdminSocialLinkController;
+use App\Http\Controllers\Api\V1\Admin\AdminUserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
 use App\Http\Controllers\Api\V1\Admin\AdminSettingController;
@@ -133,4 +134,11 @@ Route::prefix('admin')
         Route::post('menu-blocks/{blockId}/items', [AdminMenuController::class, 'storeItem'])->name('menu-blocks.items.store');
         Route::put('menu-blocks/{blockId}/items/{itemId}', [AdminMenuController::class, 'updateItem'])->name('menu-blocks.items.update');
         Route::delete('menu-blocks/{blockId}/items/{itemId}', [AdminMenuController::class, 'destroyItem'])->name('menu-blocks.items.destroy');
+
+        // Users CRUD
+        Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('users/{id}', [AdminUserController::class, 'show'])->name('users.show');
+        Route::post('users', [AdminUserController::class, 'store'])->name('users.store');
+        Route::put('users/{id}', [AdminUserController::class, 'update'])->name('users.update');
+        Route::delete('users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
     });
