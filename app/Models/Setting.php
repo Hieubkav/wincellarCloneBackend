@@ -34,6 +34,7 @@ class Setting extends Model
         'hours',
         'email',
         'google_map_embed',
+        'footer_config',
         'meta_default_title',
         'meta_default_description',
         'meta_default_keywords',
@@ -48,6 +49,7 @@ class Setting extends Model
         return [
             'extra' => 'array',
             'meta_default_keywords' => 'array',
+            'footer_config' => 'array',
         ];
     }
 
