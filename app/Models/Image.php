@@ -81,8 +81,9 @@ class Image extends Model
             return null;
         }
 
-        return \Storage::disk($this->disk ?? config('filesystems.default'))
-            ->url($this->file_path);
+        // Always return relative path for portability across environments
+        // Frontend will prepend the correct backend URL from NEXT_PUBLIC_API_BASE_URL
+        return '/storage/' . ltrim($this->file_path, '/');
     }
 
     private function ensureOrderValue(): void
