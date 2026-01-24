@@ -72,7 +72,7 @@ class ImageInfolist
                                     ->label('Loại')
                                     ->formatStateUsing(fn (?string $state): string => $state ? class_basename($state) : 'Không có')
                                     ->badge()
-                                    ->color(fn (?string $state): string => match($state) {
+                                    ->color(fn (?string $state): string => match ($state) {
                                         'App\Models\Product' => 'success',
                                         'App\Models\Article' => 'info',
                                         default => 'gray',
@@ -110,10 +110,10 @@ class ImageInfolist
                                 ->action(function (Image $record) {
                                     $ownerType = class_basename($record->model_type);
                                     $ownerId = $record->model_id;
-                                    
+
                                     // Soft delete the image record
                                     $record->delete();
-                                    
+
                                     \Filament\Notifications\Notification::make()
                                         ->success()
                                         ->title('Đã xóa')
@@ -121,7 +121,7 @@ class ImageInfolist
                                         ->send();
                                 }),
                         ])
-                        ->fullWidth(),
+                            ->fullWidth(),
                     ]),
                 Section::make('Extra attributes')
                     ->collapsed()
@@ -149,14 +149,14 @@ class ImageInfolist
                     ]),
             ]);
     }
-    
+
     protected static function getOwnerUrl(Image $record): ?string
     {
-        if (!$record->model_type || !$record->model_id) {
+        if (! $record->model_type || ! $record->model_id) {
             return null;
         }
-        
-        return match($record->model_type) {
+
+        return match ($record->model_type) {
             Product::class => route('filament.admin.resources.products.edit', ['record' => $record->model_id]),
             Article::class => route('filament.admin.resources.articles.edit', ['record' => $record->model_id]),
             default => null,

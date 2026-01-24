@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\TrackingEvent;
 use App\Models\Visitor;
 use App\Models\VisitorSession;
-use App\Models\TrackingEvent;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
@@ -14,7 +14,7 @@ class TrackingDataSeeder extends Seeder
     public function run(): void
     {
         $this->command->info('Tạo dữ liệu tracking mẫu...');
-        
+
         $periods = [
             'today' => [Carbon::now()->startOfDay(), Carbon::now()],
             'yesterday' => [Carbon::yesterday()->startOfDay(), Carbon::yesterday()->endOfDay()],
@@ -32,7 +32,7 @@ class TrackingDataSeeder extends Seeder
 
     private function createTrackingData(Carbon $start, Carbon $end, string $period): void
     {
-        $visitorCount = match($period) {
+        $visitorCount = match ($period) {
             'today' => rand(50, 100),
             'yesterday' => rand(40, 80),
             'this_week' => rand(200, 300),

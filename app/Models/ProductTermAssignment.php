@@ -41,4 +41,3 @@ class ProductTermAssignment extends Model
         return $this->belongsTo(CatalogTerm::class, 'term_id');
     }
 }
-

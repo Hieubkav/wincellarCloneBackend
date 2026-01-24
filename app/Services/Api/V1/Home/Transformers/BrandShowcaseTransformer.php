@@ -15,17 +15,17 @@ class BrandShowcaseTransformer extends AbstractComponentTransformer
         $entries = [];
 
         foreach ($itemsConfig as $item) {
-            if (!is_array($item)) {
+            if (! is_array($item)) {
                 continue;
             }
 
             $imageId = $this->toPositiveInt($item['image_id'] ?? null);
-            if (!$imageId) {
+            if (! $imageId) {
                 continue;
             }
 
             $image = $resources->image($component, $imageId);
-            if (!$image) {
+            if (! $image) {
                 continue;
             }
 

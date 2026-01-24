@@ -14,13 +14,13 @@ class SettingObserver
     {
         // Clear settings cache
         Cache::forget('api:v1:settings');
-        
+
         // Increment global cache version
         $oldVersion = (int) Cache::get('api_cache_version', 0);
         $newVersion = $oldVersion + 1;
         Cache::put('api_cache_version', $newVersion);
         Cache::put('last_cache_clear', now()->toIso8601String());
-        
+
         // Log successful invalidation
         \Log::info('Settings cache invalidated', [
             'action' => $action,
@@ -30,7 +30,7 @@ class SettingObserver
             ],
             'timestamp' => now()->toIso8601String(),
         ]);
-        
+
         // Trigger Next.js revalidation immediately
         try {
             app(\App\Services\RevalidationService::class)->revalidateAll();

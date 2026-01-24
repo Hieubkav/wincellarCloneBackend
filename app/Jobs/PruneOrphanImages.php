@@ -44,19 +44,19 @@ class PruneOrphanImages implements ShouldQueue
 
     private function isOrphan(Image $image): bool
     {
-        if (!$image->model_type || !$image->model_id) {
+        if (! $image->model_type || ! $image->model_id) {
             return true;
         }
 
-        if (!class_exists($image->model_type)) {
+        if (! class_exists($image->model_type)) {
             return true;
         }
 
         $modelClass = $image->model_type;
 
-        $instance = new $modelClass();
+        $instance = new $modelClass;
 
-        return !$instance->newQueryWithoutScopes()
+        return ! $instance->newQueryWithoutScopes()
             ->whereKey($image->model_id)
             ->exists();
     }

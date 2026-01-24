@@ -37,17 +37,17 @@ class MenusTable
                 TextColumn::make('type')
                     ->label('Kiểu')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => match($state) {
+                    ->formatStateUsing(fn ($state) => match ($state) {
                         'standard' => 'Link đơn',
                         'mega' => 'Mega Menu',
                         default => $state
                     })
-                    ->icon(fn ($state) => match($state) {
+                    ->icon(fn ($state) => match ($state) {
                         'standard' => 'heroicon-o-link',
                         'mega' => 'heroicon-o-squares-2x2',
                         default => 'heroicon-o-bars-3'
                     })
-                    ->color(fn ($state) => match($state) {
+                    ->color(fn ($state) => match ($state) {
                         'standard' => 'gray',
                         'mega' => 'info',
                         default => 'gray'

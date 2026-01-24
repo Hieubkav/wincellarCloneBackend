@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
 use App\Models\Article;
+use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
 use App\Models\TrackingEvent;
 use App\Models\VisitorSession;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
@@ -90,7 +90,7 @@ class AdminDashboardController extends Controller
             $dayStart = $startDate->copy()->addDays($i)->startOfDay();
             $dayEnd = $dayStart->copy()->endOfDay();
             $date = $dayStart->format('Y-m-d');
-            
+
             $dayStats = TrackingEvent::query()
                 ->selectRaw('
                     COUNT(*) as total_events,
@@ -107,7 +107,7 @@ class AdminDashboardController extends Controller
                 ])
                 ->whereBetween('occurred_at', [$dayStart, $dayEnd])
                 ->first();
-            
+
             $chartData[] = [
                 'date' => $date,
                 'label' => $dayStart->format('d/m'),
@@ -144,7 +144,7 @@ class AdminDashboardController extends Controller
             ->get()
             ->keyBy('id');
 
-        $data = $topProducts->map(fn($item) => [
+        $data = $topProducts->map(fn ($item) => [
             'id' => $item->product_id,
             'name' => $products[$item->product_id]?->name ?? 'Sản phẩm đã xóa',
             'slug' => $products[$item->product_id]?->slug,
@@ -177,7 +177,7 @@ class AdminDashboardController extends Controller
             ->get()
             ->keyBy('id');
 
-        $data = $topArticles->map(fn($item) => [
+        $data = $topArticles->map(fn ($item) => [
             'id' => $item->article_id,
             'title' => $articles[$item->article_id]?->title ?? 'Bài viết đã xóa',
             'slug' => $articles[$item->article_id]?->slug,
@@ -197,10 +197,10 @@ class AdminDashboardController extends Controller
             ->orderByDesc('occurred_at')
             ->limit($limit)
             ->get()
-            ->map(fn($e) => [
+            ->map(fn ($e) => [
                 'id' => $e->id,
                 'event_type' => $e->event_type,
-                'event_label' => match($e->event_type) {
+                'event_label' => match ($e->event_type) {
                     TrackingEvent::TYPE_PRODUCT_VIEW => 'Xem sản phẩm',
                     TrackingEvent::TYPE_ARTICLE_VIEW => 'Xem bài viết',
                     TrackingEvent::TYPE_CTA_CONTACT => 'Click liên hệ',

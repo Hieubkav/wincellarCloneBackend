@@ -15,17 +15,17 @@ class HeroCarouselTransformer extends AbstractComponentTransformer
         $slides = [];
 
         foreach ($slidesConfig as $slide) {
-            if (!is_array($slide)) {
+            if (! is_array($slide)) {
                 continue;
             }
 
             $imageId = $this->toPositiveInt($slide['image_id'] ?? null);
-            if (!$imageId) {
+            if (! $imageId) {
                 continue;
             }
 
             $image = $resources->image($component, $imageId);
-            if (!$image) {
+            if (! $image) {
                 continue;
             }
 

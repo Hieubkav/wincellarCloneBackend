@@ -36,7 +36,7 @@ class ProductSearchController extends Controller
             $requestedPage,
             ['products.*'],
             'page',
-            !$usingCursor
+            ! $usingCursor
         );
 
         $collection = $paginator->getCollection();

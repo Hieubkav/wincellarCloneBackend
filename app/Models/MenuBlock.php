@@ -51,4 +51,3 @@ class MenuBlock extends Model
         return $query->where('active', true);
     }
 }
-

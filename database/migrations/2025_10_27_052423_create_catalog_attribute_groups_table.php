@@ -39,4 +39,3 @@ return new class extends Migration
         Schema::dropIfExists('catalog_attribute_groups');
     }
 };
-

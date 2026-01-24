@@ -28,7 +28,7 @@ class CatalogAttributeGroupFactory extends Factory
             'is_filterable' => true,
             'position' => $this->faker->numberBetween(0, 20),
             'display_config' => [
-                'icon' => 'lucide:' . $this->faker->randomElement(['tag', 'sparkles', 'box']),
+                'icon' => 'lucide:'.$this->faker->randomElement(['tag', 'sparkles', 'box']),
             ],
         ];
     }

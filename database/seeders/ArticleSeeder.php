@@ -26,7 +26,7 @@ class ArticleSeeder extends Seeder
             ->delete();
 
         $authorId = DB::table('users')->orderBy('id')->value('id');
-        if (!$authorId) {
+        if (! $authorId) {
             $authorId = DB::table('users')->insertGetId([
                 'name' => 'Content Admin',
                 'email' => 'content-admin@example.com',

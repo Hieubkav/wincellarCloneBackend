@@ -11,29 +11,29 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 class TrafficOverviewWidget extends BaseWidget
 {
     protected static ?int $sort = -2;
-    
+
     protected ?string $pollingInterval = '30s';
-    
+
     protected ?string $heading = 'Tổng quan Traffic';
-    
+
     protected string $view = 'filament.widgets.traffic-overview-widget';
-    
+
     public ?string $filter = 'today';
 
     protected function getStats(): array
     {
         $period = $this->filter ?? 'today';
-        
+
         [$startDate, $endDate] = $this->getDateRange($period);
-        
+
         $totalVisits = TrackingEvent::whereBetween('occurred_at', [$startDate, $endDate])->count();
-        
+
         $uniqueVisitors = Visitor::whereBetween('last_seen_at', [$startDate, $endDate])->count();
-        
+
         $productViews = TrackingEvent::where('event_type', TrackingEvent::TYPE_PRODUCT_VIEW)
             ->whereBetween('occurred_at', [$startDate, $endDate])
             ->count();
-        
+
         $ctaContacts = TrackingEvent::where('event_type', TrackingEvent::TYPE_CTA_CONTACT)
             ->whereBetween('occurred_at', [$startDate, $endDate])
             ->count();
@@ -46,19 +46,19 @@ class TrafficOverviewWidget extends BaseWidget
                 ->descriptionIcon($this->getChangeIcon($totalVisits, $previousPeriod['visits']))
                 ->color($this->getChangeColor($totalVisits, $previousPeriod['visits']))
                 ->chart($this->getChartData($period, 'total')),
-            
+
             Stat::make('Người dùng duy nhất', number_format($uniqueVisitors))
                 ->description($this->getChangeDescription($uniqueVisitors, $previousPeriod['visitors']))
                 ->descriptionIcon($this->getChangeIcon($uniqueVisitors, $previousPeriod['visitors']))
                 ->color($this->getChangeColor($uniqueVisitors, $previousPeriod['visitors']))
                 ->chart($this->getChartData($period, 'visitors')),
-            
+
             Stat::make('Lượt xem sản phẩm', number_format($productViews))
                 ->description($this->getChangeDescription($productViews, $previousPeriod['product_views']))
                 ->descriptionIcon($this->getChangeIcon($productViews, $previousPeriod['product_views']))
                 ->color($this->getChangeColor($productViews, $previousPeriod['product_views']))
                 ->chart($this->getChartData($period, 'product_views')),
-            
+
             Stat::make('Lượt nhấn liên hệ', number_format($ctaContacts))
                 ->description($this->getChangeDescription($ctaContacts, $previousPeriod['cta_contacts']))
                 ->descriptionIcon($this->getChangeIcon($ctaContacts, $previousPeriod['cta_contacts']))
@@ -70,8 +70,8 @@ class TrafficOverviewWidget extends BaseWidget
     protected function getDateRange(string $period): array
     {
         $now = Carbon::now();
-        
-        return match($period) {
+
+        return match ($period) {
             'today' => [$now->copy()->startOfDay(), $now->copy()->endOfDay()],
             'week' => [$now->copy()->startOfWeek(), $now->copy()->endOfWeek()],
             'month' => [$now->copy()->startOfMonth(), $now->copy()->endOfMonth()],
@@ -108,7 +108,7 @@ class TrafficOverviewWidget extends BaseWidget
         $change = (($current - $previous) / $previous) * 100;
         $changeFormatted = number_format(abs($change), 1);
 
-        return $change >= 0 
+        return $change >= 0
             ? "{$changeFormatted}% tăng so với kỳ trước"
             : "{$changeFormatted}% giảm so với kỳ trước";
     }
@@ -126,8 +126,8 @@ class TrafficOverviewWidget extends BaseWidget
     protected function getChartData(string $period, string $type): array
     {
         $now = Carbon::now();
-        
-        $days = match($period) {
+
+        $days = match ($period) {
             'today' => 24, // hours
             'week' => 7,
             'month' => 30,
@@ -137,7 +137,7 @@ class TrafficOverviewWidget extends BaseWidget
         };
 
         $data = [];
-        
+
         if ($period === 'today') {
             for ($i = $days - 1; $i >= 0; $i--) {
                 $hour = $now->copy()->subHours($i)->startOfHour();
@@ -160,7 +160,7 @@ class TrafficOverviewWidget extends BaseWidget
 
     protected function getDataForHour(Carbon $hour, string $type): int
     {
-        $query = match($type) {
+        $query = match ($type) {
             'visitors' => Visitor::whereBetween('last_seen_at', [$hour, $hour->copy()->endOfHour()]),
             'product_views' => TrackingEvent::where('event_type', TrackingEvent::TYPE_PRODUCT_VIEW)
                 ->whereBetween('occurred_at', [$hour, $hour->copy()->endOfHour()]),
@@ -174,7 +174,7 @@ class TrafficOverviewWidget extends BaseWidget
 
     protected function getDataForDay(Carbon $day, string $type): int
     {
-        $query = match($type) {
+        $query = match ($type) {
             'visitors' => Visitor::whereBetween('last_seen_at', [$day, $day->copy()->endOfDay()]),
             'product_views' => TrackingEvent::where('event_type', TrackingEvent::TYPE_PRODUCT_VIEW)
                 ->whereBetween('occurred_at', [$day, $day->copy()->endOfDay()]),
@@ -188,7 +188,7 @@ class TrafficOverviewWidget extends BaseWidget
 
     protected function getDataForMonth(Carbon $month, string $type): int
     {
-        $query = match($type) {
+        $query = match ($type) {
             'visitors' => Visitor::whereBetween('last_seen_at', [$month, $month->copy()->endOfMonth()]),
             'product_views' => TrackingEvent::where('event_type', TrackingEvent::TYPE_PRODUCT_VIEW)
                 ->whereBetween('occurred_at', [$month, $month->copy()->endOfMonth()]),

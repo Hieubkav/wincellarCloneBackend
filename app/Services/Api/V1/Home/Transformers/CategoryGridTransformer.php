@@ -16,7 +16,7 @@ class CategoryGridTransformer extends AbstractComponentTransformer
         $categories = [];
 
         foreach ($itemsConfig as $item) {
-            if (!is_array($item)) {
+            if (! is_array($item)) {
                 continue;
             }
 
@@ -29,7 +29,7 @@ class CategoryGridTransformer extends AbstractComponentTransformer
 
             // Get image (required) - support both formats
             $imageData = null;
-            
+
             // Format 1: image_id reference to Image model
             $imageId = $this->toPositiveInt($item['image_id'] ?? null);
             if ($imageId) {
@@ -38,11 +38,11 @@ class CategoryGridTransformer extends AbstractComponentTransformer
                     $imageData = $resources->mapImage($image, $item['title'] ?? $term?->name);
                 }
             }
-            
+
             // Format 2: Direct image object from JSON (e.g., from file upload in admin)
-            if (!$imageData && isset($item['image']) && is_array($item['image'])) {
+            if (! $imageData && isset($item['image']) && is_array($item['image'])) {
                 $imageObj = $item['image'];
-                if (!empty($imageObj['url'])) {
+                if (! empty($imageObj['url'])) {
                     $imageData = [
                         'id' => (int) ($imageObj['id'] ?? 0),
                         'url' => $imageObj['url'],
@@ -52,7 +52,7 @@ class CategoryGridTransformer extends AbstractComponentTransformer
             }
 
             // Skip if no valid image found
-            if (!$imageData) {
+            if (! $imageData) {
                 continue;
             }
 

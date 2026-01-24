@@ -17,7 +17,7 @@ class AdminSocialLinkController extends Controller
             ->orderBy('id', 'desc');
 
         if ($request->filled('platform')) {
-            $query->where('platform', 'like', '%' . $request->input('platform') . '%');
+            $query->where('platform', 'like', '%'.$request->input('platform').'%');
         }
 
         if ($request->filled('active')) {
@@ -28,7 +28,7 @@ class AdminSocialLinkController extends Controller
         $links = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $links->map(fn($link) => [
+            'data' => $links->map(fn ($link) => [
                 'id' => $link->id,
                 'platform' => $link->platform,
                 'url' => $link->url,

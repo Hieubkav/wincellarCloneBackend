@@ -5,11 +5,10 @@ use Illuminate\Support\Facades\Route;
 
 /**
  * Social Links API Routes
- * 
+ *
  * Public endpoints for fetching active social media links
  * Used in: Footer, Contact page
  */
-
 Route::prefix('social-links')
     ->as('social-links.')
     ->group(function (): void {

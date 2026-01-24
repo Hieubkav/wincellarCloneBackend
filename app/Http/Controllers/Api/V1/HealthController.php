@@ -16,16 +16,16 @@ class HealthController extends Controller
     public function __invoke(): JsonResponse
     {
         $startTime = microtime(true);
-        
+
         $checks = [
             'database' => $this->checkDatabase(),
             'cache' => $this->checkCache(),
             'storage' => $this->checkStorage(),
         ];
 
-        $allHealthy = collect($checks)->every(fn($check) => $check['status'] === 'healthy');
+        $allHealthy = collect($checks)->every(fn ($check) => $check['status'] === 'healthy');
         $overallStatus = $allHealthy ? 'healthy' : 'degraded';
-        
+
         $responseTime = round((microtime(true) - $startTime) * 1000, 2);
 
         return response()->json([
@@ -65,7 +65,7 @@ class HealthController extends Controller
             $startTime = microtime(true);
             DB::connection()->getPdo();
             DB::connection()->getDatabaseName();
-            
+
             $responseTime = round((microtime(true) - $startTime) * 1000, 2);
 
             return [
@@ -90,7 +90,7 @@ class HealthController extends Controller
     {
         try {
             $startTime = microtime(true);
-            $testKey = 'health_check_' . now()->timestamp;
+            $testKey = 'health_check_'.now()->timestamp;
             $testValue = 'test';
 
             Cache::put($testKey, $testValue, 10);
@@ -129,10 +129,10 @@ class HealthController extends Controller
         try {
             $startTime = microtime(true);
             $disk = Storage::disk('public');
-            
+
             // Check if disk is accessible
             $exists = $disk->exists('.');
-            
+
             $responseTime = round((microtime(true) - $startTime) * 1000, 2);
 
             return [

@@ -23,4 +23,3 @@ class ProductTermAssignmentFactory extends Factory
         ];
     }
 }
-

@@ -180,7 +180,7 @@ class SiteConfigSeeder extends Seeder
             ],
             [
                 'id' => 3,
-                'title' => 'Bai viet',
+                'title' => 'Bài Viết',
                 'term_id' => null,
                 'type' => 'standard',
                 'href' => '/bai-viet',

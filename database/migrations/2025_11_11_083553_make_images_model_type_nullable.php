@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Make model_type and model_id nullable to support orphaned images
      * (logo, favicon, social icons, etc.)
      */

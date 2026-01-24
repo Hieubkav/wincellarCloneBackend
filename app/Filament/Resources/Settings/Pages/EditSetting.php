@@ -15,7 +15,7 @@ class EditSetting extends EditRecord
     /**
      * Get the record to edit (first Setting record, or create if not exists)
      */
-    public function mount(int|string $record = null): void
+    public function mount(int|string|null $record = null): void
     {
         $this->record = Setting::firstOrCreate(
             ['id' => 1],

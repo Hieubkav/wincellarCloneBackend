@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Filament\Resources\ProductTypes\RelationManagers\AttributeGroupsRelationManager;
 use App\Models\Article;
 use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
@@ -10,7 +11,6 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
 use App\Models\RichEditorMedia;
-use App\Filament\Resources\ProductTypes\RelationManagers\AttributeGroupsRelationManager;
 use App\Observers\ArticleObserver;
 use App\Observers\CatalogAttributeGroupObserver;
 use App\Observers\CatalogTermObserver;
@@ -85,7 +85,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $appUrl = config('app.url');
 
-        if (!$appUrl) {
+        if (! $appUrl) {
             return;
         }
 
@@ -108,7 +108,7 @@ class AppServiceProvider extends ServiceProvider
                 return $value;
             }
 
-            if (!isset($parts['host']) || strtolower($parts['host']) !== 'localhost') {
+            if (! isset($parts['host']) || strtolower($parts['host']) !== 'localhost') {
                 return $value;
             }
 

@@ -19,28 +19,33 @@ class ArticleResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'excerpt' => $this->excerpt,
-            
+
             // Conditional fields for detail view
             'content' => $this->when($request->routeIs('api.v1.articles.show'), $this->content),
-            
+
             // Images
             'cover_image_url' => $this->cover_image_url ?: '/placeholder/article.svg',
-            
+
             'gallery' => $this->when(
                 $request->routeIs('api.v1.articles.show') && $this->relationLoaded('images'),
                 $this->gallery_for_output
             ),
-            
+
             // Author (detail view only)
-            'author' => $this->when($request->routeIs('api.v1.articles.show') && $this->relationLoaded('author') && $this->author, [
-                'id' => $this->author->id,
-                'name' => $this->author->name,
-            ]),
-            
+            'author' => $this->when(
+                $request->routeIs('api.v1.articles.show') && $this->relationLoaded('author') && $this->author,
+                function () {
+                    return [
+                        'id' => $this->author->id,
+                        'name' => $this->author->name,
+                    ];
+                }
+            ),
+
             // Timestamps
             'published_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->when($request->routeIs('api.v1.articles.show'), $this->updated_at?->toIso8601String()),
-            
+
             // SEO meta (detail view only)
             'meta' => $this->when($request->routeIs('api.v1.articles.show'), [
                 'title' => $this->meta_title,
@@ -63,7 +68,7 @@ class ArticleResource extends JsonResource
                     });
                 }
             ),
-            
+
             // HATEOAS links
             '_links' => [
                 'self' => [

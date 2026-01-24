@@ -22,12 +22,12 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\AddCorrelationId::class,
             \App\Http\Middleware\PerformanceMonitor::class,
         ]);
-        
+
         // Add response compression for API routes (append to run after response is generated)
         $middleware->api(append: [
             \App\Http\Middleware\CompressApiResponse::class,
         ]);
-        
+
         // Add cache headers for static assets (images, fonts, etc.)
         $middleware->web(append: [
             \App\Http\Middleware\AddStaticAssetCacheHeaders::class,
@@ -65,13 +65,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (TooManyRequestsHttpException $e, $request) {
             if ($request->is('api/*')) {
                 $retryAfter = $e->getHeaders()['Retry-After'] ?? 60;
+
                 return ErrorResponse::rateLimitExceeded((int) $retryAfter);
             }
         });
 
         // Generic exceptions for API routes (production only)
         $exceptions->render(function (\Throwable $e, $request) {
-            if ($request->is('api/*') && !app()->environment('local')) {
+            if ($request->is('api/*') && ! app()->environment('local')) {
                 // Log error with correlation ID
                 logger()->error('API Error', [
                     'correlation_id' => $request->header('X-Correlation-ID'),

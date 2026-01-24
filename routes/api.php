@@ -27,7 +27,7 @@ Route::middleware(['api', 'throttle:api'])
     ->group(function (): void {
         // Health check endpoint (no auth required)
         Route::get('health', \App\Http\Controllers\Api\V1\HealthController::class)->name('health');
-        
+
         // Cache management endpoints
         Route::prefix('cache')->as('cache.')->group(function (): void {
             Route::post('clear', [\App\Http\Controllers\Api\V1\CacheController::class, 'clear'])->name('clear');
@@ -35,7 +35,7 @@ Route::middleware(['api', 'throttle:api'])
             Route::get('version', [\App\Http\Controllers\Api\V1\CacheController::class, 'version'])->name('version');
             Route::post('version/increment', [\App\Http\Controllers\Api\V1\CacheController::class, 'incrementVersion'])->name('version.increment');
         });
-        
+
         require __DIR__.'/api/home.php';
         require __DIR__.'/api/menus.php';
         require __DIR__.'/api/products.php';

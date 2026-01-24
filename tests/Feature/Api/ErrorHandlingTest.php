@@ -26,9 +26,9 @@ class ErrorHandlingTest extends TestCase
                 'correlation_id',
                 'details' => [
                     'errors' => [
-                        '*' => ['field', 'message', 'value']
-                    ]
-                ]
+                        '*' => ['field', 'message', 'value'],
+                    ],
+                ],
             ])
             ->assertJson([
                 'error' => 'ValidationError',
@@ -50,7 +50,7 @@ class ErrorHandlingTest extends TestCase
                 'timestamp',
                 'path',
                 'correlation_id',
-                'details' => ['identifier']
+                'details' => ['identifier'],
             ])
             ->assertJson([
                 'error' => 'NotFound',
@@ -71,7 +71,7 @@ class ErrorHandlingTest extends TestCase
                 'timestamp',
                 'path',
                 'correlation_id',
-                'details'
+                'details',
             ])
             ->assertJson([
                 'error' => 'BadRequest',
@@ -111,7 +111,7 @@ class ErrorHandlingTest extends TestCase
         $customId = 'test-correlation-id-123';
 
         $response = $this->getJson('/api/v1/home', [
-            'X-Correlation-ID' => $customId
+            'X-Correlation-ID' => $customId,
         ]);
 
         $response->assertHeader('X-Correlation-ID', $customId);
@@ -131,8 +131,8 @@ class ErrorHandlingTest extends TestCase
                 'error' => 'NotFound',
                 'message' => 'Product not found',
                 'details' => [
-                    'identifier' => $slug
-                ]
+                    'identifier' => $slug,
+                ],
             ]);
     }
 
@@ -169,7 +169,7 @@ class ErrorHandlingTest extends TestCase
                     'id',
                     'name',
                     'slug',
-                ]
+                ],
             ]);
     }
 }

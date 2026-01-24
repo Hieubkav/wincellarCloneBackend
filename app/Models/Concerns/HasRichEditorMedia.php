@@ -6,9 +6,9 @@ use App\Models\RichEditorMedia;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 
 trait HasRichEditorMedia
 {
@@ -68,9 +68,10 @@ trait HasRichEditorMedia
 
         foreach ($richEditorFields as $fieldName) {
             $content = $this->getAttribute($fieldName);
-            
-            if (!$content) {
+
+            if (! $content) {
                 $this->richEditorMedia()->where('field_name', $fieldName)->delete();
+
                 continue;
             }
 
@@ -106,7 +107,7 @@ trait HasRichEditorMedia
 
         // 1) HTML img src
         preg_match_all('/<img[^>]+src=[\'"]([^\'"]+)[\'"][^>]*>/i', $content, $matches);
-        if (!empty($matches[1])) {
+        if (! empty($matches[1])) {
             foreach ($matches[1] as $src) {
                 $relative = $this->normalizeStoragePath($src);
                 if ($relative) {
@@ -117,7 +118,7 @@ trait HasRichEditorMedia
 
         // 2) data-url attr (một số editor lưu thêm)
         preg_match_all('/data-url=[\'"]([^\'"]+)[\'"]/', $content, $dataMatches);
-        if (!empty($dataMatches[1])) {
+        if (! empty($dataMatches[1])) {
             foreach ($dataMatches[1] as $src) {
                 $relative = $this->normalizeStoragePath($src);
                 if ($relative) {
@@ -141,8 +142,8 @@ trait HasRichEditorMedia
 
     protected function getRichEditorFields(): array
     {
-        return property_exists($this, 'richEditorFields') 
-            ? $this->richEditorFields 
+        return property_exists($this, 'richEditorFields')
+            ? $this->richEditorFields
             : [];
     }
 
@@ -153,7 +154,7 @@ trait HasRichEditorMedia
         foreach ($richEditorFields as $fieldName) {
             $content = $this->getAttribute($fieldName);
 
-            if (!$content) {
+            if (! $content) {
                 continue;
             }
 
@@ -173,7 +174,7 @@ trait HasRichEditorMedia
             $matches,
             PREG_SET_ORDER
         );
-        
+
         if (empty($matches)) {
             return $content;
         }
@@ -195,7 +196,8 @@ trait HasRichEditorMedia
                     $filePath
                 ));
             } catch (\Exception $e) {
-                Log::error('Failed to convert base64 image: ' . $e->getMessage());
+                Log::error('Failed to convert base64 image: '.$e->getMessage());
+
                 continue;
             }
         }
@@ -219,20 +221,20 @@ trait HasRichEditorMedia
         }
 
         $baseDir = $this->richEditorContentDirectory();
-        $datedDir = $baseDir . '/' . now()->format('Y/m/d');
-        $filename = $this->richEditorFilenamePrefix() . '-' . time() . '-' . Str::random(8) . '.' . $extension;
-        $path = trim($datedDir, '/') . '/' . $filename;
+        $datedDir = $baseDir.'/'.now()->format('Y/m/d');
+        $filename = $this->richEditorFilenamePrefix().'-'.time().'-'.Str::random(8).'.'.$extension;
+        $path = trim($datedDir, '/').'/'.$filename;
 
         $disk = Storage::disk($this->richEditorDisk());
         $directory = dirname($path);
 
-        if (!$disk->exists($directory)) {
+        if (! $disk->exists($directory)) {
             $disk->makeDirectory($directory);
         }
 
         $saved = $disk->put($path, $imageData);
 
-        if (!$saved) {
+        if (! $saved) {
             throw new \Exception('Failed to save file to storage');
         }
 
@@ -244,7 +246,7 @@ trait HasRichEditorMedia
      */
     protected function deleteImageFile(?string $relativePath): void
     {
-        if (!$relativePath) {
+        if (! $relativePath) {
             return;
         }
 
@@ -271,7 +273,7 @@ trait HasRichEditorMedia
 
         // Local/public disk: trả về /storage/...
         if ($this->richEditorDisk() === 'public' && config('filesystems.disks.public.driver') === 'local') {
-            return '/storage/' . $relativePath;
+            return '/storage/'.$relativePath;
         }
 
         // Các disk khác (S3/CDN) dùng URL gốc của disk
@@ -331,7 +333,7 @@ trait HasRichEditorMedia
             $oldContent = $this->richEditorOriginalContent[$fieldName] ?? null;
             $newContent = $this->getAttribute($fieldName);
 
-            if (!$oldContent) {
+            if (! $oldContent) {
                 continue;
             }
 
@@ -355,7 +357,7 @@ trait HasRichEditorMedia
     {
         foreach ($this->getRichEditorFields() as $fieldName) {
             $content = $this->getAttribute($fieldName);
-            if (!$content) {
+            if (! $content) {
                 continue;
             }
 
@@ -372,7 +374,7 @@ trait HasRichEditorMedia
     protected function richEditorFilenamePrefix(): string
     {
         if (method_exists($this, 'mediaPlaceholderKey')) {
-            return $this->mediaPlaceholderKey() . '-lexical';
+            return $this->mediaPlaceholderKey().'-lexical';
         }
 
         return 'lexical';
@@ -389,7 +391,7 @@ trait HasRichEditorMedia
         }
 
         if (method_exists($this, 'mediaPlaceholderKey')) {
-            return 'uploads/' . Str::plural($this->mediaPlaceholderKey()) . '/content';
+            return 'uploads/'.Str::plural($this->mediaPlaceholderKey()).'/content';
         }
 
         return 'uploads/rich-editor/content';

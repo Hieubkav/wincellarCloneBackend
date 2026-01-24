@@ -7,10 +7,6 @@ use Illuminate\Support\Arr;
 
 class ProductSorts
 {
-    /**
-     * @param \Illuminate\Contracts\Database\Eloquent\Builder $query
-     * @param string|null $sort
-     */
     public static function apply(Builder $query, ?string $sort): void
     {
         $sortKey = $sort ?: '-created_at';

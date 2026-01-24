@@ -68,7 +68,7 @@ class ProductSeeder extends Seeder
             }
 
             $badges = $context->randomBadges();
-            if ($discounted && ($badges === null || !in_array('SALE', $badges, true))) {
+            if ($discounted && ($badges === null || ! in_array('SALE', $badges, true))) {
                 $badges = array_merge($badges ?? [], ['SALE']);
             }
 
@@ -125,7 +125,7 @@ class ProductSeeder extends Seeder
             ]);
 
             foreach ($originRegions as $index => $region) {
-                $termAssignments[] = $this->makeAssignment($productId, $region->id, $index === 0 && !$isAccessory, $index + 1, $now, [
+                $termAssignments[] = $this->makeAssignment($productId, $region->id, $index === 0 && ! $isAccessory, $index + 1, $now, [
                     'context' => 'origin_region',
                 ]);
             }
@@ -183,9 +183,9 @@ class ProductSeeder extends Seeder
             for ($imgIndex = 0; $imgIndex < $imageTotal; $imgIndex++) {
                 $imageRows[] = [
                     'id' => $context->nextImageId(),
-                    'file_path' => "products/{$slug}-" . ($imgIndex + 1) . '.jpg',
+                    'file_path' => "products/{$slug}-".($imgIndex + 1).'.jpg',
                     'disk' => 'public',
-                    'alt' => "{$name} hình " . ($imgIndex + 1),
+                    'alt' => "{$name} hình ".($imgIndex + 1),
                     'width' => 1600,
                     'height' => 2000,
                     'mime' => 'image/jpeg',
@@ -214,22 +214,22 @@ class ProductSeeder extends Seeder
 
     private function flush(array &$products, array &$images, array &$assignments, array &$categoryProductRows): void
     {
-        if (!empty($products)) {
+        if (! empty($products)) {
             DB::table('products')->insert($products);
             $products = [];
         }
 
-        if (!empty($images)) {
+        if (! empty($images)) {
             DB::table('images')->insert($images);
             $images = [];
         }
 
-        if (!empty($assignments)) {
+        if (! empty($assignments)) {
             DB::table('product_term_assignments')->insert($assignments);
             $assignments = [];
         }
 
-        if (!empty($categoryProductRows)) {
+        if (! empty($categoryProductRows)) {
             DB::table('product_category_product')->insert($categoryProductRows);
             $categoryProductRows = [];
         }
@@ -263,6 +263,7 @@ class ProductSeeder extends Seeder
             ->get()
             ->map(function ($term) {
                 $term->metadata = $term->metadata ? json_decode($term->metadata, true) : [];
+
                 return $term;
             });
 
@@ -300,7 +301,7 @@ class ProductSeeder extends Seeder
     }
 
     /**
-     * @param \Illuminate\Support\Collection<int, object> $pool
+     * @param  \Illuminate\Support\Collection<int, object>  $pool
      */
     private function pickRandom(Collection $pool)
     {
@@ -312,8 +313,8 @@ class ProductSeeder extends Seeder
     }
 
     /**
-     * @param array<int, int> $range
-     * @param \Illuminate\Support\Collection<int, object> $pool
+     * @param  array<int, int>  $range
+     * @param  \Illuminate\Support\Collection<int, object>  $pool
      * @return \Illuminate\Support\Collection<int, object>
      */
     private function pickTermsWithinRange(array $range, Collection $pool): Collection

@@ -12,10 +12,10 @@ use Illuminate\Support\Collection;
 class HomeComponentResources
 {
     /**
-     * @param \Illuminate\Support\Collection<int, \App\Models\Product> $products
-     * @param \Illuminate\Support\Collection<int, \App\Models\Article> $articles
-     * @param \Illuminate\Support\Collection<int, \App\Models\Image> $images
-     * @param \Illuminate\Support\Collection<int, \App\Models\CatalogTerm> $terms
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Product>  $products
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Article>  $articles
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Image>  $images
+     * @param  \Illuminate\Support\Collection<int, \App\Models\CatalogTerm>  $terms
      */
     public function __construct(
         private readonly Collection $products,
@@ -23,14 +23,13 @@ class HomeComponentResources
         private readonly Collection $images,
         private readonly Collection $terms,
         private readonly \Closure $missingLogger,
-    ) {
-    }
+    ) {}
 
     public function product(HomeComponent $component, int $id): ?Product
     {
         $product = $this->products->get($id);
 
-        if (!$product) {
+        if (! $product) {
             ($this->missingLogger)($component, 'product', $id);
         }
 
@@ -41,7 +40,7 @@ class HomeComponentResources
     {
         $article = $this->articles->get($id);
 
-        if (!$article) {
+        if (! $article) {
             ($this->missingLogger)($component, 'article', $id);
         }
 
@@ -52,7 +51,7 @@ class HomeComponentResources
     {
         $image = $this->images->get($id);
 
-        if (!$image) {
+        if (! $image) {
             ($this->missingLogger)($component, 'image', $id);
         }
 
@@ -63,7 +62,7 @@ class HomeComponentResources
     {
         $term = $this->terms->get($id);
 
-        if (!$term) {
+        if (! $term) {
             ($this->missingLogger)($component, 'catalog_term', $id);
         }
 

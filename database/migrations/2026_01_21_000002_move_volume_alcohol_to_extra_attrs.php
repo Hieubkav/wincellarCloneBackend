@@ -34,7 +34,7 @@ return new class extends Migration
                         $extraAttrs = $row->extra_attrs ? json_decode($row->extra_attrs, true) : [];
                         $extraAttrs = is_array($extraAttrs) ? $extraAttrs : [];
 
-                        if ($hasVolume && $row->volume_ml !== null && !array_key_exists('dung_tich', $extraAttrs)) {
+                        if ($hasVolume && $row->volume_ml !== null && ! array_key_exists('dung_tich', $extraAttrs)) {
                             $extraAttrs['dung_tich'] = [
                                 'label' => $labels['dung_tich'] ?? 'Dung tích',
                                 'value' => (int) $row->volume_ml,
@@ -42,7 +42,7 @@ return new class extends Migration
                             ];
                         }
 
-                        if ($hasAlcohol && $row->alcohol_percent !== null && !array_key_exists('1abv', $extraAttrs)) {
+                        if ($hasAlcohol && $row->alcohol_percent !== null && ! array_key_exists('1abv', $extraAttrs)) {
                             $extraAttrs['1abv'] = [
                                 'label' => $labels['1abv'] ?? '%ABV',
                                 'value' => (float) $row->alcohol_percent,
@@ -50,7 +50,7 @@ return new class extends Migration
                             ];
                         }
 
-                        if (!empty($extraAttrs)) {
+                        if (! empty($extraAttrs)) {
                             DB::table('products')
                                 ->where('id', $row->id)
                                 ->update([
@@ -115,7 +115,7 @@ return new class extends Migration
                         $updates['alcohol_percent'] = is_numeric($value) ? (float) $value : null;
                     }
 
-                    if (!empty($updates)) {
+                    if (! empty($updates)) {
                         DB::table('products')
                             ->where('id', $row->id)
                             ->update($updates);

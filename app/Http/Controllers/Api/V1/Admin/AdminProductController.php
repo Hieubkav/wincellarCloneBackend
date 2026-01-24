@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Image;
 use App\Models\Product;
-use App\Models\ProductCategory;
-use App\Models\ProductType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -24,20 +22,20 @@ class AdminProductController extends Controller
         // Support fetching by IDs for preview
         if ($request->filled('ids')) {
             $ids = array_filter(array_map('intval', explode(',', $request->input('ids'))));
-            if (!empty($ids)) {
+            if (! empty($ids)) {
                 $query->whereIn('id', $ids);
             }
         } elseif ($request->filled('q')) {
-            $query->where('name', 'like', '%' . $request->input('q') . '%');
+            $query->where('name', 'like', '%'.$request->input('q').'%');
         }
 
         $limit = min($request->integer('limit', 50), 200);
         $products = $query->limit($limit)->get();
 
         return response()->json([
-            'data' => $products->map(fn($p) => [
+            'data' => $products->map(fn ($p) => [
                 'value' => $p->id,
-                'label' => $p->name . ' (#' . $p->id . ')',
+                'label' => $p->name.' (#'.$p->id.')',
                 'price' => $p->price,
                 'cover_image' => $p->coverImage ? [
                     'id' => $p->coverImage->id,
@@ -55,7 +53,7 @@ class AdminProductController extends Controller
             ->orderBy('id', 'desc');
 
         if ($request->filled('q')) {
-            $query->where('name', 'like', '%' . $request->input('q') . '%');
+            $query->where('name', 'like', '%'.$request->input('q').'%');
         }
 
         if ($request->filled('type_id')) {
@@ -63,7 +61,7 @@ class AdminProductController extends Controller
         }
 
         if ($request->filled('category_id')) {
-            $query->whereHas('categories', fn($q) => $q->where('product_categories.id', $request->input('category_id')));
+            $query->whereHas('categories', fn ($q) => $q->where('product_categories.id', $request->input('category_id')));
         }
 
         if ($request->filled('active')) {
@@ -74,7 +72,7 @@ class AdminProductController extends Controller
         $products = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $products->map(fn($p) => [
+            'data' => $products->map(fn ($p) => [
                 'id' => $p->id,
                 'name' => $p->name,
                 'slug' => $p->slug,
@@ -115,7 +113,7 @@ class AdminProductController extends Controller
                 'type_id' => $product->type_id,
                 'category_ids' => $product->categories->pluck('id'),
                 'cover_image_url' => $product->coverImage?->url,
-                'images' => $product->images->map(fn($img) => [
+                'images' => $product->images->map(fn ($img) => [
                     'id' => $img->id,
                     'url' => $img->url,
                     'path' => $img->file_path,
@@ -151,7 +149,7 @@ class AdminProductController extends Controller
 
         $product = Product::create($validated);
 
-        if (!empty($validated['category_ids'])) {
+        if (! empty($validated['category_ids'])) {
             $product->categories()->sync($validated['category_ids']);
         }
 

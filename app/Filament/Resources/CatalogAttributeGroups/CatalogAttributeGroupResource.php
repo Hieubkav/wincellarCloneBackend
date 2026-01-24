@@ -5,18 +5,16 @@ namespace App\Filament\Resources\CatalogAttributeGroups;
 use App\Filament\Resources\CatalogAttributeGroups\Pages\CreateCatalogAttributeGroup;
 use App\Filament\Resources\CatalogAttributeGroups\Pages\EditCatalogAttributeGroup;
 use App\Filament\Resources\CatalogAttributeGroups\Pages\ListCatalogAttributeGroups;
-use App\Filament\Resources\CatalogAttributeGroups\Pages\ViewCatalogAttributeGroup;
 use App\Filament\Resources\CatalogAttributeGroups\Schemas\CatalogAttributeGroupForm;
 use App\Filament\Resources\CatalogAttributeGroups\Schemas\CatalogAttributeGroupInfolist;
 use App\Filament\Resources\CatalogAttributeGroups\Tables\CatalogAttributeGroupsTable;
-use App\Filament\Resources\CatalogAttributeGroups\RelationManagers;
 use App\Models\CatalogAttributeGroup;
 use BackedEnum;
-use UnitEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class CatalogAttributeGroupResource extends Resource
 {

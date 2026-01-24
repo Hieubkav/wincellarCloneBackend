@@ -70,10 +70,10 @@ class MenuBlockItemsRelationManager extends RelationManager
                             ->maxFiles(1)
                             ->acceptedFileTypes(['image/*'])
                             ->saveUploadedFileUsing(function ($file) {
-                                $filename = uniqid('menu_item_') . '.webp';
-                                $path = 'menu-items/' . $filename;
+                                $filename = uniqid('menu_item_').'.webp';
+                                $path = 'menu-items/'.$filename;
 
-                                $manager = new ImageManager(new Driver());
+                                $manager = new ImageManager(new Driver);
                                 $image = $manager->read($file->getRealPath());
 
                                 if ($image->width() > 400) {
@@ -127,7 +127,7 @@ class MenuBlockItemsRelationManager extends RelationManager
                 TextColumn::make('badge')
                     ->label('Badge')
                     ->badge()
-                    ->color(fn ($state) => match(strtoupper($state ?? '')) {
+                    ->color(fn ($state) => match (strtoupper($state ?? '')) {
                         'HOT' => 'danger',
                         'NEW' => 'success',
                         'SALE' => 'warning',

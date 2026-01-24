@@ -8,7 +8,7 @@ use App\Services\Api\V1\Home\HomeComponentResources;
 abstract class AbstractProductListTransformer extends AbstractComponentTransformer
 {
     /**
-     * @param array<int, mixed> $itemsConfig
+     * @param  array<int, mixed>  $itemsConfig
      * @return array<int, array<string, mixed>>
      */
     protected function buildProductEntries(HomeComponent $component, array $itemsConfig, HomeComponentResources $resources): array
@@ -32,12 +32,12 @@ abstract class AbstractProductListTransformer extends AbstractComponentTransform
                 $productId = $this->toPositiveInt($item);
             }
 
-            if (!$productId) {
+            if (! $productId) {
                 continue;
             }
 
             $product = $resources->product($component, $productId);
-            if (!$product) {
+            if (! $product) {
                 continue;
             }
 

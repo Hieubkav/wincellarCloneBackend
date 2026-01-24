@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\Images\Tables;
 
-
-use App\Filament\Resources\BaseResource;use App\Models\Article;
+use App\Filament\Resources\BaseResource;
+use App\Models\Article;
 use App\Models\Image;
 use App\Models\Product;
 use Filament\Actions\BulkActionGroup;
@@ -46,9 +46,8 @@ class ImagesTable
                     ->wrap(),
                 TextColumn::make('dimensions')
                     ->label('Kích thước')
-                    ->state(fn (Image $record): string => 
-                        $record->width && $record->height 
-                            ? "{$record->width}x{$record->height}px" 
+                    ->state(fn (Image $record): string => $record->width && $record->height
+                            ? "{$record->width}x{$record->height}px"
                             : '-'
                     )
                     ->toggleable(),
@@ -61,7 +60,7 @@ class ImagesTable
                     ->label('Loại chủ sở hữu')
                     ->formatStateUsing(fn (?string $state): ?string => self::formatModelType($state))
                     ->badge()
-                    ->color(fn (?string $state): string => match($state) {
+                    ->color(fn (?string $state): string => match ($state) {
                         'App\Models\Product' => 'success',
                         'App\Models\Article' => 'info',
                         default => 'gray',
@@ -116,14 +115,14 @@ class ImagesTable
                         // Kiểm tra xem ảnh có đang được dùng không
                         if ($record->model_type && $record->model_id) {
                             $ownerType = class_basename($record->model_type);
-                            
+
                             \Filament\Notifications\Notification::make()
                                 ->danger()
                                 ->title('Không thể xóa ảnh')
                                 ->body("Ảnh này đang được sử dụng bởi {$ownerType} #{$record->model_id}. Vui lòng gỡ liên kết trước khi xóa.")
                                 ->persistent()
                                 ->send();
-                            
+
                             // Cancel deletion
                             $action->cancel();
                         }
@@ -135,7 +134,7 @@ class ImagesTable
                         ->before(function (DeleteBulkAction $action, $records) {
                             // Kiểm tra xem có ảnh nào đang được dùng không
                             $inUse = $records->filter(fn (Image $img) => $img->model_type && $img->model_id);
-                            
+
                             if ($inUse->isNotEmpty()) {
                                 \Filament\Notifications\Notification::make()
                                     ->danger()
@@ -143,7 +142,7 @@ class ImagesTable
                                     ->body("Có {$inUse->count()} ảnh đang được sử dụng. Vui lòng gỡ liên kết trước khi xóa.")
                                     ->persistent()
                                     ->send();
-                                
+
                                 // Cancel deletion
                                 $action->cancel();
                             }

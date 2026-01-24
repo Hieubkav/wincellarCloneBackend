@@ -16,7 +16,7 @@ class SpeedDialTransformer extends AbstractComponentTransformer
         $transformedItems = array_map(function ($item) {
             $iconType = $item['icon_type'] ?? 'home';
             $iconImageId = $this->toPositiveInt($item['icon_image_id'] ?? null);
-            
+
             $iconUrl = null;
             if ($iconType === 'custom' && $iconImageId) {
                 $image = Image::find($iconImageId);

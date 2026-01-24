@@ -30,21 +30,21 @@ class ApiResourceTest extends TestCase
                         '_links' => [
                             'self',
                             'list',
-                        ]
-                    ]
+                        ],
+                    ],
                 ],
                 'meta' => [
                     'pagination',
                     'sorting',
                     'filtering',
                     'api_version',
-                    'timestamp'
+                    'timestamp',
                 ],
                 '_links' => [
                     'self',
                     'first',
-                    'last'
-                ]
+                    'last',
+                ],
             ]);
     }
 
@@ -73,9 +73,9 @@ class ApiResourceTest extends TestCase
                     '_links' => [
                         'self',
                         'list',
-                        'related'
-                    ]
-                ]
+                        'related',
+                    ],
+                ],
             ])
             ->assertJsonPath('data.description', 'Detailed description');
     }
@@ -116,11 +116,11 @@ class ApiResourceTest extends TestCase
                         'per_page',
                         'total',
                         'last_page',
-                        'has_more'
+                        'has_more',
                     ],
                     'api_version',
-                    'timestamp'
-                ]
+                    'timestamp',
+                ],
             ])
             ->assertJsonPath('meta.pagination.page', 1)
             ->assertJsonPath('meta.pagination.per_page', 2)
@@ -171,17 +171,17 @@ class ApiResourceTest extends TestCase
                         'slug',
                         '_links' => [
                             'self',
-                            'list'
-                        ]
-                    ]
+                            'list',
+                        ],
+                    ],
                 ],
                 'meta' => [
                     'pagination',
                     'sorting',
                     'filtering',
-                    'api_version'
+                    'api_version',
                 ],
-                '_links'
+                '_links',
             ]);
     }
 
@@ -208,8 +208,8 @@ class ApiResourceTest extends TestCase
                     'gallery',      // Only in detail view
                     'meta',         // Only in detail view
                     'updated_at',   // Only in detail view
-                    '_links'
-                ]
+                    '_links',
+                ],
             ])
             ->assertJsonPath('data.content', 'Full article content');
     }
@@ -268,7 +268,7 @@ class ApiResourceTest extends TestCase
     {
         $product = Product::factory()->create([
             'slug' => 'test-product-123',
-            'active' => true
+            'active' => true,
         ]);
 
         $response = $this->getJson("/api/v1/san-pham/{$product->slug}");
@@ -285,7 +285,7 @@ class ApiResourceTest extends TestCase
     {
         $product = Product::factory()->create([
             'slug' => 'test-product',
-            'active' => true
+            'active' => true,
         ]);
 
         $response = $this->getJson("/api/v1/san-pham/{$product->slug}");
@@ -296,9 +296,9 @@ class ApiResourceTest extends TestCase
                     '_links' => [
                         'self',
                         'list',
-                        'related'
-                    ]
-                ]
+                        'related',
+                    ],
+                ],
             ]);
     }
 }

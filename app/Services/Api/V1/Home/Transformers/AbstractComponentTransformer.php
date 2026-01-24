@@ -12,7 +12,7 @@ abstract class AbstractComponentTransformer
     }
 
     /**
-     * @param mixed $value
+     * @param  mixed  $value
      */
     protected function toPositiveInt($value): ?int
     {

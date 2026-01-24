@@ -14,14 +14,15 @@ class ProductOutput
     public static function listItem(Product $product): array
     {
         $coverImageUrl = $product->cover_image_url;
-        if ($coverImageUrl && !self::fileExists($coverImageUrl)) {
+        if ($coverImageUrl && ! self::fileExists($coverImageUrl)) {
             $coverImageUrl = '/placeholder/wine-bottle.svg';
         }
 
         $gallery = $product->gallery_for_output->map(function ($image) {
-            if ($image['url'] && !self::fileExists($image['url'])) {
+            if ($image['url'] && ! self::fileExists($image['url'])) {
                 $image['url'] = '/placeholder/wine-bottle.svg';
             }
+
             return $image;
         })->all();
 
@@ -59,7 +60,7 @@ class ProductOutput
     public static function suggestion(Product $product): array
     {
         $coverImageUrl = $product->cover_image_url;
-        if ($coverImageUrl && !self::fileExists($coverImageUrl)) {
+        if ($coverImageUrl && ! self::fileExists($coverImageUrl)) {
             $coverImageUrl = '/placeholder/wine-bottle.svg';
         }
 
@@ -96,14 +97,15 @@ class ProductOutput
         $originTerms = self::transformTerms($product->termsByGroup('origin'));
 
         $coverImageUrl = $product->cover_image_url;
-        if ($coverImageUrl && !self::fileExists($coverImageUrl)) {
+        if ($coverImageUrl && ! self::fileExists($coverImageUrl)) {
             $coverImageUrl = '/placeholder/wine-bottle.svg';
         }
 
         $gallery = $product->gallery_for_output->map(function ($image) {
-            if ($image['url'] && !self::fileExists($image['url'])) {
+            if ($image['url'] && ! self::fileExists($image['url'])) {
                 $image['url'] = '/placeholder/wine-bottle.svg';
             }
+
             return $image;
         })->all();
 
@@ -145,7 +147,7 @@ class ProductOutput
 
     private static function transformTerm(?CatalogTerm $term): ?array
     {
-        if (!$term) {
+        if (! $term) {
             return null;
         }
 
@@ -157,7 +159,7 @@ class ProductOutput
     }
 
     /**
-     * @param \Illuminate\Support\Collection<int, CatalogTerm> $terms
+     * @param  \Illuminate\Support\Collection<int, CatalogTerm>  $terms
      * @return array<int, array{id:int,name:string,slug:string}>
      */
     private static function transformTerms(Collection $terms): array
@@ -170,46 +172,47 @@ class ProductOutput
     }
 
     /**
-    * @return array<int, array{label:string,href:string}>
-    */
+     * @return array<int, array{label:string,href:string}>
+     */
     private static function buildBreadcrumbs(Product $product): array
     {
-    $breadcrumbs = [];
+        $breadcrumbs = [];
 
-    if ($category = $product->categories->first()) {
-    $breadcrumbs[] = [
-    'label' => $category->name,
-    'href' => '/san-pham/'.$category->slug,
-    ];
-    }
+        if ($category = $product->categories->first()) {
+            $breadcrumbs[] = [
+                'label' => $category->name,
+                'href' => '/san-pham/'.$category->slug,
+            ];
+        }
 
-    if ($product->type) {
-    $breadcrumbs[] = [
-    'label' => $product->type->name,
-    'href' => '/san-pham?type='.$product->type->slug,
-    ];
-    }
+        if ($product->type) {
+            $breadcrumbs[] = [
+                'label' => $product->type->name,
+                'href' => '/san-pham?type='.$product->type->slug,
+            ];
+        }
 
-    if ($brand = $product->primaryTerm('brand')) {
-    $breadcrumbs[] = [
-    'label' => $brand->name,
-    'href' => '/san-pham?brand='.$brand->slug,
-    ];
-    }
+        if ($brand = $product->primaryTerm('brand')) {
+            $breadcrumbs[] = [
+                'label' => $brand->name,
+                'href' => '/san-pham?brand='.$brand->slug,
+            ];
+        }
 
-    return $breadcrumbs;
+        return $breadcrumbs;
     }
 
     private static function fileExists(string $url): bool
     {
         // Remove domain if present, assume localhost:8000
         $path = parse_url($url, PHP_URL_PATH);
-        if (!$path) {
+        if (! $path) {
             return false;
         }
 
         // Assuming storage/app/public is symlinked to public/storage
         $fullPath = public_path($path);
+
         return file_exists($fullPath);
     }
 }

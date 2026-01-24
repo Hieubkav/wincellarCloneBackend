@@ -18,7 +18,7 @@ class ExportCatalogBaseline extends Command
         $this->info('Exporting catalog baseline...');
 
         $dataPath = database_path('seeders/data');
-        if (!File::isDirectory($dataPath)) {
+        if (! File::isDirectory($dataPath)) {
             File::makeDirectory($dataPath, 0755, true);
         }
 

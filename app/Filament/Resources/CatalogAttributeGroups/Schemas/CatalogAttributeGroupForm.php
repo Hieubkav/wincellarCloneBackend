@@ -33,7 +33,7 @@ class CatalogAttributeGroupForm
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true) // tránh Livewire gửi request liên tục khi gõ
-                            
+
                             ->afterStateUpdated(fn ($state, callable $set) => $set('code', Str::slug((string) $state, '_'))),
 
                         Select::make('filter_type')
@@ -73,6 +73,7 @@ class CatalogAttributeGroupForm
                             ->unique(ignoreRecord: true)
                             ->dehydrateStateUsing(function ($state, Get $get) {
                                 $value = $state ?: Str::slug((string) ($get('name') ?? ''), '_');
+
                                 return $value ?: Str::random(8);
                             }),
 

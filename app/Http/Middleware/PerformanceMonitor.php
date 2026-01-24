@@ -25,9 +25,9 @@ class PerformanceMonitor
         $memoryUsage = round((memory_get_usage(true) - $startMemory) / 1024 / 1024, 2);
 
         // Add performance headers
-        $response->headers->set('X-Execution-Time', $executionTime . 'ms');
-        $response->headers->set('X-Memory-Usage', $memoryUsage . 'MB');
-        $response->headers->set('X-Memory-Peak', round(memory_get_peak_usage(true) / 1024 / 1024, 2) . 'MB');
+        $response->headers->set('X-Execution-Time', $executionTime.'ms');
+        $response->headers->set('X-Memory-Usage', $memoryUsage.'MB');
+        $response->headers->set('X-Memory-Peak', round(memory_get_peak_usage(true) / 1024 / 1024, 2).'MB');
 
         // Log slow requests (>1000ms)
         if ($executionTime > 1000) {

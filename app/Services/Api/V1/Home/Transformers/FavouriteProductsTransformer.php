@@ -10,7 +10,7 @@ class FavouriteProductsTransformer extends AbstractProductListTransformer
     public function transform(HomeComponent $component, HomeComponentResources $resources): ?array
     {
         $config = $this->normalizeConfig($component);
-        
+
         // Support both 'products' and 'product_ids' keys for backward compatibility
         $itemsConfig = $this->ensureArray($config['products'] ?? $config['product_ids'] ?? []);
 

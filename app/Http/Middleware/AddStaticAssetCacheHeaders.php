@@ -32,24 +32,24 @@ class AddStaticAssetCacheHeaders
         if ($isStaticAsset) {
             // Add cache headers for 1 year (max allowed by HTTP spec)
             $response->headers->set('Cache-Control', 'public, max-age=31536000, immutable');
-            
+
             // Add ETag for validation
             if ($content = $response->getContent()) {
                 $etag = md5($content);
-                $response->headers->set('ETag', '"' . $etag . '"');
-                
+                $response->headers->set('ETag', '"'.$etag.'"');
+
                 // Check if client has valid cached version
                 $clientEtag = $request->header('If-None-Match');
-                if ($clientEtag === '"' . $etag . '"') {
+                if ($clientEtag === '"'.$etag.'"') {
                     return response('', 304)->withHeaders([
                         'Cache-Control' => 'public, max-age=31536000, immutable',
-                        'ETag' => '"' . $etag . '"',
+                        'ETag' => '"'.$etag.'"',
                     ]);
                 }
             }
-            
+
             // Add Expires header for older browsers
-            $response->headers->set('Expires', gmdate('D, d M Y H:i:s', time() + 31536000) . ' GMT');
+            $response->headers->set('Expires', gmdate('D, d M Y H:i:s', time() + 31536000).' GMT');
         }
 
         return $response;

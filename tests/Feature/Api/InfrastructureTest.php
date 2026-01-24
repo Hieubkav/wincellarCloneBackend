@@ -4,7 +4,6 @@ namespace Tests\Feature\Api;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class InfrastructureTest extends TestCase
@@ -92,7 +91,7 @@ class InfrastructureTest extends TestCase
             '_links' => [
                 'self' => ['href', 'method'],
                 'api_docs' => ['href', 'method'],
-            ]
+            ],
         ]);
     }
 
@@ -133,7 +132,7 @@ class InfrastructureTest extends TestCase
         $customId = 'test-correlation-id-infrastructure';
 
         $response = $this->getJson('/api/v1/health', [
-            'X-Correlation-ID' => $customId
+            'X-Correlation-ID' => $customId,
         ]);
 
         $response->assertHeader('X-Correlation-ID', $customId);
@@ -146,12 +145,12 @@ class InfrastructureTest extends TestCase
     {
         // This test verifies health check doesn't crash on service failures
         // In real scenario, you might mock service failures
-        
+
         $response = $this->getJson('/api/v1/health');
 
         // Should still return a response (either 200 or 503)
         $this->assertContains($response->status(), [200, 503]);
-        
+
         // Should have status field
         $response->assertJsonStructure(['status', 'services']);
     }
@@ -183,10 +182,10 @@ class InfrastructureTest extends TestCase
 
         foreach ($endpoints as $endpoint) {
             $response = $this->getJson($endpoint);
-            
+
             if ($response->status() === 200) {
                 $data = $response->json();
-                
+
                 // Check for api_version in response
                 if (isset($data['version']['api'])) {
                     $this->assertEquals('v1', $data['version']['api']);
@@ -203,9 +202,9 @@ class InfrastructureTest extends TestCase
     public function test_health_check_response_time_is_reasonable(): void
     {
         $startTime = microtime(true);
-        
+
         $response = $this->getJson('/api/v1/health');
-        
+
         $endTime = microtime(true);
         $duration = ($endTime - $startTime) * 1000; // in ms
 
@@ -226,7 +225,7 @@ class InfrastructureTest extends TestCase
 
         $this->assertArrayHasKey('environment', $data);
         $this->assertIsString($data['environment']);
-        
+
         $this->assertArrayHasKey('version', $data);
         $this->assertArrayHasKey('laravel', $data['version']);
         $this->assertArrayHasKey('php', $data['version']);
@@ -242,11 +241,11 @@ class InfrastructureTest extends TestCase
         $data = $response->json();
 
         $this->assertArrayHasKey('timestamp', $data);
-        
+
         // Verify ISO 8601 format
         $timestamp = $data['timestamp'];
         $parsed = \DateTime::createFromFormat(\DateTime::ISO8601, $timestamp);
-        
+
         // ISO8601 format should parse successfully
         $this->assertNotFalse($parsed);
     }

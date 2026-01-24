@@ -29,6 +29,7 @@ class Article extends Model
         'active',
         'meta_title',
         'meta_description',
+        'published_at',
     ];
 
     /**
@@ -38,6 +39,7 @@ class Article extends Model
     {
         return [
             'active' => 'bool',
+            'published_at' => 'datetime',
         ];
     }
 

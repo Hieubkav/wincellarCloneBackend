@@ -13,7 +13,7 @@ return new class extends Migration
     {
         // MariaDB/MySQL không support partial indexes (WHERE clause)
         // Giải pháp: Xóa unique constraint, dùng ImageObserver để đảm bảo order unique
-        
+
         // Check if constraint exists before dropping
         $indexExists = DB::select("
             SELECT COUNT(*) as count 
@@ -22,13 +22,13 @@ return new class extends Migration
             AND table_name = 'images' 
             AND index_name = 'images_unique_order_per_model'
         ");
-        
+
         if ($indexExists[0]->count > 0) {
             Schema::table('images', function (Blueprint $table) {
                 $table->dropUnique('images_unique_order_per_model');
             });
         }
-        
+
         // Check if new index already exists
         $newIndexExists = DB::select("
             SELECT COUNT(*) as count 
@@ -37,7 +37,7 @@ return new class extends Migration
             AND table_name = 'images' 
             AND index_name = 'images_order_index'
         ");
-        
+
         if ($newIndexExists[0]->count == 0) {
             Schema::table('images', function (Blueprint $table) {
                 // Thay bằng regular index (không unique) để tối ưu query
@@ -54,7 +54,7 @@ return new class extends Migration
         Schema::table('images', function (Blueprint $table) {
             // Drop regular index
             $table->dropIndex('images_order_index');
-            
+
             // Restore unique constraint
             $table->unique(['model_type', 'model_id', 'order'], 'images_unique_order_per_model');
         });

@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
-    public function __construct(private readonly HomeComponentAssembler $assembler)
-    {
-    }
+    public function __construct(private readonly HomeComponentAssembler $assembler) {}
 
     public function __invoke(): JsonResponse
     {
@@ -23,7 +21,7 @@ class HomeController extends Controller
             ->get();
 
         $payload = $this->assembler->build($components);
-        
+
         // Include cache version for frontend cache invalidation
         $cacheVersion = (int) Cache::get('api_cache_version', 0);
 

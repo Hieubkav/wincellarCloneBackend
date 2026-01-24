@@ -11,7 +11,7 @@ class CacheController extends Controller
 {
     /**
      * Clear application cache.
-     * 
+     *
      * This endpoint can be called from frontend to clear cache
      * when data is updated in admin panel.
      */
@@ -24,7 +24,7 @@ class CacheController extends Controller
             Artisan::call('config:clear');
             Artisan::call('route:clear');
             Artisan::call('view:clear');
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Cache cleared successfully',
@@ -46,7 +46,7 @@ class CacheController extends Controller
     {
         // Store last cache clear time in cache itself
         $lastClear = Cache::get('last_cache_clear');
-        
+
         return response()->json([
             'data' => [
                 'last_clear' => $lastClear,
@@ -58,13 +58,13 @@ class CacheController extends Controller
 
     /**
      * Increment cache version for frontend cache busting.
-     * 
+     *
      * Frontend can read this version and bust cache when it changes.
      */
     public function version(): JsonResponse
     {
         $version = (int) Cache::get('api_cache_version', 0);
-        
+
         return response()->json([
             'data' => [
                 'version' => $version,
@@ -75,17 +75,17 @@ class CacheController extends Controller
 
     /**
      * Increment cache version.
-     * 
+     *
      * Call this when data is updated to invalidate frontend caches.
      */
     public function incrementVersion(): JsonResponse
     {
         $version = (int) Cache::get('api_cache_version', 0);
         $newVersion = $version + 1;
-        
+
         Cache::put('api_cache_version', $newVersion);
         Cache::put('last_cache_clear', now()->toIso8601String());
-        
+
         return response()->json([
             'success' => true,
             'data' => [

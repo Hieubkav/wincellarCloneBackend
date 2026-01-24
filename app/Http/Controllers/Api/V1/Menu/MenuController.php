@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Cache;
 
 class MenuController extends Controller
 {
-    public function __construct(private readonly MenuAssembler $assembler)
-    {
-    }
+    public function __construct(private readonly MenuAssembler $assembler) {}
 
     public function __invoke(): JsonResponse
     {
@@ -30,7 +28,7 @@ class MenuController extends Controller
             ->get();
 
         $payload = $this->assembler->build($menus);
-        
+
         // Include cache version for frontend cache invalidation
         $cacheVersion = (int) Cache::get('api_cache_version', 0);
 

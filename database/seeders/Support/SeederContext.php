@@ -100,7 +100,7 @@ class SeederContext
 
     public static function get(): self
     {
-        return self::$instance ??= new self();
+        return self::$instance ??= new self;
     }
 
     public function dataset(): string
@@ -141,8 +141,9 @@ class SeederContext
         }
 
         $counters = &$this->slugCounters[$scope];
-        if (!isset($counters[$base])) {
+        if (! isset($counters[$base])) {
             $counters[$base] = 0;
+
             return $base;
         }
 

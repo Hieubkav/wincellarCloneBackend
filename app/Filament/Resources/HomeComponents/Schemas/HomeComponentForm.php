@@ -4,10 +4,8 @@ namespace App\Filament\Resources\HomeComponents\Schemas;
 
 use App\Enums\HomeComponentType;
 use App\Models\Article;
-use App\Models\CatalogTerm;
 use App\Models\Image;
 use App\Models\Product;
-use App\Models\ProductCategory;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -38,17 +36,17 @@ class HomeComponentForm
         return $images->mapWithKeys(function ($image) {
             $filename = basename($image->file_path);
             $imageUrl = $image->url ?? '/images/placeholder.png';
-            
+
             $html = '<div style="display: flex; align-items: center; gap: 8px;">';
-            $html .= '<img src="' . e($imageUrl) . '" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb;" />';
+            $html .= '<img src="'.e($imageUrl).'" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb;" />';
             $html .= '<div style="display: flex; flex-direction: column;">';
-            $html .= '<span style="font-weight: 500;">' . e($image->alt ?: $filename) . '</span>';
+            $html .= '<span style="font-weight: 500;">'.e($image->alt ?: $filename).'</span>';
             if ($image->width && $image->height) {
-                $html .= '<span style="font-size: 0.75rem; color: #6b7280;">' . $image->width . 'x' . $image->height . '</span>';
+                $html .= '<span style="font-size: 0.75rem; color: #6b7280;">'.$image->width.'x'.$image->height.'</span>';
             }
             $html .= '</div>';
             $html .= '</div>';
-            
+
             return [$image->id => $html];
         })->toArray();
     }
@@ -64,24 +62,24 @@ class HomeComponentForm
 
         return $products->mapWithKeys(function ($product) {
             $imageUrl = $product->cover_image_url ?? '/images/placeholder.png';
-            
+
             $html = '<div style="display: flex; align-items: center; gap: 10px;">';
-            $html .= '<img src="' . e($imageUrl) . '" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb;" />';
+            $html .= '<img src="'.e($imageUrl).'" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb;" />';
             $html .= '<div style="display: flex; flex-direction: column; gap: 2px;">';
-            $html .= '<span style="font-weight: 500; color: #111827;">' . e($product->name) . '</span>';
-            
+            $html .= '<span style="font-weight: 500; color: #111827;">'.e($product->name).'</span>';
+
             $priceHtml = '<div style="display: flex; gap: 8px; align-items: center;">';
-            $priceHtml .= '<span style="font-size: 0.875rem; color: #059669; font-weight: 600;">' . number_format($product->price) . ' ₫</span>';
-            
+            $priceHtml .= '<span style="font-size: 0.875rem; color: #059669; font-weight: 600;">'.number_format($product->price).' ₫</span>';
+
             if ($product->original_price && $product->original_price > $product->price) {
-                $priceHtml .= '<span style="font-size: 0.75rem; color: #9ca3af; text-decoration: line-through;">' . number_format($product->original_price) . ' ₫</span>';
+                $priceHtml .= '<span style="font-size: 0.75rem; color: #9ca3af; text-decoration: line-through;">'.number_format($product->original_price).' ₫</span>';
             }
             $priceHtml .= '</div>';
-            
+
             $html .= $priceHtml;
             $html .= '</div>';
             $html .= '</div>';
-            
+
             return [$product->id => $html];
         })->toArray();
     }
@@ -106,11 +104,11 @@ class HomeComponentForm
                     ->disk('public')
                     ->directory('media/images')
                     ->saveUploadedFileUsing(function (TemporaryUploadedFile $file) {
-                        $filename = 'img-' . Str::uuid() . '.webp';
+                        $filename = 'img-'.Str::uuid().'.webp';
                         $disk = 'public';
-                        $path = 'media/images/' . $filename;
+                        $path = 'media/images/'.$filename;
 
-                        $manager = new ImageManager(new Driver());
+                        $manager = new ImageManager(new Driver);
                         $image = $manager->read($file->getRealPath());
 
                         if ($image->width() > 1920) {
@@ -124,7 +122,7 @@ class HomeComponentForm
                     })
                     ->columnSpanFull()
                     ->helperText('Tải lên ảnh mới (tự động convert sang WebP, tối đa 1920px width)'),
-                
+
                 Toggle::make('active')
                     ->label('Đang hiển thị')
                     ->default(true)
@@ -136,7 +134,7 @@ class HomeComponentForm
                     'active' => $data['active'] ?? true,
                     'disk' => 'public',
                 ]);
-                
+
                 return $image->id;
             })
             ->createOptionAction(
@@ -178,17 +176,18 @@ class HomeComponentForm
 
     protected static function getTypeDescription(?string $type): ?string
     {
-        if (!$type) {
+        if (! $type) {
             return null;
         }
 
         $enum = HomeComponentType::tryFrom($type);
+
         return $enum?->getDescription();
     }
 
     protected static function getConfigFields(?string $type): array
     {
-        if (!$type) {
+        if (! $type) {
             return [];
         }
 
@@ -267,17 +266,17 @@ class HomeComponentForm
                                         'product_category' => '📁 Danh mục sản phẩm',
                                         'product_type' => '📦 Loại sản phẩm',
                                     ];
-                                    
+
                                     $groups = \App\Models\CatalogAttributeGroup::query()
                                         ->where('is_filterable', true)
                                         ->whereIn('filter_type', ['chon_don', 'chon_nhieu'])
                                         ->orderBy('position')
                                         ->get();
-                                    
+
                                     foreach ($groups as $group) {
-                                        $options['attribute_group_' . $group->id] = '🏷️ ' . $group->name;
+                                        $options['attribute_group_'.$group->id] = '🏷️ '.$group->name;
                                     }
-                                    
+
                                     return $options;
                                 })
                                 ->required()
@@ -290,39 +289,40 @@ class HomeComponentForm
                                     $set('href', '');
                                 })
                                 ->helperText('Chọn loại để hiển thị danh sách giá trị tương ứng'),
-                            
+
                             Select::make('filter_value_id')
                                 ->label('Giá trị')
                                 ->options(function (Get $get) {
                                     $filterType = $get('filter_type');
-                                    
-                                    if (!$filterType) {
+
+                                    if (! $filterType) {
                                         return [];
                                     }
-                                    
+
                                     if ($filterType === 'product_category') {
                                         return \App\Models\ProductCategory::query()
                                             ->where('active', true)
                                             ->orderBy('order')
                                             ->pluck('name', 'id');
                                     }
-                                    
+
                                     if ($filterType === 'product_type') {
                                         return \App\Models\ProductType::query()
                                             ->where('active', true)
                                             ->orderBy('order')
                                             ->pluck('name', 'id');
                                     }
-                                    
+
                                     if (str_starts_with($filterType, 'attribute_group_')) {
                                         $groupId = str_replace('attribute_group_', '', $filterType);
+
                                         return \App\Models\CatalogTerm::query()
                                             ->where('group_id', $groupId)
                                             ->where('is_active', true)
                                             ->orderBy('position')
                                             ->pluck('name', 'id');
                                     }
-                                    
+
                                     return [];
                                 })
                                 ->required()
@@ -330,41 +330,41 @@ class HomeComponentForm
                                 ->preload()
                                 ->live()
                                 ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                    if (!$state) {
+                                    if (! $state) {
                                         return;
                                     }
-                                    
+
                                     $filterType = $get('filter_type');
-                                    
+
                                     if ($filterType === 'product_category') {
                                         $category = \App\Models\ProductCategory::find($state);
                                         if ($category) {
-                                            if (!$get('title')) {
+                                            if (! $get('title')) {
                                                 $set('title', $category->name);
                                             }
-                                            $set('href', '/filter?category=' . $category->id);
+                                            $set('href', '/filter?category='.$category->id);
                                         }
                                     } elseif ($filterType === 'product_type') {
                                         $productType = \App\Models\ProductType::find($state);
                                         if ($productType) {
-                                            if (!$get('title')) {
+                                            if (! $get('title')) {
                                                 $set('title', $productType->name);
                                             }
-                                            $set('href', '/filter?type=' . $productType->id);
+                                            $set('href', '/filter?type='.$productType->id);
                                         }
                                     } elseif (str_starts_with($filterType, 'attribute_group_')) {
                                         $groupId = str_replace('attribute_group_', '', $filterType);
                                         $term = \App\Models\CatalogTerm::with('group')->find($state);
                                         if ($term) {
-                                            if (!$get('title')) {
+                                            if (! $get('title')) {
                                                 $set('title', $term->name);
                                             }
-                                            $set('href', '/filter?' . $term->group->code . '=' . $term->id);
+                                            $set('href', '/filter?'.$term->group->code.'='.$term->id);
                                         }
                                     }
                                 })
                                 ->helperText('Chọn giá trị cụ thể, URL sẽ tự động tạo'),
-                            
+
                             self::imageSelectWithQuickCreate('image_id', 'Hình ảnh nền'),
                         ]),
                     TextInput::make('title')
@@ -382,8 +382,7 @@ class HomeComponentForm
                 ->defaultItems(1)
                 ->addActionLabel('Thêm ô lưới')
                 ->collapsible()
-                ->itemLabel(fn (array $state): ?string => 
-                    $state['title'] ?? 'Ô lưới mới'
+                ->itemLabel(fn (array $state): ?string => $state['title'] ?? 'Ô lưới mới'
                 ),
         ];
     }
@@ -556,19 +555,19 @@ class HomeComponentForm
 
         return $articles->mapWithKeys(function ($article) {
             $imageUrl = $article->cover_image_url ?? '/images/placeholder.png';
-            
+
             $html = '<div style="display: flex; align-items: center; gap: 10px;">';
-            $html .= '<img src="' . e($imageUrl) . '" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb;" />';
+            $html .= '<img src="'.e($imageUrl).'" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb;" />';
             $html .= '<div style="display: flex; flex-direction: column; gap: 2px;">';
-            $html .= '<span style="font-weight: 500; color: #111827;">' . e($article->title) . '</span>';
-            
+            $html .= '<span style="font-weight: 500; color: #111827;">'.e($article->title).'</span>';
+
             if ($article->published_at) {
-                $html .= '<span style="font-size: 0.75rem; color: #6b7280;">' . $article->published_at->format('d/m/Y') . '</span>';
+                $html .= '<span style="font-size: 0.75rem; color: #6b7280;">'.$article->published_at->format('d/m/Y').'</span>';
             }
-            
+
             $html .= '</div>';
             $html .= '</div>';
-            
+
             return [$article->id => $html];
         })->toArray();
     }

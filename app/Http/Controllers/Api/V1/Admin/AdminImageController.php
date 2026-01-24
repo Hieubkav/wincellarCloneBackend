@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Image;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class AdminImageController extends Controller
 {
@@ -16,9 +15,9 @@ class AdminImageController extends Controller
             ->orderBy('id', 'desc');
 
         if ($request->filled('q')) {
-            $query->where(function($q) use ($request) {
-                $q->where('alt', 'like', '%' . $request->input('q') . '%')
-                  ->orWhere('file_path', 'like', '%' . $request->input('q') . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('alt', 'like', '%'.$request->input('q').'%')
+                    ->orWhere('file_path', 'like', '%'.$request->input('q').'%');
             });
         }
 
@@ -34,7 +33,7 @@ class AdminImageController extends Controller
         $images = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $images->map(function($img) {
+            'data' => $images->map(function ($img) {
                 $usedBy = $this->getUsedByInfo($img);
 
                 return [
@@ -64,7 +63,7 @@ class AdminImageController extends Controller
 
     private function getUsedByInfo($image): ?array
     {
-        if (!$image->model_type || !$image->model_id) {
+        if (! $image->model_type || ! $image->model_id) {
             return null;
         }
 
@@ -101,7 +100,7 @@ class AdminImageController extends Controller
                 ];
             }
         } catch (\Exception $e) {
-            \Log::warning("Failed to get used_by info for image {$image->id}: " . $e->getMessage());
+            \Log::warning("Failed to get used_by info for image {$image->id}: ".$e->getMessage());
         }
 
         return null;
@@ -200,7 +199,7 @@ class AdminImageController extends Controller
         ]);
 
         $images = Image::whereIn('id', $validated['ids'])->get();
-        
+
         foreach ($images as $image) {
             $image->forceDelete();
         }

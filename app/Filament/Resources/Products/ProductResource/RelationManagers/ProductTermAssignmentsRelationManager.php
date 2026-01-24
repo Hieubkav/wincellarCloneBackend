@@ -7,26 +7,24 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Forms\Components\Select;
-use Filament\Tables;
-use Filament\Tables\Table;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class ProductTermAssignmentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'termAssignments';
-    
-    protected static ?string $title = 'Giá trị thuộc tính';
-    
-    protected static ?string $modelLabel = 'thuộc tính';
 
+    protected static ?string $title = 'Giá trị thuộc tính';
+
+    protected static ?string $modelLabel = 'thuộc tính';
 
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('id')
-            ->modifyQueryUsing(fn($query) => $query->with(['term.group']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['term.group']))
             ->columns([
                 TextColumn::make('term.group.name')
                     ->label('Tên thuộc tính')
@@ -38,7 +36,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                     ->sortable(),
             ])
             ->filters([
-            //
+                //
             ])
             ->defaultSort('position', 'asc');
     }
@@ -57,21 +55,22 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                                 ->get()
                                 ->mapWithKeys(function ($group) {
                                     $type = $group->filter_type === 'chon_nhieu' ? '(Chọn nhiều)' : '(Chọn đơn)';
-                                    return [$group->id => $group->name . ' ' . $type];
+
+                                    return [$group->id => $group->name.' '.$type];
                                 });
                         })
                         ->required()
                         ->live()
                         ->afterStateUpdated(fn ($state, callable $set) => $set('term_id', null)),
-                    
+
                     Select::make('term_id')
                         ->label('Giá trị')
                         ->options(function (callable $get) {
                             $groupId = $get('attribute_group_id');
-                            if (!$groupId) {
+                            if (! $groupId) {
                                 return [];
                             }
-                            
+
                             return \App\Models\CatalogTerm::where('group_id', $groupId)
                                 ->where('is_active', true)
                                 ->orderBy('position')
@@ -79,17 +78,18 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                         })
                         ->required()
                         ->searchable()
-                        ->hidden(fn (callable $get) => !$get('attribute_group_id')),
+                        ->hidden(fn (callable $get) => ! $get('attribute_group_id')),
                 ])
                 ->mutateFormDataUsing(function (array $data): array {
                     // Bỏ attribute_group_id khỏi data và không lưu vào database
                     unset($data['attribute_group_id']);
+
                     return $data;
                 })
                 ->before(function (CreateAction $action, array $data) {
                     // Lấy thông tin group để check
                     $term = \App\Models\CatalogTerm::find($data['term_id']);
-                    if (!$term || !$term->group) {
+                    if (! $term || ! $term->group) {
                         return;
                     }
 
@@ -120,7 +120,8 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                                 ->get()
                                 ->mapWithKeys(function ($group) {
                                     $type = $group->filter_type === 'chon_nhieu' ? '(Chọn nhiều)' : '(Chọn đơn)';
-                                    return [$group->id => $group->name . ' ' . $type];
+
+                                    return [$group->id => $group->name.' '.$type];
                                 });
                         })
                         ->required()
@@ -131,15 +132,15 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                                 $component->state($record->term->group_id);
                             }
                         }),
-                    
+
                     Select::make('term_id')
                         ->label('Giá trị')
                         ->options(function (callable $get) {
                             $groupId = $get('attribute_group_id');
-                            if (!$groupId) {
+                            if (! $groupId) {
                                 return [];
                             }
-                            
+
                             return \App\Models\CatalogTerm::where('group_id', $groupId)
                                 ->where('is_active', true)
                                 ->orderBy('position')
@@ -147,17 +148,18 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                         })
                         ->required()
                         ->searchable()
-                        ->hidden(fn (callable $get) => !$get('attribute_group_id')),
+                        ->hidden(fn (callable $get) => ! $get('attribute_group_id')),
                 ])
                 ->mutateFormDataUsing(function (array $data): array {
                     // Bỏ attribute_group_id khỏi data và không lưu vào database
                     unset($data['attribute_group_id']);
+
                     return $data;
                 })
                 ->before(function (EditAction $action, array $data) {
                     // Lấy thông tin group để check
                     $term = \App\Models\CatalogTerm::find($data['term_id']);
-                    if (!$term || !$term->group) {
+                    if (! $term || ! $term->group) {
                         return;
                     }
 
@@ -165,7 +167,7 @@ class ProductTermAssignmentsRelationManager extends RelationManager
                     if ($term->group->filter_type === 'chon_don') {
                         $currentRecord = $action->getRecord();
                         $product = $currentRecord->product;
-                        
+
                         $product->termAssignments()
                             ->where('id', '!=', $currentRecord->id)
                             ->whereHas('term', function ($query) use ($term) {

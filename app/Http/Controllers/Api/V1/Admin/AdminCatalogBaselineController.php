@@ -10,7 +10,7 @@ class AdminCatalogBaselineController extends Controller
 {
     public function seed(): JsonResponse
     {
-        (new CatalogBaselineSeeder())->run();
+        (new CatalogBaselineSeeder)->run();
 
         return response()->json([
             'success' => true,

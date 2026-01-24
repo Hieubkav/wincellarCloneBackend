@@ -101,6 +101,6 @@ class CatalogTermSeeder extends Seeder
             ]);
         }
 
-        $this->command->info('✅ Seeded ' . count($allTerms) . ' catalog terms successfully!');
+        $this->command->info('✅ Seeded '.count($allTerms).' catalog terms successfully!');
     }
 }

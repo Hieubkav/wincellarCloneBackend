@@ -30,8 +30,8 @@ class ArticleController extends Controller
             } elseif (is_array($ids)) {
                 $ids = array_map('intval', array_filter($ids));
             }
-            
-            if (!empty($ids)) {
+
+            if (! empty($ids)) {
                 $query->whereIn('articles.id', $ids);
             }
         }
@@ -55,7 +55,7 @@ class ArticleController extends Controller
             ->where('slug', $slug)
             ->first();
 
-        if (!$article) {
+        if (! $article) {
             throw ApiException::notFound('Article', $slug);
         }
 

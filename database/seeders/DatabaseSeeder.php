@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'password' => Hash::make('Admin@123'),
-             ]
+            ]
         );
 
         User::query()->updateOrCreate(

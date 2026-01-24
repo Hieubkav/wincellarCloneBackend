@@ -18,6 +18,7 @@ class ImageObserver
         Cache::put('api_cache_version', $version + 1);
         Cache::put('last_cache_clear', now()->toIso8601String());
     }
+
     /**
      * Handle the Image "creating" event.
      * Auto-set disk, order, và alt text cho ảnh mới
@@ -30,36 +31,36 @@ class ImageObserver
         if (empty($image->disk)) {
             $image->disk = 'public';
         }
-        
+
         // Auto-assign order if not set
         if ($image->order === null && $image->model_type && $image->model_id) {
             $image->order = $this->findNextAvailableOrder($image);
         }
-        
+
         // Auto-generate alt text
         if (empty($image->alt)) {
             $image->alt = $this->generateAltText($image);
         }
     }
-    
+
     /**
      * Tìm order trống tiếp theo cho model
      */
     private function findNextAvailableOrder(Image $image): int
     {
         $nextOrder = 0;
-        
+
         while (Image::query()
             ->where('model_type', $image->model_type)
             ->where('model_id', $image->model_id)
             ->where('order', $nextOrder)
             ->whereNull('deleted_at')  // Exclude soft deleted
-            ->when($image->id, fn($q) => $q->where('id', '!=', $image->id))  // Exclude current image if updating
+            ->when($image->id, fn ($q) => $q->where('id', '!=', $image->id))  // Exclude current image if updating
             ->exists()
         ) {
             $nextOrder++;
         }
-        
+
         return $nextOrder;
     }
 
@@ -99,10 +100,10 @@ class ImageObserver
 
                 if (file_exists($fullPath)) {
                     [$width, $height, $type] = getimagesize($fullPath);
-                    
+
                     $image->width = $width;
                     $image->height = $height;
-                    
+
                     $mimeTypes = [
                         IMAGETYPE_GIF => 'image/gif',
                         IMAGETYPE_JPEG => 'image/jpeg',
@@ -110,7 +111,7 @@ class ImageObserver
                         IMAGETYPE_WEBP => 'image/webp',
                         IMAGETYPE_BMP => 'image/bmp',
                     ];
-                    
+
                     $image->mime = $mimeTypes[$type] ?? 'image/webp';
                 }
             } catch (\Throwable $e) {
@@ -128,14 +129,14 @@ class ImageObserver
      */
     private function generateAltText(Image $image): string
     {
-        if (!$image->model_type || !$image->model_id) {
+        if (! $image->model_type || ! $image->model_id) {
             return 'Hình ảnh';
         }
 
         try {
             $model = $image->model_type::find($image->model_id);
 
-            if (!$model) {
+            if (! $model) {
                 return 'Hình ảnh';
             }
 
@@ -145,6 +146,7 @@ class ImageObserver
                 if ($order === 0) {
                     return "{$model->name}";
                 }
+
                 return "{$model->name} hình {$order}";
             }
 
@@ -152,10 +154,11 @@ class ImageObserver
             $nameField = $this->getModelNameField($model);
             $name = $model->$nameField ?? 'Hình ảnh';
             $order = $image->order ?? 0;
-            
+
             if ($order === 0) {
                 return $name;
             }
+
             return "{$name} hình {$order}";
         } catch (\Throwable $e) {
             \Log::warning('Failed to generate alt text', [
@@ -164,6 +167,7 @@ class ImageObserver
                 'model_id' => $image->model_id,
                 'error' => $e->getMessage(),
             ]);
+
             return 'Hình ảnh';
         }
     }

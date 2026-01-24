@@ -5,15 +5,15 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\TrackingEventResource\Pages;
 use App\Models\TrackingEvent;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use UnitEnum;
 
 class TrackingEventResource extends Resource
@@ -26,9 +26,9 @@ class TrackingEventResource extends Resource
 
     protected static ?string $navigationLabel = 'Sự kiện theo dõi';
 
-    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-eye';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-eye';
 
-    protected static UnitEnum | string | null $navigationGroup = 'Phân tích';
+    protected static UnitEnum|string|null $navigationGroup = 'Phân tích';
 
     protected static ?int $navigationSort = 10;
 
@@ -57,8 +57,7 @@ class TrackingEventResource extends Resource
     {
         return $table
             // Eager loading để tránh N+1 query
-            ->modifyQueryUsing(fn (Builder $query) => 
-                $query->with(['visitor', 'session', 'product', 'article'])
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['visitor', 'session', 'product', 'article'])
             )
             ->columns([
                 static::getRowNumberColumn(),
@@ -122,8 +121,10 @@ class TrackingEventResource extends Resource
                             foreach ($state as $key => $value) {
                                 $items[] = "{$key}: {$value}";
                             }
+
                             return implode(', ', array_slice($items, 0, 3));
                         }
+
                         return json_encode($state);
                     })
                     ->limit(50)

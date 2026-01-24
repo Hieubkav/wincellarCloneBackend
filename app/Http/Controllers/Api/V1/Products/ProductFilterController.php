@@ -191,8 +191,8 @@ class ProductFilterController extends Controller
                     'name' => $group->name,
                     'filter_type' => $group->filter_type,
                     'input_type' => $group->input_type,
-                    'icon_url' => $isFilePath ? asset('storage/' . $group->icon_path) : null,
-                    'icon_name' => !$isFilePath ? $group->icon_path : null, // Lucide icon name
+                    'icon_url' => $isFilePath ? asset('storage/'.$group->icon_path) : null,
+                    'icon_name' => ! $isFilePath ? $group->icon_path : null, // Lucide icon name
                     'range' => [
                         'min' => (float) ($stats->min_val ?? 0),
                         'max' => (float) ($stats->max_val ?? 100),
@@ -229,8 +229,8 @@ class ProductFilterController extends Controller
                 'filter_type' => $group->filter_type,
                 'input_type' => $group->input_type,
                 'display_config' => $displayConfig,
-                'icon_url' => $isFilePath ? asset('storage/' . $group->icon_path) : null,
-                'icon_name' => !$isFilePath ? $group->icon_path : null, // Lucide icon name
+                'icon_url' => $isFilePath ? asset('storage/'.$group->icon_path) : null,
+                'icon_name' => ! $isFilePath ? $group->icon_path : null, // Lucide icon name
                 'options' => $terms,
             ];
         }
@@ -241,12 +241,13 @@ class ProductFilterController extends Controller
     /**
      * Đếm số sản phẩm active cho mỗi term.
      * Filter theo type nếu có để counts chính xác với filter set.
-     * 
+     *
      * NOTE: This method is now deprecated in favor of TermCountCache::getForType()
      * which provides in-memory caching to prevent duplicate queries.
      * Kept for backwards compatibility but should use TermCountCache directly.
      *
      * @deprecated Use TermCountCache::getForType($type) instead
+     *
      * @param  ProductType|null  $type  Filter theo type nếu có
      * @return array<int, int> Map của term_id => count
      */

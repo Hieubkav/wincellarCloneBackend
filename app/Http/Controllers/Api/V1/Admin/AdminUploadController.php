@@ -15,7 +15,9 @@ use Intervention\Image\ImageManager;
 class AdminUploadController extends Controller
 {
     private const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
     private const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
     private const WEBP_QUALITY = 85;
 
     public function uploadImage(Request $request): JsonResponse
@@ -27,7 +29,7 @@ class AdminUploadController extends Controller
 
         $file = $request->file('image');
 
-        if (!$file || !$file->isValid()) {
+        if (! $file || ! $file->isValid()) {
             return response()->json([
                 'success' => false,
                 'message' => 'File upload không hợp lệ',
@@ -41,7 +43,7 @@ class AdminUploadController extends Controller
             ], 422);
         }
 
-        if (!in_array($file->getMimeType(), self::ALLOWED_MIMES)) {
+        if (! in_array($file->getMimeType(), self::ALLOWED_MIMES)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Chỉ chấp nhận file ảnh JPEG, PNG, GIF, WebP',
@@ -56,15 +58,15 @@ class AdminUploadController extends Controller
 
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
         $slugifiedName = $this->slugifyFilename($originalName);
-        $filename = "{$slugifiedName}-" . time() . '-' . Str::random(6) . ".webp";
+        $filename = "{$slugifiedName}-".time().'-'.Str::random(6).'.webp';
         $path = "{$directory}/{$filename}";
 
         try {
-            $manager = new ImageManager(new Driver());
+            $manager = new ImageManager(new Driver);
             $image = $manager->read($file->getRealPath());
             $webp = $image->toWebp(quality: self::WEBP_QUALITY);
             Storage::disk('public')->put($path, $webp);
-            
+
             // Create Image record
             $imageModel = Image::create([
                 'file_path' => $path,
@@ -80,13 +82,14 @@ class AdminUploadController extends Controller
                 'file' => $file->getClientOriginalName(),
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Không thể xử lý ảnh này',
             ], 422);
         }
 
-        $url = '/storage/' . $path;
+        $url = '/storage/'.$path;
 
         return response()->json([
             'success' => true,
@@ -107,7 +110,7 @@ class AdminUploadController extends Controller
         ]);
 
         $response = Http::timeout(10)->get($validated['url']);
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Không thể tải ảnh từ URL',
@@ -115,7 +118,7 @@ class AdminUploadController extends Controller
         }
 
         $contentType = $response->header('Content-Type');
-        if (!$contentType || !in_array(strtolower($contentType), self::ALLOWED_MIMES, true)) {
+        if (! $contentType || ! in_array(strtolower($contentType), self::ALLOWED_MIMES, true)) {
             return response()->json([
                 'success' => false,
                 'message' => 'URL không phải ảnh hợp lệ',
@@ -139,15 +142,15 @@ class AdminUploadController extends Controller
         $pathInfo = parse_url($validated['url'], PHP_URL_PATH) ?: '';
         $originalName = $pathInfo ? pathinfo($pathInfo, PATHINFO_FILENAME) : 'image';
         $slugifiedName = $this->slugifyFilename($originalName);
-        $filename = "{$slugifiedName}-" . time() . '-' . Str::random(6) . ".webp";
+        $filename = "{$slugifiedName}-".time().'-'.Str::random(6).'.webp';
         $path = "{$directory}/{$filename}";
 
         try {
-            $manager = new ImageManager(new Driver());
+            $manager = new ImageManager(new Driver);
             $image = $manager->read($body);
             $webp = $image->toWebp(quality: self::WEBP_QUALITY);
             Storage::disk('public')->put($path, $webp);
-            
+
             // Create Image record
             $imageModel = Image::create([
                 'file_path' => $path,
@@ -163,13 +166,14 @@ class AdminUploadController extends Controller
                 'url' => $validated['url'],
                 'error' => $e->getMessage(),
             ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Không thể xử lý ảnh từ URL',
             ], 422);
         }
 
-        $url = '/storage/' . $path;
+        $url = '/storage/'.$path;
 
         return response()->json([
             'success' => true,

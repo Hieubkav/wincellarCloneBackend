@@ -1,7 +1,7 @@
 <?php
+
 namespace App\Filament\Resources\Products;
-use BackedEnum;
-use UnitEnum;
+
 use App\Filament\Resources\BaseResource;
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
@@ -10,23 +10,21 @@ use App\Models\CatalogAttributeGroup;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
+use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Notifications\Notification;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Support\Enums\GridDirection;
-use Filament\Support\Icons\Heroicon;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -34,18 +32,30 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Malzariey\FilamentLexicalEditor\LexicalEditor;
+use UnitEnum;
+
 class ProductResource extends BaseResource
 {
     protected static ?string $model = Product::class;
+
     protected static ?array $attributeFieldKeys = null;
+
     protected static ?array $attributeMultipleFieldKeys = null;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cube';
+
     protected static ?string $recordTitleAttribute = 'name';
+
     protected static UnitEnum|string|null $navigationGroup = 'Sản phẩm';
+
     protected static ?string $navigationLabel = 'Sản phẩm';
+
     protected static ?int $navigationSort = 10;
+
     protected static ?string $modelLabel = 'Sản phẩm';
+
     protected static ?string $pluralModelLabel = 'Các sản phẩm';
+
     public static function form(Schema $schema): Schema
     {
         return $schema
@@ -97,7 +107,7 @@ class ProductResource extends BaseResource
                             ->multiple()
                             ->default([])
                             ->preload()
-                            ->disabled(fn (callable $get) => !$get('type_id'))
+                            ->disabled(fn (callable $get) => ! $get('type_id'))
                             ->helperText('Danh mục sản phẩm'),
                         TextInput::make('name')
                             ->label('Tên sản phẩm')
@@ -199,8 +209,8 @@ class ProductResource extends BaseResource
             ]);
         }
     }
+
     /**
-     * @param int|string|null $typeId
      * @return array<int, \Filament\Forms\Components\Component>
      */
     protected static function getAttributeFields(int|string|null $typeId): array
@@ -208,7 +218,7 @@ class ProductResource extends BaseResource
         // Cast state to int because Filament Select usually returns string.
         $typeId = ($typeId !== null && $typeId !== '') ? (int) $typeId : null;
         $groups = static::attributeGroupsForType($typeId);
-        if (!$typeId) {
+        if (! $typeId) {
             return [
                 Placeholder::make('attributes_select_type')
                     ->content('Chọn phân loại sp để hiển thị nhóm thuộc tính tương ứng.')
@@ -236,6 +246,7 @@ class ProductResource extends BaseResource
                     $input->maxLength(255);
                 }
                 $fields[] = $input;
+
                 continue;
             }
             $isMultiple = $group->filter_type === 'chon_nhieu';
@@ -256,8 +267,10 @@ class ProductResource extends BaseResource
             }
             $fields[] = $field;
         }
+
         return $fields;
     }
+
     public static function attributeGroupsForType(?int $typeId): Collection
     {
         if ($typeId) {
@@ -268,13 +281,16 @@ class ProductResource extends BaseResource
                         ->orderBy('position');
                 }])
                 ->find($typeId);
+
             return $type?->attributeGroups ?? collect();
         }
+
         return CatalogAttributeGroup::query()
             ->with(['terms' => fn ($q) => $q->where('is_active', true)->orderBy('position')])
             ->orderBy('position')
             ->get();
     }
+
     protected static function clearAttributeFieldStates(callable $set): void
     {
         if (static::$attributeFieldKeys === null || static::$attributeMultipleFieldKeys === null) {
@@ -298,6 +314,7 @@ class ProductResource extends BaseResource
             );
         }
     }
+
     public static function table(Table $table): Table
     {
         return $table
@@ -312,6 +329,7 @@ class ProductResource extends BaseResource
                     ->getStateUsing(function ($record) {
                         // Lấy ảnh đầu tiên (order nhỏ nhất) hoặc cover image (order = 0)
                         $image = $record->images->sortBy('order')->first();
+
                         return $image ? $image->file_path : null;
                     })
                     ->defaultImageUrl('/images/placeholder.png'),
@@ -349,7 +367,7 @@ class ProductResource extends BaseResource
                     ->listWithLineBreaks()
                     ->badge()
                     ->getStateUsing(function ($record) {
-                        if (!$record->relationLoaded('terms') || $record->terms->isEmpty()) {
+                        if (! $record->relationLoaded('terms') || $record->terms->isEmpty()) {
                             return [];
                         }
                         $grouped = $record->terms->groupBy(function ($term) {
@@ -360,6 +378,7 @@ class ProductResource extends BaseResource
                             $termNames = $terms->pluck('name')->join(', ');
                             $result[] = "{$groupName}: {$termNames}";
                         }
+
                         return $result;
                     })
                     ->wrap()
@@ -404,17 +423,21 @@ class ProductResource extends BaseResource
             ->paginated([5, 10, 25, 50, 100, 'all'])
             ->defaultPaginationPageOption(25);
     }
+
     public static function getNavigationBadge(): ?string
     {
         $activeCount = static::getModel()::query()
             ->where('active', true)
             ->count();
+
         return $activeCount > 0 ? (string) $activeCount : null;
     }
+
     public static function getNavigationBadgeColor(): ?string
     {
         return 'success';
     }
+
     public static function getRelations(): array
     {
         return [
@@ -422,6 +445,7 @@ class ProductResource extends BaseResource
             // ProductResource\RelationManagers\ProductTermAssignmentsRelationManager::class,
         ];
     }
+
     public static function getPages(): array
     {
         return [
@@ -430,6 +454,7 @@ class ProductResource extends BaseResource
             'edit' => EditProduct::route('/{record}/edit'),
         ];
     }
+
     /**
      * Get frontend URL for a product
      * Uses FRONTEND_URL from .env config
@@ -437,6 +462,7 @@ class ProductResource extends BaseResource
     public static function getFrontendUrl(Product $product): string
     {
         $frontendBaseUrl = config('app.frontend_url', 'http://localhost:3000');
-        return $frontendBaseUrl . '/san-pham/' . $product->slug;
+
+        return $frontendBaseUrl.'/san-pham/'.$product->slug;
     }
 }

@@ -10,12 +10,12 @@ use App\Filament\Resources\ProductTypes\RelationManagers\CategoriesRelationManag
 use App\Filament\Resources\ProductTypes\Schemas\ProductTypeForm;
 use App\Filament\Resources\ProductTypes\Tables\ProductTypesTable;
 use App\Models\ProductType;
-use Illuminate\Database\Eloquent\Model;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class ProductTypeResource extends Resource

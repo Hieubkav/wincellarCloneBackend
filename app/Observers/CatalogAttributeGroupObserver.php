@@ -3,7 +3,6 @@
 namespace App\Observers;
 
 use App\Models\CatalogAttributeGroup;
-use App\Models\Product;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -46,12 +45,12 @@ class CatalogAttributeGroupObserver
     {
         $code = $group->code;
         $newName = $group->name;
-        $jsonPath = '$."' . $code . '".label';
+        $jsonPath = '$."'.$code.'".label';
 
         DB::table('products')
-            ->whereRaw('JSON_EXTRACT(extra_attrs, ?) IS NOT NULL', ['$."' . $code . '"'])
+            ->whereRaw('JSON_EXTRACT(extra_attrs, ?) IS NOT NULL', ['$."'.$code.'"'])
             ->update([
-                'extra_attrs' => DB::raw("JSON_SET(extra_attrs, '{$jsonPath}', " . DB::getPdo()->quote($newName) . ")"),
+                'extra_attrs' => DB::raw("JSON_SET(extra_attrs, '{$jsonPath}', ".DB::getPdo()->quote($newName).')'),
             ]);
     }
 
@@ -64,7 +63,7 @@ class CatalogAttributeGroupObserver
         if ($catalogAttributeGroup->icon_path && Storage::disk('public')->exists($catalogAttributeGroup->icon_path)) {
             Storage::disk('public')->delete($catalogAttributeGroup->icon_path);
         }
-        
+
         $this->clearFilterCache();
     }
 
@@ -77,7 +76,7 @@ class CatalogAttributeGroupObserver
         if ($catalogAttributeGroup->icon_path && Storage::disk('public')->exists($catalogAttributeGroup->icon_path)) {
             Storage::disk('public')->delete($catalogAttributeGroup->icon_path);
         }
-        
+
         $this->clearFilterCache();
     }
 
@@ -87,10 +86,10 @@ class CatalogAttributeGroupObserver
         $patterns = ['product_filter_options_v2', 'product_filter_options_v3', 'product_filter_options_v5'];
         foreach ($patterns as $pattern) {
             // Clear cache cho tất cả types (all, và từng type_id)
-            Cache::forget($pattern . ':all');
+            Cache::forget($pattern.':all');
             // Xóa cache cho các type cụ thể (giả sử có tối đa 100 types)
             for ($i = 1; $i <= 100; $i++) {
-                Cache::forget($pattern . ':' . $i);
+                Cache::forget($pattern.':'.$i);
             }
         }
     }

@@ -113,7 +113,7 @@ class AdminCategoryController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $category = ProductCategory::findOrFail($id);
-        
+
         $productsCount = $category->products()->count();
         if ($productsCount > 0) {
             return response()->json([
@@ -138,7 +138,7 @@ class AdminCategoryController extends Controller
         ]);
 
         $categories = ProductCategory::whereIn('id', $validated['ids'])->get();
-        
+
         $categoriesWithProducts = $categories->filter(function ($category) {
             return $category->products()->count() > 0;
         });

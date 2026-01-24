@@ -4,7 +4,6 @@ namespace App\Http\Resources\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Storage;
 
 class ProductResource extends JsonResource
 {
@@ -95,7 +94,7 @@ class ProductResource extends JsonResource
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
                             'icon_url' => $isUrl ? $iconPath : null,
-                            'icon_name' => !$isUrl ? $iconPath : null,
+                            'icon_name' => ! $isUrl ? $iconPath : null,
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,
@@ -292,7 +291,7 @@ class ProductResource extends JsonResource
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
                             'icon_url' => $isUrl ? $iconPath : null,
-                            'icon_name' => !$isUrl ? $iconPath : null,
+                            'icon_name' => ! $isUrl ? $iconPath : null,
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,

@@ -9,13 +9,12 @@ use Filament\Forms;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Schemas\Schema;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class TermsRelationManager extends RelationManager
 {
@@ -109,6 +108,7 @@ class TermsRelationManager extends RelationManager
                         $data['group_id'] = $this->ownerRecord->getKey();
                         $data['slug'] = $data['slug'] ?: Str::slug((string) ($data['name'] ?? ''), '-');
                         $data['position'] = $data['position'] ?? (int) ($this->ownerRecord->terms()->max('position') ?? 0) + 1;
+
                         return $data;
                     }),
             ])
@@ -117,6 +117,7 @@ class TermsRelationManager extends RelationManager
                     ->mutateFormDataUsing(function (array $data): array {
                         $data['group_id'] = $this->ownerRecord->getKey();
                         $data['slug'] = $data['slug'] ?: Str::slug((string) ($data['name'] ?? ''), '-');
+
                         return $data;
                     }),
                 DeleteAction::make(),

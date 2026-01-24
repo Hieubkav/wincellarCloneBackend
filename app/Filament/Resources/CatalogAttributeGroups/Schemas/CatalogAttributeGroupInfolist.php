@@ -29,7 +29,7 @@ class CatalogAttributeGroupInfolist
                                 TextEntry::make('filter_type')
                                     ->label('Filter type')
                                     ->formatStateUsing(function (?string $state): ?string {
-                                        return match($state) {
+                                        return match ($state) {
                                             'chon_don' => 'Chọn đơn',
                                             'chon_nhieu' => 'Chọn nhiều',
                                             'nhap_tay' => 'Nhập tay',
@@ -39,7 +39,7 @@ class CatalogAttributeGroupInfolist
                                     ->badge(),
                                 TextEntry::make('input_type')
                                     ->label('Kiểu nhập')
-                                    ->formatStateUsing(fn (?string $state): ?string => match($state) {
+                                    ->formatStateUsing(fn (?string $state): ?string => match ($state) {
                                         'text' => 'Text',
                                         'number' => 'Số',
                                         default => null,

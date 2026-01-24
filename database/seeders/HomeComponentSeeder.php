@@ -17,7 +17,7 @@ class HomeComponentSeeder extends Seeder
         DB::table('home_components')->truncate();
         Schema::enableForeignKeyConstraints();
 
-        if (!$context->flag('seed_home_components', false)) {
+        if (! $context->flag('seed_home_components', false)) {
             return;
         }
 
@@ -67,7 +67,7 @@ class HomeComponentSeeder extends Seeder
             ] : null,
         ]));
 
-        if (!empty($components)) {
+        if (! empty($components)) {
             DB::table('home_components')->insert($components);
         }
     }
@@ -88,7 +88,7 @@ class HomeComponentSeeder extends Seeder
         $slides = [];
         foreach ($images as $image) {
             $slug = DB::table('products')->where('id', $image->model_id)->value('slug');
-            if (!$slug) {
+            if (! $slug) {
                 continue;
             }
 
@@ -176,4 +176,3 @@ class HomeComponentSeeder extends Seeder
             ->all();
     }
 }
-

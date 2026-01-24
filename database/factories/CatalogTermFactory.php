@@ -41,4 +41,3 @@ class CatalogTermFactory extends Factory
         ]);
     }
 }
-

@@ -13,7 +13,7 @@ class AdminSettingController extends Controller
     {
         $setting = Setting::with(['logoImage', 'faviconImage', 'productWatermarkImage'])->first();
 
-        if (!$setting) {
+        if (! $setting) {
             $setting = Setting::create([]);
         }
 
@@ -53,7 +53,7 @@ class AdminSettingController extends Controller
     {
         $setting = Setting::first();
 
-        if (!$setting) {
+        if (! $setting) {
             $setting = Setting::create([]);
         }
 

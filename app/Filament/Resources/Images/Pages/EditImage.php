@@ -31,22 +31,22 @@ class EditImage extends EditRecord
                 ->color('danger')
                 ->requiresConfirmation()
                 ->modalHeading('Xóa ảnh khỏi Owner')
-                ->modalDescription(fn (Image $record) => "Xóa ảnh này khỏi " . class_basename($record->model_type) . " #{$record->model_id}. File ảnh gốc vẫn còn trong storage.")
+                ->modalDescription(fn (Image $record) => 'Xóa ảnh này khỏi '.class_basename($record->model_type)." #{$record->model_id}. File ảnh gốc vẫn còn trong storage.")
                 ->modalSubmitActionLabel('Xóa khỏi Owner')
                 ->visible(fn (Image $record) => $record->model_type && $record->model_id)
                 ->action(function (Image $record) {
                     $ownerType = class_basename($record->model_type);
                     $ownerId = $record->model_id;
-                    
+
                     // Soft delete the image record (keeps file)
                     $record->delete();
-                    
+
                     \Filament\Notifications\Notification::make()
                         ->success()
                         ->title('Đã xóa')
                         ->body("Đã xóa ảnh khỏi {$ownerType} #{$ownerId}.")
                         ->send();
-                    
+
                     // Redirect to images list
                     return redirect()->route('filament.admin.resources.images.index');
                 }),
@@ -55,14 +55,14 @@ class EditImage extends EditRecord
                     // Kiểm tra xem ảnh có đang được dùng không
                     if ($record->model_type && $record->model_id) {
                         $ownerType = class_basename($record->model_type);
-                        
+
                         \Filament\Notifications\Notification::make()
                             ->danger()
                             ->title('Không thể xóa ảnh')
                             ->body("Ảnh này đang được sử dụng bởi {$ownerType} #{$record->model_id}. Vui lòng gỡ liên kết trước khi xóa.")
                             ->persistent()
                             ->send();
-                        
+
                         // Cancel deletion
                         $action->cancel();
                     }
@@ -71,14 +71,14 @@ class EditImage extends EditRecord
             RestoreAction::make(),
         ];
     }
-    
+
     protected function getOwnerUrl(Image $record): ?string
     {
-        if (!$record->model_type || !$record->model_id) {
+        if (! $record->model_type || ! $record->model_id) {
             return null;
         }
-        
-        return match($record->model_type) {
+
+        return match ($record->model_type) {
             Product::class => route('filament.admin.resources.products.edit', ['record' => $record->model_id]),
             Article::class => route('filament.admin.resources.articles.edit', ['record' => $record->model_id]),
             default => null,

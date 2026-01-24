@@ -9,10 +9,10 @@ Route::prefix('track')
     ->group(function (): void {
         // Generate new anonymous ID
         Route::get('generate-id', 'generateId')->name('generate-id');
-        
+
         // Track visitor and session
         Route::post('visitor', 'trackVisitor')->name('visitor');
-        
+
         // Track events (product view, article view, CTA contact)
         Route::post('event', 'trackEvent')->name('event');
     });

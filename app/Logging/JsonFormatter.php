@@ -42,6 +42,6 @@ class JsonFormatter extends MonologJsonFormatter
             ];
         }
 
-        return $this->toJson($formatted, true) . "\n";
+        return $this->toJson($formatted, true)."\n";
     }
 }

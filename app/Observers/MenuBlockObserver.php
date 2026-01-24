@@ -16,6 +16,7 @@ class MenuBlockObserver
         Cache::put('api_cache_version', $version + 1);
         Cache::put('last_cache_clear', now()->toIso8601String());
     }
+
     public function creating(MenuBlock $menuBlock): void
     {
         if ($menuBlock->order === null) {

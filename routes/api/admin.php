@@ -1,21 +1,21 @@
 <?php
 
-use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
-use App\Http\Controllers\Api\V1\Admin\AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\AdminArticleController;
-use App\Http\Controllers\Api\V1\Admin\AdminProductTypeController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogAttributeGroupController;
-use App\Http\Controllers\Api\V1\Admin\AdminCatalogTermController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogBaselineController;
+use App\Http\Controllers\Api\V1\Admin\AdminCatalogTermController;
 use App\Http\Controllers\Api\V1\Admin\AdminCategoryController;
+use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\AdminHomeComponentController;
 use App\Http\Controllers\Api\V1\Admin\AdminImageController;
+use App\Http\Controllers\Api\V1\Admin\AdminMenuController;
+use App\Http\Controllers\Api\V1\Admin\AdminProductController;
+use App\Http\Controllers\Api\V1\Admin\AdminProductTypeController;
+use App\Http\Controllers\Api\V1\Admin\AdminSettingController;
 use App\Http\Controllers\Api\V1\Admin\AdminSocialLinkController;
+use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
 use App\Http\Controllers\Api\V1\Admin\AdminUserController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\Admin\AdminUploadController;
-use App\Http\Controllers\Api\V1\Admin\AdminSettingController;
-use App\Http\Controllers\Api\V1\Admin\AdminMenuController;
 
 Route::prefix('admin')
     ->as('admin.')

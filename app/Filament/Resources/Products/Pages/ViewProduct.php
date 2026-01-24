@@ -17,7 +17,7 @@ class ViewProduct extends ViewRecord
                 ->label('Web')
                 ->icon('heroicon-o-eye')
                 ->color('info')
-                ->url(fn() => ProductResource::getFrontendUrl($this->record))
+                ->url(fn () => ProductResource::getFrontendUrl($this->record))
                 ->openUrlInNewTab(),
             Actions\EditAction::make(),
         ];

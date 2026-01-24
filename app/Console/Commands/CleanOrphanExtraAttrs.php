@@ -18,7 +18,7 @@ class CleanOrphanExtraAttrs extends Command
             ->pluck('code')
             ->toArray();
 
-        $this->info('Valid attribute codes: ' . implode(', ', $validCodes));
+        $this->info('Valid attribute codes: '.implode(', ', $validCodes));
 
         $products = Product::whereNotNull('extra_attrs')->get();
         $totalCleaned = 0;
@@ -28,7 +28,7 @@ class CleanOrphanExtraAttrs extends Command
             $cleaned = false;
 
             foreach (array_keys($extraAttrs) as $code) {
-                if (!in_array($code, $validCodes, true)) {
+                if (! in_array($code, $validCodes, true)) {
                     $this->warn("Product [{$product->id}] {$product->name}: removing orphan code [{$code}]");
                     unset($extraAttrs[$code]);
                     $cleaned = true;

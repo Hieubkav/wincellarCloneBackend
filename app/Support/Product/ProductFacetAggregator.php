@@ -2,15 +2,12 @@
 
 namespace App\Support\Product;
 
-use App\Models\CatalogTerm;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class ProductFacetAggregator
 {
-    public function __construct(private Builder $baseQuery)
-    {
-    }
+    public function __construct(private Builder $baseQuery) {}
 
     /**
      * @return array<string, mixed>

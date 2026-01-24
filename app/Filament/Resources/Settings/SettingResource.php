@@ -6,20 +6,20 @@ use App\Filament\Resources\Settings\Pages\EditSetting;
 use App\Models\Image;
 use App\Models\Setting;
 use BackedEnum;
-use UnitEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Tabs;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
+use UnitEnum;
 
 class SettingResource extends Resource
 {
@@ -76,11 +76,11 @@ class SettingResource extends Resource
                                                     ->maxSize(5120)
                                                     ->acceptedFileTypes(['image/*'])
                                                     ->saveUploadedFileUsing(function ($file, $set) {
-                                                        $filename = 'logo_' . time() . '.webp';
-                                                        $path = 'branding/' . $filename;
+                                                        $filename = 'logo_'.time().'.webp';
+                                                        $path = 'branding/'.$filename;
                                                         $disk = 'public';
 
-                                                        $manager = new ImageManager(new Driver());
+                                                        $manager = new ImageManager(new Driver);
                                                         $image = $manager->read($file->getRealPath());
 
                                                         if ($image->width() > 800) {
@@ -141,11 +141,11 @@ class SettingResource extends Resource
                                                     ->maxSize(1024)
                                                     ->acceptedFileTypes(['image/*'])
                                                     ->saveUploadedFileUsing(function ($file, $set) {
-                                                        $filename = 'favicon_' . time() . '.webp';
-                                                        $path = 'branding/' . $filename;
+                                                        $filename = 'favicon_'.time().'.webp';
+                                                        $path = 'branding/'.$filename;
                                                         $disk = 'public';
 
-                                                        $manager = new ImageManager(new Driver());
+                                                        $manager = new ImageManager(new Driver);
                                                         $image = $manager->read($file->getRealPath());
 
                                                         if ($image->width() > 64 || $image->height() > 64) {
@@ -202,7 +202,6 @@ class SettingResource extends Resource
                             ]),
                     ]),
 
-
                 Section::make('Watermark sản phẩm')
                     ->description('Thiết lập watermark dán lên ảnh sản phẩm')
                     ->schema([
@@ -234,11 +233,11 @@ class SettingResource extends Resource
                                                     ->maxSize(5120)
                                                     ->acceptedFileTypes(['image/*'])
                                                     ->saveUploadedFileUsing(function ($file, $set) {
-                                                        $filename = 'product_watermark_' . time() . '.webp';
-                                                        $path = 'branding/' . $filename;
+                                                        $filename = 'product_watermark_'.time().'.webp';
+                                                        $path = 'branding/'.$filename;
                                                         $disk = 'public';
 
-                                                        $manager = new ImageManager(new Driver());
+                                                        $manager = new ImageManager(new Driver);
                                                         $image = $manager->read($file->getRealPath());
 
                                                         if ($image->width() > 1200) {

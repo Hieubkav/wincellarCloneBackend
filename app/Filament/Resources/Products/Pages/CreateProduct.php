@@ -42,13 +42,13 @@ class CreateProduct extends CreateRecord
         // Luu term assignments hoac extra attributes
         $position = 0;
         foreach ($data as $key => $value) {
-            if (!str_starts_with($key, 'attributes_')) {
+            if (! str_starts_with($key, 'attributes_')) {
                 continue;
             }
 
             $groupId = (int) str_replace('attributes_', '', $key);
             $group = $groups->get($groupId);
-            if (!$group) {
+            if (! $group) {
                 continue;
             }
 
@@ -82,7 +82,7 @@ class CreateProduct extends CreateRecord
         }
 
         // Luu extra attributes
-        if (!empty($extraAttrs)) {
+        if (! empty($extraAttrs)) {
             $product->extra_attrs = $extraAttrs;
             $product->save();
         }
@@ -90,7 +90,7 @@ class CreateProduct extends CreateRecord
         // Luu images tu file upload
         $order = 0;
 
-        if (!empty($this->productImages)) {
+        if (! empty($this->productImages)) {
             foreach ($this->productImages as $filePath) {
                 Image::create([
                     'file_path' => $filePath,

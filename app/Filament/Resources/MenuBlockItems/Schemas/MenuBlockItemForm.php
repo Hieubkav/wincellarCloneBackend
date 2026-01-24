@@ -4,9 +4,9 @@ namespace App\Filament\Resources\MenuBlockItems\Schemas;
 
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -63,10 +63,10 @@ class MenuBlockItemForm
                             ->maxFiles(1)
                             ->acceptedFileTypes(['image/*'])
                             ->saveUploadedFileUsing(function ($file) {
-                                $filename = uniqid('menu_item_') . '.webp';
-                                $path = 'menu-items/' . $filename;
+                                $filename = uniqid('menu_item_').'.webp';
+                                $path = 'menu-items/'.$filename;
 
-                                $manager = new ImageManager(new Driver());
+                                $manager = new ImageManager(new Driver);
                                 $image = $manager->read($file->getRealPath());
 
                                 if ($image->width() > 400) {

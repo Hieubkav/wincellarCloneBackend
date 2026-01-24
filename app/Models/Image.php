@@ -63,7 +63,7 @@ class Image extends Model
         });
 
         static::deleted(function (Image $image): void {
-            if (!$image->isForceDeleting()) {
+            if (! $image->isForceDeleting()) {
                 // Soft delete branch: still detach references to avoid dangling FK.
                 $image->detachPrimaryReferences();
             }
@@ -77,7 +77,7 @@ class Image extends Model
 
     public function getUrlAttribute(): ?string
     {
-        if (!$this->file_path) {
+        if (! $this->file_path) {
             return null;
         }
 
@@ -94,7 +94,7 @@ class Image extends Model
 
     private function reassignExistingCover(): void
     {
-        if (!$this->model_type || !$this->model_id) {
+        if (! $this->model_type || ! $this->model_id) {
             return;
         }
 
@@ -117,7 +117,7 @@ class Image extends Model
 
     private function nextOrderValue(): int
     {
-        if (!$this->model_type || !$this->model_id) {
+        if (! $this->model_type || ! $this->model_id) {
             return 1;
         }
 
@@ -149,7 +149,7 @@ class Image extends Model
             $affected[] = 'social_links';
         }
 
-        if (!empty($affected)) {
+        if (! empty($affected)) {
             \Log::info('Image references nullified on delete', [
                 'image_id' => $this->id,
                 'tables' => $affected,
@@ -197,7 +197,7 @@ class Image extends Model
 
     private function deleteFile(): void
     {
-        if (!$this->disk || !$this->file_path) {
+        if (! $this->disk || ! $this->file_path) {
             return;
         }
 

@@ -9,21 +9,21 @@ class RevalidationService
 {
     /**
      * Trigger Next.js on-demand revalidation
-     * 
-     * @param array<string> $paths Các paths cần revalidate (e.g., ["/", "/products"])
-     * @param array<string> $tags Các tags cần revalidate (optional)
-     * @return bool
+     *
+     * @param  array<string>  $paths  Các paths cần revalidate (e.g., ["/", "/products"])
+     * @param  array<string>  $tags  Các tags cần revalidate (optional)
      */
     public function triggerRevalidation(array $paths = [], array $tags = []): bool
     {
         $url = config('services.nextjs.revalidate_url');
         $secret = config('services.nextjs.revalidate_secret');
 
-        if (!$url || !$secret) {
+        if (! $url || ! $secret) {
             Log::warning('Next.js revalidation not configured', [
                 'url' => $url,
-                'has_secret' => !empty($secret),
+                'has_secret' => ! empty($secret),
             ]);
+
             return false;
         }
 
@@ -40,6 +40,7 @@ class RevalidationService
                     'tags' => $tags,
                     'response' => $response->json(),
                 ]);
+
                 return true;
             }
 
@@ -47,6 +48,7 @@ class RevalidationService
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+
             return false;
         } catch (\Throwable $e) {
             Log::error('Next.js revalidation error', [
@@ -54,6 +56,7 @@ class RevalidationService
                 'paths' => $paths,
                 'tags' => $tags,
             ]);
+
             return false;
         }
     }

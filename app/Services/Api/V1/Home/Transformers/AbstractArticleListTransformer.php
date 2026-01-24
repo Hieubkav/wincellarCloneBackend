@@ -8,7 +8,7 @@ use App\Services\Api\V1\Home\HomeComponentResources;
 abstract class AbstractArticleListTransformer extends AbstractComponentTransformer
 {
     /**
-     * @param array<int, mixed> $itemsConfig
+     * @param  array<int, mixed>  $itemsConfig
      * @return array<int, array<string, mixed>>
      */
     protected function buildArticleEntries(HomeComponent $component, array $itemsConfig, HomeComponentResources $resources): array
@@ -30,12 +30,12 @@ abstract class AbstractArticleListTransformer extends AbstractComponentTransform
                 $articleId = $this->toPositiveInt($item);
             }
 
-            if (!$articleId) {
+            if (! $articleId) {
                 continue;
             }
 
             $article = $resources->article($component, $articleId);
-            if (!$article) {
+            if (! $article) {
                 continue;
             }
 

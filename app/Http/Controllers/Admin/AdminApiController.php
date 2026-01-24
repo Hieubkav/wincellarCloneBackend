@@ -14,13 +14,13 @@ class AdminApiController extends Controller
         try {
             $perPage = (int) ($request->query('per_page', '12'));
             $search = (string) ($request->query('search', ''));
-            
+
             $query = Image::query()
                 ->where('active', true)
                 ->whereNull('deleted_at')
                 ->orderByDesc('created_at');
 
-            if (!empty($search)) {
+            if (! empty($search)) {
                 $searchTerm = "%{$search}%";
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('alt', 'like', $searchTerm)
@@ -31,7 +31,7 @@ class AdminApiController extends Controller
             $images = $query->paginate($perPage);
 
             return response()->json([
-                'data' => collect($images->items())->map(fn(Image $image) => [
+                'data' => collect($images->items())->map(fn (Image $image) => [
                     'id' => $image->id,
                     'url' => $image->url ?? '/images/placeholder.png',
                     'alt' => $image->alt ?? basename($image->file_path ?? ''),
@@ -44,10 +44,11 @@ class AdminApiController extends Controller
                 'per_page' => $images->perPage(),
             ]);
         } catch (\Throwable $e) {
-            \Log::error('Error in getLibraryImages: ' . $e->getMessage(), [
+            \Log::error('Error in getLibraryImages: '.$e->getMessage(), [
                 'exception' => $e,
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return response()->json([
                 'error' => $e->getMessage(),
                 'trace' => config('app.debug') ? $e->getTraceAsString() : null,

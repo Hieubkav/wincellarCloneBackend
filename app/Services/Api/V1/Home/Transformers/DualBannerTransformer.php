@@ -15,14 +15,14 @@ class DualBannerTransformer extends AbstractComponentTransformer
         $banners = [];
 
         foreach ($bannersConfig as $banner) {
-            if (!is_array($banner)) {
+            if (! is_array($banner)) {
                 continue;
             }
 
             $imageId = $this->toPositiveInt($banner['image_id'] ?? null);
             if ($imageId) {
                 $image = $resources->image($component, $imageId);
-                if (!$image) {
+                if (! $image) {
                     continue;
                 }
 
@@ -31,7 +31,7 @@ class DualBannerTransformer extends AbstractComponentTransformer
 
             unset($banner['image_id']);
 
-            if (!empty($banner)) {
+            if (! empty($banner)) {
                 $banners[] = $banner;
             }
         }

@@ -1,13 +1,14 @@
 <?php
+
 require 'vendor/autoload.php';
 $app = require 'bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
 $product = \App\Models\Product::with(['terms.group', 'type'])->findOrFail(171);
 
-echo "=== PRODUCT 171: " . $product->name . " ===\n";
-echo "Type: " . $product->type?->name . "\n";
-echo "Type ID: " . $product->type_id . "\n\n";
+echo '=== PRODUCT 171: '.$product->name." ===\n";
+echo 'Type: '.$product->type?->name."\n";
+echo 'Type ID: '.$product->type_id."\n\n";
 
 echo "=== TERMS (Catalog Attributes) ===\n";
 if ($product->terms->isEmpty()) {
@@ -17,7 +18,7 @@ if ($product->terms->isEmpty()) {
     $grouped = $product->terms->groupBy(function ($term) {
         return $term->group?->name ?? 'Unknown';
     });
-    
+
     foreach ($grouped as $groupName => $terms) {
         echo "{$groupName}:\n";
         foreach ($terms as $term) {
@@ -35,7 +36,7 @@ if (empty($product->extra_attrs)) {
     }
 }
 
-echo "\n=== CATALOG ATTRIBUTE GROUPS OF TYPE " . $product->type_id . " ===\n";
+echo "\n=== CATALOG ATTRIBUTE GROUPS OF TYPE ".$product->type_id." ===\n";
 $groups = \App\Models\CatalogAttributeGroup::whereHas('types', function ($q) use ($product) {
     $q->where('type_id', $product->type_id);
 })->orderBy('position')->get();

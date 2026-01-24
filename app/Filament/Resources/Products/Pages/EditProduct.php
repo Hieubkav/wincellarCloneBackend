@@ -17,7 +17,7 @@ class EditProduct extends EditRecord
                 ->label('Web')
                 ->icon('heroicon-o-eye')
                 ->color('info')
-                ->url(fn() => ProductResource::getFrontendUrl($this->record))
+                ->url(fn () => ProductResource::getFrontendUrl($this->record))
                 ->openUrlInNewTab(),
             Actions\DeleteAction::make(),
         ];
@@ -34,11 +34,12 @@ class EditProduct extends EditRecord
             // Nhập tay -> lấy giá trị từ extra_attrs
             if ($group->filter_type === 'nhap_tay') {
                 $data["attributes_{$group->id}"] = $extraAttrs[$group->code]['value'] ?? null;
+
                 continue;
             }
 
             $termIds = $product->termAssignments()
-                ->whereHas('term', fn($q) => $q->where('group_id', $group->id))
+                ->whereHas('term', fn ($q) => $q->where('group_id', $group->id))
                 ->pluck('term_id')
                 ->toArray();
 
@@ -48,7 +49,7 @@ class EditProduct extends EditRecord
                 $data["attributes_{$group->id}"] = $termIds[0] ?? null;
             }
         }
-        
+
         return $data;
     }
 
@@ -62,7 +63,7 @@ class EditProduct extends EditRecord
                 unset($data[$key]);
             }
         }
-        
+
         return $data;
     }
 
@@ -72,20 +73,20 @@ class EditProduct extends EditRecord
         $data = $this->data;
         $groups = ProductResource::attributeGroupsForType($product->type_id)->keyBy('id');
         $extraAttrs = $product->extra_attrs ?? [];
-        
+
         // Xóa tất cả assignments cũ
         $product->termAssignments()->delete();
-        
+
         // Tạo lại assignments từ data mới
         $position = 0;
         foreach ($data as $key => $value) {
-            if (!str_starts_with($key, 'attributes_')) {
+            if (! str_starts_with($key, 'attributes_')) {
                 continue;
             }
 
             $groupId = (int) str_replace('attributes_', '', $key);
             $group = $groups->get($groupId);
-            if (!$group) {
+            if (! $group) {
                 continue;
             }
 
@@ -95,6 +96,7 @@ class EditProduct extends EditRecord
 
                 if ($cleanValue === '' || $cleanValue === null) {
                     unset($extraAttrs[$group->code]);
+
                     continue;
                 }
 
@@ -106,13 +108,13 @@ class EditProduct extends EditRecord
 
                 continue;
             }
-            
+
             if (empty($value)) {
                 continue;
             }
-            
+
             $termIds = is_array($value) ? $value : [$value];
-            
+
             foreach ($termIds as $termId) {
                 $product->termAssignments()->create([
                     'term_id' => $termId,

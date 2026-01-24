@@ -17,7 +17,7 @@ class CreateMenuBlockItem extends CreateRecord
         // Lưu icon_image trước khi loại bỏ khỏi data
         $this->iconImage = $data['icon_image'] ?? null;
         unset($data['icon_image']);
-        
+
         return $data;
     }
 

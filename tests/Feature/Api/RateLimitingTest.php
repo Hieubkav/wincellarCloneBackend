@@ -10,9 +10,9 @@ class RateLimitingTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Clear rate limiter before each test
-        RateLimiter::clear('api:' . request()->ip());
+        RateLimiter::clear('api:'.request()->ip());
     }
 
     /**
@@ -28,7 +28,7 @@ class RateLimitingTest extends TestCase
 
         // 61st request should be rate limited
         $response = $this->getJson('/api/v1/home');
-        
+
         $response->assertStatus(429)
             ->assertJson([
                 'error' => 'RateLimitExceeded',
@@ -40,7 +40,7 @@ class RateLimitingTest extends TestCase
                 'timestamp',
                 'path',
                 'correlation_id',
-                'details' => ['retry_after']
+                'details' => ['retry_after'],
             ]);
     }
 
@@ -84,7 +84,7 @@ class RateLimitingTest extends TestCase
         ];
 
         foreach ($endpoints as $endpoint) {
-            RateLimiter::clear('api:' . request()->ip());
+            RateLimiter::clear('api:'.request()->ip());
 
             // Make 60 requests to this endpoint
             for ($i = 0; $i < 60; $i++) {
@@ -115,7 +115,7 @@ class RateLimitingTest extends TestCase
 
         // Next request should be rate limited (60 total requests made)
         $response = $this->getJson('/api/v1/bai-viet');
-        
+
         $response->assertStatus(429)
             ->assertJson([
                 'error' => 'RateLimitExceeded',

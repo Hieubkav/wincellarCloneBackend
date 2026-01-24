@@ -3,12 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\CatalogAttributeGroup;
-use App\Models\CatalogTerm;
 use Carbon\Carbon;
 use Database\Seeders\Support\SeederContext;
 use Faker\Generator;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
@@ -57,7 +55,7 @@ class LookupTableSeeder extends Seeder
     }
 
     /**
-     * @param array<string, object> $typesBySlug
+     * @param  array<string, object>  $typesBySlug
      */
     private function seedCategories(SeederContext $context, Carbon $now, array $typesBySlug): void
     {
@@ -139,8 +137,8 @@ class LookupTableSeeder extends Seeder
     }
 
     /**
-     * @param array<string, object> $typesBySlug
-     * @param array{brand: CatalogAttributeGroup, origin: CatalogAttributeGroup, grape: CatalogAttributeGroup, accessory_type: CatalogAttributeGroup, material: CatalogAttributeGroup, flavor_profile: CatalogAttributeGroup} $groups
+     * @param  array<string, object>  $typesBySlug
+     * @param  array{brand: CatalogAttributeGroup, origin: CatalogAttributeGroup, grape: CatalogAttributeGroup, accessory_type: CatalogAttributeGroup, material: CatalogAttributeGroup, flavor_profile: CatalogAttributeGroup}  $groups
      */
     private function attachAttributeGroupsToTypes(array $typesBySlug, array $groups, Carbon $now): void
     {
@@ -154,13 +152,13 @@ class LookupTableSeeder extends Seeder
         $rows = [];
         foreach ($map as $typeSlug => $groupCodes) {
             $type = $typesBySlug[$typeSlug] ?? null;
-            if (!$type) {
+            if (! $type) {
                 continue;
             }
 
             foreach ($groupCodes as $position => $code) {
                 $group = $groups[$code] ?? null;
-                if (!$group) {
+                if (! $group) {
                     continue;
                 }
 
@@ -174,7 +172,7 @@ class LookupTableSeeder extends Seeder
             }
         }
 
-        if (!empty($rows)) {
+        if (! empty($rows)) {
             DB::table('catalog_attribute_group_product_type')->insert($rows);
         }
     }
@@ -356,7 +354,7 @@ class LookupTableSeeder extends Seeder
         $regionIds = [];
         foreach ($regionSeed as $country => $regions) {
             $countryId = $countryIds[$country] ?? null;
-            if (!$countryId) {
+            if (! $countryId) {
                 continue;
             }
 
@@ -378,7 +376,7 @@ class LookupTableSeeder extends Seeder
             }
         }
 
-        if (!empty($regionRows)) {
+        if (! empty($regionRows)) {
             DB::table('catalog_terms')->insert($regionRows);
         }
 

@@ -13,7 +13,6 @@ use App\Support\Product\ProductCacheManager;
 use App\Support\Product\ProductPaginator;
 use App\Support\Product\ProductSearchBuilder;
 use App\Support\Product\ProductSorts;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Cache;
 
@@ -33,7 +32,7 @@ class ProductController extends Controller
                     [
                         'price_min' => $priceMin,
                         'price_max' => $priceMax,
-                        'constraint' => 'price_min must be less than or equal to price_max'
+                        'constraint' => 'price_min must be less than or equal to price_max',
                     ]
                 );
             }
@@ -46,7 +45,7 @@ class ProductController extends Controller
                     [
                         'alcohol_min' => $alcoholMin,
                         'alcohol_max' => $alcoholMax,
-                        'constraint' => 'alcohol_min must be less than or equal to alcohol_max'
+                        'constraint' => 'alcohol_min must be less than or equal to alcohol_max',
                     ]
                 );
             }
@@ -78,7 +77,7 @@ class ProductController extends Controller
                     $requestedPage,
                     ['products.*'],
                     'page',
-                    !$usingCursor
+                    ! $usingCursor
                 );
             });
 
@@ -114,13 +113,13 @@ class ProductController extends Controller
             ->where('slug', $slug)
             ->first();
 
-        if (!$product) {
+        if (! $product) {
             throw ApiException::notFound('Product', $slug);
         }
 
         // Get related products (optimized - single query instead of 2 sequential)
         [$sameTypeProducts, $relatedByAttributeProducts] = $this->getRelatedProductsOptimized($product);
-        
+
         $product->setRelation('sameTypeProducts', $sameTypeProducts);
         $product->setRelation('relatedByAttributeProducts', $relatedByAttributeProducts);
 
@@ -129,22 +128,21 @@ class ProductController extends Controller
 
     /**
      * Get related products optimized - Single query instead of 2 sequential
-     * 
+     *
      * Combines getSameTypeProducts + getRelatedByAttributeProducts into one query
      * Performance: 2 queries (80ms + 90ms = 170ms) → 1 query (90ms) = -47% time
-     * 
-     * @param Product $product
+     *
      * @return array [Collection $sameType, Collection $byAttribute]
      */
     protected function getRelatedProductsOptimized(Product $product): array
     {
-        if (!$product->type_id) {
+        if (! $product->type_id) {
             return [new \Illuminate\Database\Eloquent\Collection([]), new \Illuminate\Database\Eloquent\Collection([])];
         }
 
         // Get term IDs from already loaded relationship (no extra query)
         $productTermIds = $product->terms
-            ->filter(fn($term) => $term->group?->code !== 'brand')
+            ->filter(fn ($term) => $term->group?->code !== 'brand')
             ->pluck('id')
             ->toArray();
 
@@ -154,14 +152,14 @@ class ProductController extends Controller
             ->with(['coverImage', 'images', 'terms.group', 'categories', 'type'])
             ->active()
             ->where('id', '!=', $product->id)
-            ->where(function($query) use ($product, $productTermIds) {
+            ->where(function ($query) use ($product, $productTermIds) {
                 // Candidates include:
                 // 1. Products with same type
                 $query->where('type_id', $product->type_id);
-                
+
                 // 2. Products with shared terms (if any)
-                if (!empty($productTermIds)) {
-                    $query->orWhereHas('terms', function($q) use ($productTermIds) {
+                if (! empty($productTermIds)) {
+                    $query->orWhereHas('terms', function ($q) use ($productTermIds) {
                         $q->whereIn('catalog_terms.id', $productTermIds);
                     });
                 }
@@ -171,23 +169,23 @@ class ProductController extends Controller
 
         // Separate candidates in memory (fast, O(n) with n=12)
         $sameType = $candidates
-            ->filter(fn($p) => $p->type_id === $product->type_id)
+            ->filter(fn ($p) => $p->type_id === $product->type_id)
             ->take(4);
-        
+
         $byAttribute = new \Illuminate\Database\Eloquent\Collection([]);
-        if (!empty($productTermIds)) {
+        if (! empty($productTermIds)) {
             $byAttribute = $candidates
-                ->filter(function($p) use ($productTermIds) {
+                ->filter(function ($p) use ($productTermIds) {
                     return $p->terms->pluck('id')->intersect($productTermIds)->isNotEmpty();
                 })
-                ->filter(fn($p) => $p->type_id !== $product->type_id) // Exclude same type duplicates
+                ->filter(fn ($p) => $p->type_id !== $product->type_id) // Exclude same type duplicates
                 ->take(4);
         }
 
         // Return only if >= 4 items (per requirements)
         return [
             $sameType->count() >= 4 ? $sameType : new \Illuminate\Database\Eloquent\Collection([]),
-            $byAttribute->count() >= 4 ? $byAttribute : new \Illuminate\Database\Eloquent\Collection([])
+            $byAttribute->count() >= 4 ? $byAttribute : new \Illuminate\Database\Eloquent\Collection([]),
         ];
     }
 
@@ -197,7 +195,7 @@ class ProductController extends Controller
      */
     protected function getSameTypeProducts(Product $product, int $limit = 4): \Illuminate\Database\Eloquent\Collection
     {
-        if (!$product->type_id) {
+        if (! $product->type_id) {
             return new \Illuminate\Database\Eloquent\Collection([]);
         }
 

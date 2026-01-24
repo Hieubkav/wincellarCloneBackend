@@ -12,7 +12,7 @@ class CreateHomeComponent extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         // Ensure config is properly set
-        if (!isset($data['config'])) {
+        if (! isset($data['config'])) {
             $data['config'] = [];
         }
 

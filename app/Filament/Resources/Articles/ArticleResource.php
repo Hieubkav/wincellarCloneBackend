@@ -2,29 +2,28 @@
 
 namespace App\Filament\Resources\Articles;
 
-use BackedEnum;
-use UnitEnum;
-
 use App\Filament\Resources\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Articles\Pages\EditArticle;
 use App\Filament\Resources\Articles\Pages\ListArticles;
 use App\Filament\Resources\BaseResource;
 use App\Models\Article;
-use Filament\Schemas\Components\Tabs;
+use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Malzariey\FilamentLexicalEditor\LexicalEditor;
+use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Malzariey\FilamentLexicalEditor\LexicalEditor;
+use UnitEnum;
 
 class ArticleResource extends BaseResource
 {
@@ -66,25 +65,25 @@ class ArticleResource extends BaseResource
                                     ->label('Tiêu đề')
                                     ->required()
                                     ->maxLength(255),
-                                
+
                                 Select::make('author_id')
                                     ->label('Tác giả')
                                     ->relationship('author', 'name')
                                     ->searchable()
                                     ->preload()
                                     ->required(),
-                                
+
                                 Textarea::make('excerpt')
                                     ->label('Tóm tắt')
                                     ->rows(3)
                                     ->columnSpanFull(),
-                                
+
                                 Toggle::make('active')
                                     ->label('Đang hiển thị')
                                     ->default(true),
                             ])
                             ->columns(2),
-                        
+
                         Tabs\Tab::make('Nội dung')
                             ->schema([
                                 LexicalEditor::make('content')
@@ -108,35 +107,35 @@ class ArticleResource extends BaseResource
                     ->width(60)
                     ->height(60)
                     ->defaultImageUrl('/images/placeholder.png'),
-                
+
                 Tables\Columns\TextColumn::make('title')
                     ->label('Tiêu đề')
                     ->searchable()
                     ->sortable()
                     ->limit(50),
-                
+
                 Tables\Columns\TextColumn::make('slug')
                     ->label('Đường dẫn')
                     ->searchable()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('author.name')
                     ->label('Tác giả')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\IconColumn::make('active')
                     ->label('Hiển thị')
                     ->boolean()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tạo lúc')
                     ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                
+
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Cập nhật')
                     ->dateTime('d/m/Y H:i')

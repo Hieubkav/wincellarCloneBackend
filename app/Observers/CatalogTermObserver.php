@@ -54,7 +54,7 @@ class CatalogTermObserver
         $counter = 1;
 
         while ($this->slugExists($slug, $groupId, $ignoreId)) {
-            $slug = $originalSlug . '-' . $counter;
+            $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
 

@@ -5,15 +5,14 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\VisitorResource\Pages;
 use App\Models\Visitor;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\DeleteAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Columns\TextColumn;
 use UnitEnum;
 
 class VisitorResource extends Resource
@@ -26,9 +25,9 @@ class VisitorResource extends Resource
 
     protected static ?string $navigationLabel = 'Khách truy cập';
 
-    protected static string | BackedEnum | null $navigationIcon = 'heroicon-o-users';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
 
-    protected static UnitEnum | string | null $navigationGroup = 'Phân tích';
+    protected static UnitEnum|string|null $navigationGroup = 'Phân tích';
 
     protected static ?int $navigationSort = 20;
 
@@ -37,6 +36,7 @@ class VisitorResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         $count = static::getModel()::query()->count();
+
         return $count > 0 ? (string) $count : null;
     }
 
@@ -53,8 +53,7 @@ class VisitorResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => 
-                $query->withCount(['sessions', 'events'])
+            ->modifyQueryUsing(fn (Builder $query) => $query->withCount(['sessions', 'events'])
             )
             ->columns([
                 static::getRowNumberColumn(),

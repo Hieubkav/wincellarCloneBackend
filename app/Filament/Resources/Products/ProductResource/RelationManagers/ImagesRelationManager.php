@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Products\ProductResource\RelationManagers;
 
 use App\Filament\Traits\ManagesImageUploads;
-use App\Models\Image;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -55,7 +54,7 @@ class ImagesRelationManager extends RelationManager
                         // Nếu file_path null (upload failed), halt action
                         if (empty($data['file_path'])) {
                             $action->halt();
-                            
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Không thể tải lên ảnh')
                                 ->body('Vui lòng chọn file ảnh hợp lệ.')
@@ -63,7 +62,7 @@ class ImagesRelationManager extends RelationManager
                                 ->send();
                         }
                     }),
-Action::make('selectFromLibrary')
+                Action::make('selectFromLibrary')
                     ->label('Chọn từ thư viện')
                     ->icon('heroicon-o-photo')
                     ->color('gray')

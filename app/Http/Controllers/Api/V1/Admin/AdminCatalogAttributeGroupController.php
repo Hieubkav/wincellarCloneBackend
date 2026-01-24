@@ -19,8 +19,8 @@ class AdminCatalogAttributeGroupController extends Controller
 
         if ($request->filled('q')) {
             $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->input('q') . '%')
-                  ->orWhere('code', 'like', '%' . $request->input('q') . '%');
+                $q->where('name', 'like', '%'.$request->input('q').'%')
+                    ->orWhere('code', 'like', '%'.$request->input('q').'%');
             });
         }
 
@@ -38,10 +38,10 @@ class AdminCatalogAttributeGroupController extends Controller
         return response()->json([
             'data' => $groups->map(function ($group) {
                 $termIds = $group->terms->pluck('id')->toArray();
-                
+
                 // Count products that have any of these terms
                 $productsCount = 0;
-                if (!empty($termIds)) {
+                if (! empty($termIds)) {
                     $productsCount = \App\Models\Product::whereHas('terms', function ($query) use ($termIds) {
                         $query->whereIn('catalog_terms.id', $termIds);
                     })->count();
@@ -134,12 +134,12 @@ class AdminCatalogAttributeGroupController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $group = CatalogAttributeGroup::findOrFail($id);
-        
+
         \Log::info('Update attribute group request:', [
             'id' => $id,
             'data' => $request->all(),
         ]);
-        
+
         // Convert empty strings to null for nullable fields
         $data = $request->all();
         foreach (['input_type', 'icon_path', 'position'] as $field) {
@@ -148,7 +148,7 @@ class AdminCatalogAttributeGroupController extends Controller
             }
         }
         $request->merge($data);
-        
+
         \Log::info('After converting empty strings:', [
             'data' => $request->all(),
         ]);

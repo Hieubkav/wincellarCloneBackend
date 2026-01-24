@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\TrackingEventResource\Pages;
 
 use App\Filament\Resources\TrackingEventResource;
-use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTrackingEvents extends ListRecords

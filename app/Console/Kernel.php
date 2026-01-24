@@ -10,7 +10,7 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->job(new PruneOrphanImages())
+        $schedule->job(new PruneOrphanImages)
             ->weeklyOn(1, '02:00')
             ->name('prune-orphan-images')
             ->withoutOverlapping();

@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 class MenuAssembler
 {
     /**
-     * @param \Illuminate\Support\Collection<int, \App\Models\Menu> $menus
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Menu>  $menus
      * @return array<int, array<string, mixed>>
      */
     public function build(Collection $menus): array
@@ -52,8 +52,8 @@ class MenuAssembler
     /**
      * Transform MenuBlocks collection to API response format
      *
-     * @param \Illuminate\Support\Collection<int, \App\Models\MenuBlock> $blocks
-     * @param Menu $parentMenu Parent menu for "View All" link
+     * @param  \Illuminate\Support\Collection<int, \App\Models\MenuBlock>  $blocks
+     * @param  Menu  $parentMenu  Parent menu for "View All" link
      */
     private function transformBlocks(Collection $blocks, Menu $parentMenu): array
     {
@@ -62,7 +62,7 @@ class MenuAssembler
         foreach ($blocks as $block) {
             // Only include active items
             $activeItems = $block->items->filter(fn ($item) => $item->active);
-            
+
             if ($activeItems->isEmpty()) {
                 continue;
             }

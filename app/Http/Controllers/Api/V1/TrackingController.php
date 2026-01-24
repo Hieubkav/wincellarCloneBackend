@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\TrackingEvent;
 use App\Services\TrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
-use App\Models\TrackingEvent;
 
 class TrackingController extends Controller
 {
@@ -111,6 +111,7 @@ class TrackingController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to track event', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to track event',

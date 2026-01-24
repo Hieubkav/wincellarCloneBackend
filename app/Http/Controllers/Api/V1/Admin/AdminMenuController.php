@@ -8,7 +8,6 @@ use App\Models\MenuBlock;
 use App\Models\MenuBlockItem;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class AdminMenuController extends Controller
 {
@@ -20,7 +19,7 @@ class AdminMenuController extends Controller
             ->orderBy('id');
 
         if ($request->filled('q')) {
-            $query->where('title', 'like', '%' . $request->input('q') . '%');
+            $query->where('title', 'like', '%'.$request->input('q').'%');
         }
 
         if ($request->filled('active')) {
@@ -31,7 +30,7 @@ class AdminMenuController extends Controller
         $menus = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $menus->map(fn($m) => [
+            'data' => $menus->map(fn ($m) => [
                 'id' => $m->id,
                 'title' => $m->title,
                 'type' => $m->type,
@@ -62,12 +61,12 @@ class AdminMenuController extends Controller
                 'href' => $menu->href,
                 'order' => $menu->order,
                 'active' => $menu->active,
-                'blocks' => $menu->blocks->map(fn($b) => [
+                'blocks' => $menu->blocks->map(fn ($b) => [
                     'id' => $b->id,
                     'title' => $b->title,
                     'order' => $b->order,
                     'active' => $b->active,
-                    'items' => $b->items->map(fn($i) => [
+                    'items' => $b->items->map(fn ($i) => [
                         'id' => $i->id,
                         'label' => $i->label,
                         'href' => $i->href,

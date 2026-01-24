@@ -2,34 +2,33 @@
 
 namespace App\Filament\Resources\SocialLinks;
 
-use BackedEnum;
-use UnitEnum;
-
+use App\Filament\Resources\BaseResource;
 use App\Filament\Resources\SocialLinks\Pages\CreateSocialLink;
 use App\Filament\Resources\SocialLinks\Pages\EditSocialLink;
 use App\Filament\Resources\SocialLinks\Pages\ListSocialLinks;
 use App\Models\Image;
 use App\Models\SocialLink;
-use App\Filament\Resources\BaseResource;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Tabs;
+use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Actions\BulkActionGroup;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
+use UnitEnum;
 
 class SocialLinkResource extends BaseResource
 {
@@ -101,7 +100,7 @@ class SocialLinkResource extends BaseResource
                             ])
                             ->columns(2),
                     ]),
-                    
+
                 Section::make('Biểu tượng')
                     ->description('Chọn icon từ thư viện hoặc tải lên icon mới')
                     ->schema([
@@ -130,11 +129,11 @@ class SocialLinkResource extends BaseResource
                                             ->maxSize(2048)
                                             ->acceptedFileTypes(['image/*'])
                                             ->saveUploadedFileUsing(function ($file, $set, $get) {
-                                                $filename = uniqid('icon_') . '.webp';
-                                                $path = 'icons/' . $filename;
+                                                $filename = uniqid('icon_').'.webp';
+                                                $path = 'icons/'.$filename;
                                                 $disk = 'public';
 
-                                                $manager = new ImageManager(new Driver());
+                                                $manager = new ImageManager(new Driver);
                                                 $image = $manager->read($file->getRealPath());
 
                                                 if ($image->width() > 256 || $image->height() > 256) {

@@ -6,13 +6,13 @@ use App\Models\ProductType;
 
 /**
  * TermCountCache - In-memory cache for term product counts
- * 
+ *
  * Purpose: Prevent duplicate counting queries within a single request.
  * When ProductFilterController builds filters, it calls getTermProductCounts()
  * multiple times. This cache ensures we only hit the database once per request.
- * 
+ *
  * Performance Impact: Reduces N duplicate queries to 1 query per request.
- * 
+ *
  * Usage:
  * $counts = TermCountCache::getForType($type);
  * TermCountCache::clear(); // Reset between requests (auto-handled by PHP lifecycle)
@@ -22,18 +22,18 @@ class TermCountCache
     /**
      * In-memory cache storage
      * Key format: "type:{id}" or "all" for no type filter
-     * 
+     *
      * @var array<string, array<int, int>>
      */
     private static array $cache = [];
 
     /**
      * Get product counts per term, with caching
-     * 
+     *
      * Returns: [term_id => count] mapping
      * Example: [5 => 120, 7 => 45, 12 => 89]
-     * 
-     * @param ProductType|null $type Filter by product type (null = all products)
+     *
+     * @param  ProductType|null  $type  Filter by product type (null = all products)
      * @return array<int, int>
      */
     public static function getForType(?ProductType $type): array
@@ -71,7 +71,7 @@ class TermCountCache
 
     /**
      * Clear all cached counts
-     * 
+     *
      * Call this when:
      * - Products are created/updated/deleted
      * - Terms are assigned/unassigned
@@ -84,8 +84,6 @@ class TermCountCache
 
     /**
      * Clear cache for specific type
-     * 
-     * @param int|null $typeId
      */
     public static function clearForType(?int $typeId): void
     {
@@ -95,7 +93,7 @@ class TermCountCache
 
     /**
      * Get cache statistics (for debugging)
-     * 
+     *
      * @return array{keys: array<string>, hit_count: int}
      */
     public static function getStats(): array

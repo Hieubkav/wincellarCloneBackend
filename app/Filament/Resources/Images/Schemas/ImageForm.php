@@ -9,15 +9,14 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\MorphToSelect;
 use Filament\Forms\Components\MorphToSelect\Type;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\ImageManager;
+use Illuminate\Support\Str;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ImageForm
@@ -39,11 +38,11 @@ class ImageForm
                             ->disk('public')
                             ->directory('media/images')
                             ->saveUploadedFileUsing(function (TemporaryUploadedFile $file, Get $get) {
-                                $filename = 'img-' . Str::uuid() . '.webp';
+                                $filename = 'img-'.Str::uuid().'.webp';
                                 $disk = 'public';
-                                $path = 'media/images/' . $filename;
+                                $path = 'media/images/'.$filename;
 
-                                $manager = new ImageManager(new Driver());
+                                $manager = new ImageManager(new Driver);
                                 $image = $manager->read($file->getRealPath());
 
                                 if ($image->width() > 1920) {
@@ -56,14 +55,14 @@ class ImageForm
                                 return $path;
                             })
                             ->afterStateUpdated(function ($state, $set) {
-                                if (!$state) {
+                                if (! $state) {
                                     return;
                                 }
 
                                 try {
                                     $disk = 'public';
                                     $fullPath = Storage::disk($disk)->path($state);
-                                    
+
                                     if (file_exists($fullPath)) {
                                         [$width, $height] = getimagesize($fullPath);
                                         $set('width', $width);
@@ -103,14 +102,14 @@ class ImageForm
                             ->preload()
                             ->searchable(),
                     ]),
-                
+
                 // Hidden fields - sẽ được auto-fill bởi observer
                 Hidden::make('disk')
                     ->default('public'),
                 Hidden::make('width'),
                 Hidden::make('height'),
                 Hidden::make('mime'),
-                
+
                 Section::make('Thuộc tính bổ sung')
                     ->collapsed()
                     ->description('Thông tin mở rộng, không bắt buộc')

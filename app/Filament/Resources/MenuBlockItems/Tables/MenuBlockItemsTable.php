@@ -61,7 +61,7 @@ class MenuBlockItemsTable
                 TextColumn::make('badge')
                     ->label('Badge')
                     ->badge()
-                    ->color(fn ($state) => match(strtoupper($state ?? '')) {
+                    ->color(fn ($state) => match (strtoupper($state ?? '')) {
                         'HOT' => 'danger',
                         'NEW' => 'success',
                         'SALE' => 'warning',

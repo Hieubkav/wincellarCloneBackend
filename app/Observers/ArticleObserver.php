@@ -17,6 +17,7 @@ class ArticleObserver
         Cache::put('api_cache_version', $version + 1);
         Cache::put('last_cache_clear', now()->toIso8601String());
     }
+
     /**
      * Handle the Article "creating" event.
      * Tự động sinh slug và SEO fields khi tạo mới
@@ -51,7 +52,7 @@ class ArticleObserver
             $article->meta_title = $article->title;
         }
 
-        if (empty($article->meta_description) && !empty($article->excerpt)) {
+        if (empty($article->meta_description) && ! empty($article->excerpt)) {
             $article->meta_description = Str::limit($article->excerpt, 155);
         }
     }
@@ -66,7 +67,7 @@ class ArticleObserver
         $counter = 1;
 
         while ($this->slugExists($slug, $ignoreId)) {
-            $slug = $originalSlug . '-' . $counter;
+            $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
 

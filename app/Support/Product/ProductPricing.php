@@ -54,7 +54,7 @@ final class ProductPricing
             $errors['original_price'] = ['Giá niêm yết phải lớn hơn hoặc bằng 0.'];
         }
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             throw ValidationException::withMessages($errors);
         }
     }
@@ -71,4 +71,3 @@ final class ProductPricing
         return $price <= self::CONTACT_PRICE;
     }
 }
-

@@ -17,14 +17,14 @@ class CatalogBaselineSeeder extends Seeder
         $groupsFile = $dataPath.'/catalog-attribute-groups.json';
         $typesFile = $dataPath.'/product-types.json';
 
-        if (!file_exists($groupsFile) || !file_exists($typesFile)) {
+        if (! file_exists($groupsFile) || ! file_exists($typesFile)) {
             throw new RuntimeException('Thiếu file baseline JSON trong database/seeders/data.');
         }
 
         $groups = json_decode(file_get_contents($groupsFile), true);
         $types = json_decode(file_get_contents($typesFile), true);
 
-        if (!is_array($groups) || !is_array($types)) {
+        if (! is_array($groups) || ! is_array($types)) {
             throw new RuntimeException('File baseline JSON không hợp lệ.');
         }
 
@@ -33,7 +33,7 @@ class CatalogBaselineSeeder extends Seeder
 
             foreach ($groups as $group) {
                 $code = $group['code'] ?? null;
-                if (!$code) {
+                if (! $code) {
                     throw new RuntimeException('Thiếu code cho catalog attribute group.');
                 }
 
@@ -54,7 +54,7 @@ class CatalogBaselineSeeder extends Seeder
 
                 foreach (($group['terms'] ?? []) as $term) {
                     $slug = $term['slug'] ?? null;
-                    if (!$slug) {
+                    if (! $slug) {
                         throw new RuntimeException("Thiếu slug cho term trong group {$code}.");
                     }
 
@@ -78,7 +78,7 @@ class CatalogBaselineSeeder extends Seeder
 
             foreach ($types as $type) {
                 $slug = $type['slug'] ?? null;
-                if (!$slug) {
+                if (! $slug) {
                     throw new RuntimeException('Thiếu slug cho product type.');
                 }
 
@@ -94,7 +94,7 @@ class CatalogBaselineSeeder extends Seeder
                 $syncData = [];
                 foreach (($type['attribute_groups'] ?? []) as $group) {
                     $groupCode = $group['code'] ?? null;
-                    if (!$groupCode || !isset($groupMap[$groupCode])) {
+                    if (! $groupCode || ! isset($groupMap[$groupCode])) {
                         continue;
                     }
 
@@ -102,7 +102,7 @@ class CatalogBaselineSeeder extends Seeder
                     $syncData[$groupMap[$groupCode]->id] = ['position' => (int) $position];
                 }
 
-                if (!empty($syncData)) {
+                if (! empty($syncData)) {
                     $typeModel->attributeGroups()->sync($syncData);
                 }
             }

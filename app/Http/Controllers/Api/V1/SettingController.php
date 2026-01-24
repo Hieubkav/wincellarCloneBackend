@@ -20,13 +20,13 @@ class SettingController extends Controller
         $setting = Cache::remember(
             'api:v1:settings',
             3600,
-            fn() => Setting::query()
+            fn () => Setting::query()
                 ->with(['logoImage', 'faviconImage', 'productWatermarkImage'])
                 ->first()
         );
 
         // If no settings exist, return default values
-        if (!$setting) {
+        if (! $setting) {
             $setting = new Setting([
                 'site_name' => config('app.name'),
                 'hotline' => '',

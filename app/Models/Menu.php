@@ -46,4 +46,3 @@ class Menu extends Model
         return $query->where('active', true);
     }
 }
-

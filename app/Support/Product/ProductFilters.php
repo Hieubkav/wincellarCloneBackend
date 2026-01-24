@@ -47,8 +47,8 @@ class ProductFilters
 
     /**
      * Apply IDs filter - useful for home components preview/fetching specific products
-     * 
-     * @param array|string $ids Array of IDs or comma-separated string
+     *
+     * @param  array|string  $ids  Array of IDs or comma-separated string
      */
     private function applyIdsFilter(array|string $ids): void
     {

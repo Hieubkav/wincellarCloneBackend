@@ -4,21 +4,20 @@ namespace App\Filament\Pages;
 
 use App\Models\Image;
 use App\Models\Setting;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
+use BackedEnum;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\Radio;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Schemas\Schema;
-use BackedEnum;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
@@ -26,11 +25,11 @@ class SettingsPage extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string | BackedEnum | null $navigationIcon = Heroicon::OutlinedCog6Tooth;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
     protected string $view = 'filament.pages.settings-page';
 
-    protected static UnitEnum | string | null $navigationGroup = 'Cấu hình';
+    protected static UnitEnum|string|null $navigationGroup = 'Cấu hình';
 
     protected static ?int $navigationSort = 100;
 
@@ -44,7 +43,7 @@ class SettingsPage extends Page implements HasForms
     {
         $setting = Setting::first();
 
-        if (!$setting) {
+        if (! $setting) {
             $setting = Setting::create([]);
         }
 
@@ -98,12 +97,12 @@ class SettingsPage extends Page implements HasForms
                                             ->mapWithKeys(function ($image) {
                                                 $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
                                                 $fileName = basename($image->file_path);
-                                                
+
                                                 return [
                                                     $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                        <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
-                                                        <span style="font-size: 0.875rem;">' . $fileName . '</span>
-                                                    </div>'
+                                                        <img src="'.$url.'" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                        <span style="font-size: 0.875rem;">'.$fileName.'</span>
+                                                    </div>',
                                                 ];
                                             })
                                     )
@@ -117,12 +116,12 @@ class SettingsPage extends Page implements HasForms
                                             ->mapWithKeys(function ($image) {
                                                 $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
                                                 $fileName = basename($image->file_path);
-                                                
+
                                                 return [
                                                     $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                        <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
-                                                        <span style="font-size: 0.875rem;">' . $fileName . '</span>
-                                                    </div>'
+                                                        <img src="'.$url.'" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                        <span style="font-size: 0.875rem;">'.$fileName.'</span>
+                                                    </div>',
                                                 ];
                                             })
                                     )
@@ -154,12 +153,12 @@ class SettingsPage extends Page implements HasForms
                                                     ->mapWithKeys(function ($image) {
                                                         $url = \Storage::disk($image->disk ?? 'public')->url($image->file_path);
                                                         $fileName = basename($image->file_path);
-                                                        
+
                                                         return [
                                                             $image->id => '<div style="display: flex; align-items: center; gap: 0.5rem;">
-                                                                <img src="' . $url . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
-                                                                <span style="font-size: 0.875rem;">' . $fileName . '</span>
-                                                            </div>'
+                                                                <img src="'.$url.'" style="width: 40px; height: 40px; object-fit: cover; border-radius: 0.25rem;" />
+                                                                <span style="font-size: 0.875rem;">'.$fileName.'</span>
+                                                            </div>',
                                                         ];
                                                     })
                                             )
@@ -263,7 +262,7 @@ class SettingsPage extends Page implements HasForms
     {
         $setting = Setting::first();
 
-        if (!$setting) {
+        if (! $setting) {
             $setting = Setting::create($this->form->getState());
         } else {
             $setting->update($this->form->getState());

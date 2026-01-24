@@ -21,20 +21,20 @@ class AdminArticleController extends Controller
         // Support fetching by IDs for preview
         if ($request->filled('ids')) {
             $ids = array_filter(array_map('intval', explode(',', $request->input('ids'))));
-            if (!empty($ids)) {
+            if (! empty($ids)) {
                 $query->whereIn('id', $ids);
             }
         } elseif ($request->filled('q')) {
-            $query->where('title', 'like', '%' . $request->input('q') . '%');
+            $query->where('title', 'like', '%'.$request->input('q').'%');
         }
 
         $limit = min($request->integer('limit', 50), 200);
         $articles = $query->limit($limit)->get();
 
         return response()->json([
-            'data' => $articles->map(fn($a) => [
+            'data' => $articles->map(fn ($a) => [
                 'value' => $a->id,
-                'label' => $a->title . ' (#' . $a->id . ')',
+                'label' => $a->title.' (#'.$a->id.')',
                 'cover_image' => $a->coverImage ? [
                     'id' => $a->coverImage->id,
                     'url' => $a->coverImage->url,
@@ -52,7 +52,7 @@ class AdminArticleController extends Controller
             ->orderBy('id', 'desc');
 
         if ($request->filled('q')) {
-            $query->where('title', 'like', '%' . $request->input('q') . '%');
+            $query->where('title', 'like', '%'.$request->input('q').'%');
         }
 
         if ($request->filled('active')) {
@@ -63,7 +63,7 @@ class AdminArticleController extends Controller
         $articles = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $articles->map(fn($a) => [
+            'data' => $articles->map(fn ($a) => [
                 'id' => $a->id,
                 'title' => $a->title,
                 'slug' => $a->slug,
@@ -93,7 +93,7 @@ class AdminArticleController extends Controller
                 'content' => $article->content,
                 'active' => $article->active,
                 'cover_image_url' => $article->coverImage?->url,
-                'images' => $article->images->map(fn($img) => [
+                'images' => $article->images->map(fn ($img) => [
                     'id' => $img->id,
                     'url' => $img->url,
                     'path' => $img->file_path,
@@ -126,7 +126,7 @@ class AdminArticleController extends Controller
 
         $article = Article::create($validated);
 
-        if (!empty($imagePaths)) {
+        if (! empty($imagePaths)) {
             $article->syncImagesFromPaths($imagePaths);
         }
 

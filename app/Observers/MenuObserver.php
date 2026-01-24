@@ -16,7 +16,7 @@ class MenuObserver
         $version = (int) Cache::get('api_cache_version', 0);
         Cache::put('api_cache_version', $version + 1);
         Cache::put('last_cache_clear', now()->toIso8601String());
-        
+
         // Trigger Next.js revalidation ngay lập tức
         try {
             app(\App\Services\RevalidationService::class)->revalidateAll();

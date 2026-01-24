@@ -11,8 +11,11 @@ class TrackingEvent extends Model
     use HasFactory;
 
     public const TYPE_PRODUCT_VIEW = 'product_view';
+
     public const TYPE_ARTICLE_VIEW = 'article_view';
+
     public const TYPE_CTA_CONTACT = 'cta_contact';
+
     public const TYPE_PAGE_VIEW = 'page_view';
 
     /**

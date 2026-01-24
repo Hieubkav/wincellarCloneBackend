@@ -3,7 +3,6 @@
 namespace App\Filament\Forms\Components;
 
 use Filament\Forms\Components\Field;
-use Filament\Forms\Get;
 use Filament\Forms\Set;
 
 class LibraryImageSelector extends Field
@@ -15,7 +14,7 @@ class LibraryImageSelector extends Field
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->default([])
             ->reactive()
             ->afterStateUpdated(function (Set $set, $state) {
@@ -27,6 +26,7 @@ class LibraryImageSelector extends Field
     public function perPage(int $perPage): static
     {
         $this->perPage = $perPage;
+
         return $this;
     }
 

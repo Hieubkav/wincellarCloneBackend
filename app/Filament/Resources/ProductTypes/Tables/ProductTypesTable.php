@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources\ProductTypes\Tables;
 
-
-use App\Filament\Resources\BaseResource;use Filament\Actions\BulkActionGroup;
+use App\Filament\Resources\BaseResource;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;

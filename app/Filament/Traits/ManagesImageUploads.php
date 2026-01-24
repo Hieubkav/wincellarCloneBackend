@@ -17,18 +17,18 @@ trait ManagesImageUploads
 {
     /**
      * Get default disk for all image uploads.
-     * 
+     *
      * IMPORTANT: Always returns 'public' for web accessibility.
      * This is intentionally hardcoded, not configurable per environment.
-     * 
+     *
      * Reason: All images must be accessible via HTTP URLs:
      * - /storage/articles/article_xyz.webp
      * - /storage/products/product_abc.webp
      * - /storage/branding/logo.webp
-     * 
+     *
      * Using 'public' disk ensures files are in storage/app/public/
      * and accessible without authentication via symlink.
-     * 
+     *
      * If you need different storage for other use cases,
      * create separate trait or override this method in subclass.
      */
@@ -75,7 +75,7 @@ trait ManagesImageUploads
                         ->schema([
                             FileUpload::make('file_path')
                                 ->label('Chọn file ảnh')
-                                ->required(fn(string $operation): bool => $operation === 'create')
+                                ->required(fn (string $operation): bool => $operation === 'create')
                                 ->image()
                                 ->disk($this->getDefaultDisk())
                                 ->directory($this->getUploadDirectory())
@@ -110,10 +110,10 @@ trait ManagesImageUploads
     {
         try {
             $prefix = $this->getFilenamePrefix();
-            $filename = uniqid($prefix . '_') . '.webp';
-            $path = $this->getUploadDirectory() . '/' . $filename;
+            $filename = uniqid($prefix.'_').'.webp';
+            $path = $this->getUploadDirectory().'/'.$filename;
 
-            $manager = new ImageManager(new Driver());
+            $manager = new ImageManager(new Driver);
             $image = $manager->read($file->getRealPath());
 
             $maxWidth = $this->getMaxImageWidth();
@@ -137,7 +137,7 @@ trait ManagesImageUploads
                 ->body('File ảnh không được hỗ trợ hoặc bị lỗi. Vui lòng thử file ảnh khác.')
                 ->danger()
                 ->send();
-            
+
             // Không throw exception - return null để Filament validation xử lý
             return null;
         }
@@ -156,14 +156,14 @@ trait ManagesImageUploads
      */
     protected function extractImageMetadata($state, $set, $get): void
     {
-        if (!$state) {
+        if (! $state) {
             return;
         }
 
         try {
             $disk = $this->getDefaultDisk();
             $fullPath = Storage::disk($disk)->path($state);
-            
+
             if (file_exists($fullPath)) {
                 [$width, $height] = getimagesize($fullPath);
                 $set('width', $width);
@@ -191,14 +191,14 @@ trait ManagesImageUploads
 
             TextColumn::make('width')
                 ->label('Kích thước')
-                ->formatStateUsing(fn($record) => $record->width && $record->height ? "{$record->width}x{$record->height}" : '-')
+                ->formatStateUsing(fn ($record) => $record->width && $record->height ? "{$record->width}x{$record->height}" : '-')
                 ->toggleable(isToggledHiddenByDefault: true),
 
             TextColumn::make('active')
                 ->label('Trạng thái')
                 ->badge()
-                ->formatStateUsing(fn($state) => $state ? 'Hiển thị' : 'Ẩn')
-                ->color(fn($state) => $state ? 'success' : 'gray'),
+                ->formatStateUsing(fn ($state) => $state ? 'Hiển thị' : 'Ẩn')
+                ->color(fn ($state) => $state ? 'success' : 'gray'),
 
             TextColumn::make('created_at')
                 ->label('Ngày tạo')
@@ -214,7 +214,7 @@ trait ManagesImageUploads
     protected function buildLibrarySelectionForm($livewire): array
     {
         $owner = $livewire->getOwnerRecord();
-        
+
         $existingImagePaths = $owner->images()
             ->whereNull('deleted_at')
             ->pluck('file_path')
@@ -230,17 +230,17 @@ trait ManagesImageUploads
         $options = $images->mapWithKeys(function ($image) {
             $filename = basename($image->file_path);
             $imageUrl = $image->url ?? '/images/placeholder.png';
-            
+
             $html = '<div style="display: flex; align-items: center; gap: 8px;">';
-            $html .= '<img src="' . e($imageUrl) . '" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" />';
-            $html .= '<span>' . e($filename) . '</span>';
+            $html .= '<img src="'.e($imageUrl).'" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" />';
+            $html .= '<span>'.e($filename).'</span>';
             $html .= '</div>';
-            
+
             return [$image->id => $html];
         })->toArray();
-        
+
         $defaultSelected = $images
-            ->filter(fn($img) => in_array($img->file_path, $existingImagePaths))
+            ->filter(fn ($img) => in_array($img->file_path, $existingImagePaths))
             ->pluck('id')
             ->toArray();
 
@@ -279,12 +279,13 @@ trait ManagesImageUploads
 
         foreach ($selectedImageIds as $imageId) {
             $image = Image::find($imageId);
-            if (!$image) {
+            if (! $image) {
                 continue;
             }
 
             if (in_array($image->file_path, $existingImagePaths)) {
                 $skippedCount++;
+
                 continue;
             }
 
@@ -303,7 +304,7 @@ trait ManagesImageUploads
                 'order' => $nextOrder,
                 'active' => true,
             ]);
-            
+
             $addedCount++;
         }
 

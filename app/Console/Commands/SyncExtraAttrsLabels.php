@@ -18,6 +18,7 @@ class SyncExtraAttrsLabels extends Command
 
         if ($groups->isEmpty()) {
             $this->info('Không có attribute groups loại nhập tay.');
+
             return self::SUCCESS;
         }
 
@@ -26,12 +27,12 @@ class SyncExtraAttrsLabels extends Command
         foreach ($groups as $group) {
             $code = $group->code;
             $newName = $group->name;
-            $jsonPath = '$."' . $code . '".label';
+            $jsonPath = '$."'.$code.'".label';
 
             $affected = DB::table('products')
-                ->whereRaw('JSON_EXTRACT(extra_attrs, ?) IS NOT NULL', ['$."' . $code . '"'])
+                ->whereRaw('JSON_EXTRACT(extra_attrs, ?) IS NOT NULL', ['$."'.$code.'"'])
                 ->update([
-                    'extra_attrs' => DB::raw("JSON_SET(extra_attrs, '{$jsonPath}', " . DB::getPdo()->quote($newName) . ")"),
+                    'extra_attrs' => DB::raw("JSON_SET(extra_attrs, '{$jsonPath}', ".DB::getPdo()->quote($newName).')'),
                 ]);
 
             if ($affected > 0) {

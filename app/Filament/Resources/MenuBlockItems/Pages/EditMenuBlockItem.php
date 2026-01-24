@@ -23,11 +23,11 @@ class EditMenuBlockItem extends EditRecord
         // Load icon image hiện tại
         $menuBlockItem = $this->record;
         $iconImage = $menuBlockItem->coverImage;
-        
+
         if ($iconImage) {
             $data['icon_image'] = $iconImage->file_path;
         }
-        
+
         return $data;
     }
 
@@ -36,10 +36,10 @@ class EditMenuBlockItem extends EditRecord
         // Loại bỏ icon_image khỏi data chính
         $newIconPath = $data['icon_image'] ?? null;
         unset($data['icon_image']);
-        
+
         // Lưu tạm để xử lý sau
         $this->newIconPath = $newIconPath;
-        
+
         return $data;
     }
 
@@ -52,7 +52,7 @@ class EditMenuBlockItem extends EditRecord
         // Xử lý icon image
         if ($this->newIconPath !== null) {
             $currentIcon = $menuBlockItem->coverImage;
-            
+
             // Nếu đã có icon cũ
             if ($currentIcon) {
                 if ($this->newIconPath) {

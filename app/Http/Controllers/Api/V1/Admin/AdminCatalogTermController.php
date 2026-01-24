@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CatalogTerm;
-use App\Models\CatalogAttributeGroup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AdminCatalogTermController extends Controller
 {
@@ -24,7 +23,7 @@ class AdminCatalogTermController extends Controller
         }
 
         if ($request->filled('q')) {
-            $query->where('name', 'like', '%' . $request->input('q') . '%');
+            $query->where('name', 'like', '%'.$request->input('q').'%');
         }
 
         if ($request->filled('is_active')) {
@@ -101,7 +100,7 @@ class AdminCatalogTermController extends Controller
 
         $validated['is_active'] = $validated['is_active'] ?? true;
 
-        if (!isset($validated['position'])) {
+        if (! isset($validated['position'])) {
             $maxPosition = CatalogTerm::where('group_id', $validated['group_id'])->max('position');
             $validated['position'] = ($maxPosition ?? 0) + 1;
         }
@@ -130,7 +129,7 @@ class AdminCatalogTermController extends Controller
             'position' => ['nullable', 'integer', 'min:0'],
         ]);
 
-        if (isset($validated['name']) && !isset($validated['slug'])) {
+        if (isset($validated['name']) && ! isset($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['name']);
         }
 

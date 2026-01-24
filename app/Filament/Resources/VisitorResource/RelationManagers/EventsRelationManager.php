@@ -3,9 +3,8 @@
 namespace App\Filament\Resources\VisitorResource\RelationManagers;
 
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables;
-use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class EventsRelationManager extends RelationManager
 {
@@ -31,7 +30,7 @@ class EventsRelationManager extends RelationManager
             ->recordActions([
             ])
             ->toolbarActions([
-            //
+                //
             ])
             ->defaultSort('occurred_at', 'desc');
     }

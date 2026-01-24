@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\HomeComponent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class AdminHomeComponentController extends Controller
 {
@@ -28,7 +27,7 @@ class AdminHomeComponentController extends Controller
         $components = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $components->map(fn($c) => [
+            'data' => $components->map(fn ($c) => [
                 'id' => $c->id,
                 'type' => $c->type,
                 'config' => $c->config,

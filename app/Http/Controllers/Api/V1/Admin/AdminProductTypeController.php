@@ -18,7 +18,7 @@ class AdminProductTypeController extends Controller
             ->orderBy('id');
 
         if ($request->filled('q')) {
-            $query->where('name', 'like', '%' . $request->input('q') . '%');
+            $query->where('name', 'like', '%'.$request->input('q').'%');
         }
 
         if ($request->filled('active')) {

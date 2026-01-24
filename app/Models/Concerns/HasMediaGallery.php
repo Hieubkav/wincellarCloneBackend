@@ -21,7 +21,7 @@ trait HasMediaGallery
 
     /**
      * Get cover image (image with minimum order value).
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\MorphOne<\App\Models\Image>
      */
     public function coverImage(): MorphOne
@@ -75,10 +75,10 @@ trait HasMediaGallery
     {
         $paths = array_values(array_filter($paths));
 
-        \Log::info('[syncImagesFromPaths] Model: ' . get_class($this) . '#' . $this->id);
-        \Log::info('[syncImagesFromPaths] Received paths count: ' . count($paths));
-        \Log::info('[syncImagesFromPaths] Paths: ' . json_encode($paths));
-        \Log::info('[syncImagesFromPaths] Current images count: ' . $this->images()->count());
+        \Log::info('[syncImagesFromPaths] Model: '.get_class($this).'#'.$this->id);
+        \Log::info('[syncImagesFromPaths] Received paths count: '.count($paths));
+        \Log::info('[syncImagesFromPaths] Paths: '.json_encode($paths));
+        \Log::info('[syncImagesFromPaths] Current images count: '.$this->images()->count());
 
         $this->images()->delete();
 
@@ -90,7 +90,7 @@ trait HasMediaGallery
             ]);
         }
 
-        \Log::info('[syncImagesFromPaths] After sync, images count: ' . $this->images()->count());
+        \Log::info('[syncImagesFromPaths] After sync, images count: '.$this->images()->count());
     }
 
     protected function mediaPlaceholderKey(): string

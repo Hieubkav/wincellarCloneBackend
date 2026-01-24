@@ -165,7 +165,7 @@ class Product extends Model
      */
     protected function ensureTermsLoaded(): Collection
     {
-        if (!$this->relationLoaded('terms')) {
+        if (! $this->relationLoaded('terms')) {
             $this->load(['terms.group']);
         }
 

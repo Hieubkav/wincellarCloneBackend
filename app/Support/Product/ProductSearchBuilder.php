@@ -11,18 +11,17 @@ class ProductSearchBuilder
 {
     /**
      * Build product query with filters
-     * 
-     * @param array<string, mixed> $filters
-     * @param string|null $keyword
-     * @param array<int|string, mixed>|null $withRelations
-     * @param bool $isList Whether this is for list view (select fewer columns) or detail view (select all)
+     *
+     * @param  array<string, mixed>  $filters
+     * @param  array<int|string, mixed>|null  $withRelations
+     * @param  bool  $isList  Whether this is for list view (select fewer columns) or detail view (select all)
      */
     public static function build(array $filters, ?string $keyword, ?array $withRelations = null, bool $isList = true): Builder
     {
         // Select specific columns based on view type to reduce payload size
         // List view: Exclude heavy columns (description, extra_attrs can be large JSON)
         // Detail view: Select all columns
-        $columns = $isList 
+        $columns = $isList
             ? [
                 'products.id',
                 'products.name',
@@ -58,7 +57,7 @@ class ProductSearchBuilder
             'type',
         ]);
 
-        if (!empty($relations)) {
+        if (! empty($relations)) {
             $query->with($relations);
         }
 
@@ -87,7 +86,7 @@ class ProductSearchBuilder
             // Skip MATCH AGAINST for short keywords as they won't match
             if (mb_strlen($keyword) >= 4) {
                 // Try full-text search first (better relevance ranking)
-                $searchQuery->whereRaw("MATCH(products.name, products.description) AGAINST(? IN NATURAL LANGUAGE MODE)", [$keyword])
+                $searchQuery->whereRaw('MATCH(products.name, products.description) AGAINST(? IN NATURAL LANGUAGE MODE)', [$keyword])
                     ->orWhere(function (Builder $likeQuery) use ($pattern): void {
                         // Fallback to LIKE search (only name and slug, skip description to avoid false matches)
                         $likeQuery->where('products.name', 'like', $pattern)

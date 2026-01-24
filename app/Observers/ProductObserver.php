@@ -22,6 +22,7 @@ class ProductObserver
         // Priority 3: Flush product query caches using tag-based invalidation
         ProductCacheManager::flushAll();
     }
+
     /**
      * Handle the Product "creating" event.
      * Tự động sinh slug từ tên sản phẩm khi tạo mới
@@ -56,7 +57,7 @@ class ProductObserver
             $product->meta_title = $product->name;
         }
 
-        if (empty($product->meta_description) && !empty($product->description)) {
+        if (empty($product->meta_description) && ! empty($product->description)) {
             $product->meta_description = Str::limit($product->description, 155);
         }
     }
@@ -71,7 +72,7 @@ class ProductObserver
         $counter = 1;
 
         while ($this->slugExists($slug, $ignoreId)) {
-            $slug = $originalSlug . '-' . $counter;
+            $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
 

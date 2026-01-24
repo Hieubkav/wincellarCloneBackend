@@ -2,13 +2,12 @@
 
 namespace App\Filament\Resources\HomeComponents\Tables;
 
-
-use App\Filament\Resources\BaseResource;use App\Enums\HomeComponentType;
+use App\Enums\HomeComponentType;
+use App\Filament\Resources\BaseResource;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -44,15 +43,15 @@ class HomeComponentsTable
                     ->state(function ($record) {
                         $config = $record->config ?? [];
                         $type = $record->type;
-                        
+
                         return match ($type) {
-                            'hero_carousel' => count($config['slides'] ?? []) . ' slides',
-                            'dual_banner' => count($config['banners'] ?? []) . ' banners',
-                            'category_grid' => count($config['categories'] ?? []) . ' danh mục',
-                            'favourite_products' => count($config['products'] ?? []) . ' sản phẩm',
-                            'brand_showcase' => count($config['brands'] ?? []) . ' thương hiệu',
-                            'collection_showcase' => ($config['title'] ?? '') . ' - ' . count($config['products'] ?? []) . ' sản phẩm',
-                            'editorial_spotlight' => count($config['articles'] ?? []) . ' bài viết',
+                            'hero_carousel' => count($config['slides'] ?? []).' slides',
+                            'dual_banner' => count($config['banners'] ?? []).' banners',
+                            'category_grid' => count($config['categories'] ?? []).' danh mục',
+                            'favourite_products' => count($config['products'] ?? []).' sản phẩm',
+                            'brand_showcase' => count($config['brands'] ?? []).' thương hiệu',
+                            'collection_showcase' => ($config['title'] ?? '').' - '.count($config['products'] ?? []).' sản phẩm',
+                            'editorial_spotlight' => count($config['articles'] ?? []).' bài viết',
                             'footer' => $config['company_name'] ?? 'Footer',
                             default => '—'
                         };

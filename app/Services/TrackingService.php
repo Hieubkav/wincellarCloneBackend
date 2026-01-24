@@ -2,10 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\TrackingEvent;
 use App\Models\Visitor;
 use App\Models\VisitorSession;
-use App\Models\TrackingEvent;
-use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class TrackingService
@@ -19,7 +18,7 @@ class TrackingService
     {
         $visitor = Visitor::where('anon_id', $anonId)->first();
 
-        if (!$visitor) {
+        if (! $visitor) {
             $visitor = Visitor::create([
                 'anon_id' => $anonId,
                 'ip_hash' => $ipAddress ? hash('sha256', $ipAddress) : null,
@@ -49,7 +48,7 @@ class TrackingService
             ->first();
 
         // Create new session if no session exists or last session expired
-        if (!$latestSession || $this->shouldCreateNewSession($latestSession)) {
+        if (! $latestSession || $this->shouldCreateNewSession($latestSession)) {
             return VisitorSession::create([
                 'visitor_id' => $visitor->id,
                 'started_at' => now(),
@@ -68,7 +67,7 @@ class TrackingService
      */
     private function shouldCreateNewSession(VisitorSession $session): bool
     {
-        if (!$session->ended_at) {
+        if (! $session->ended_at) {
             // If ended_at is null, check started_at
             return $session->started_at->diffInMinutes(now()) > self::SESSION_TIMEOUT_MINUTES;
         }

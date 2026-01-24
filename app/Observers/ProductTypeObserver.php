@@ -54,7 +54,7 @@ class ProductTypeObserver
         $counter = 1;
 
         while ($this->slugExists($slug, $ignoreId)) {
-            $slug = $originalSlug . '-' . $counter;
+            $slug = $originalSlug.'-'.$counter;
             $counter++;
         }
 

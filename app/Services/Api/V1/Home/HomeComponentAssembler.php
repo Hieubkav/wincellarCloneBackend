@@ -23,14 +23,23 @@ use Illuminate\Support\Facades\Log;
 class HomeComponentAssembler
 {
     private HeroCarouselTransformer $heroCarousel;
+
     private DualBannerTransformer $dualBanner;
+
     private CategoryGridTransformer $categoryGrid;
+
     private FavouriteProductsTransformer $favouriteProducts;
+
     private CollectionShowcaseTransformer $collectionShowcase;
+
     private EditorialSpotlightTransformer $editorialSpotlight;
+
     private BrandShowcaseTransformer $brandShowcase;
+
     private FooterTransformer $footer;
+
     private SpeedDialTransformer $speedDial;
+
     private DefaultComponentTransformer $defaultTransformer;
 
     public function __construct(
@@ -45,20 +54,20 @@ class HomeComponentAssembler
         ?SpeedDialTransformer $speedDial = null,
         ?DefaultComponentTransformer $defaultTransformer = null,
     ) {
-        $this->heroCarousel = $heroCarousel ?? new HeroCarouselTransformer();
-        $this->dualBanner = $dualBanner ?? new DualBannerTransformer();
-        $this->categoryGrid = $categoryGrid ?? new CategoryGridTransformer();
-        $this->favouriteProducts = $favouriteProducts ?? new FavouriteProductsTransformer();
-        $this->collectionShowcase = $collectionShowcase ?? new CollectionShowcaseTransformer();
-        $this->editorialSpotlight = $editorialSpotlight ?? new EditorialSpotlightTransformer();
-        $this->brandShowcase = $brandShowcase ?? new BrandShowcaseTransformer();
-        $this->footer = $footer ?? new FooterTransformer();
-        $this->speedDial = $speedDial ?? new SpeedDialTransformer();
-        $this->defaultTransformer = $defaultTransformer ?? new DefaultComponentTransformer();
+        $this->heroCarousel = $heroCarousel ?? new HeroCarouselTransformer;
+        $this->dualBanner = $dualBanner ?? new DualBannerTransformer;
+        $this->categoryGrid = $categoryGrid ?? new CategoryGridTransformer;
+        $this->favouriteProducts = $favouriteProducts ?? new FavouriteProductsTransformer;
+        $this->collectionShowcase = $collectionShowcase ?? new CollectionShowcaseTransformer;
+        $this->editorialSpotlight = $editorialSpotlight ?? new EditorialSpotlightTransformer;
+        $this->brandShowcase = $brandShowcase ?? new BrandShowcaseTransformer;
+        $this->footer = $footer ?? new FooterTransformer;
+        $this->speedDial = $speedDial ?? new SpeedDialTransformer;
+        $this->defaultTransformer = $defaultTransformer ?? new DefaultComponentTransformer;
     }
 
     /**
-     * @param \Illuminate\Support\Collection<int, \App\Models\HomeComponent> $components
+     * @param  \Illuminate\Support\Collection<int, \App\Models\HomeComponent>  $components
      * @return array<int, array<string, mixed>>
      */
     public function build(Collection $components): array
@@ -92,7 +101,7 @@ class HomeComponentAssembler
     }
 
     /**
-     * @param \Illuminate\Support\Collection<int, \App\Models\HomeComponent> $components
+     * @param  \Illuminate\Support\Collection<int, \App\Models\HomeComponent>  $components
      * @return array{
      *     products: array<int>,
      *     articles: array<int>,
@@ -138,7 +147,7 @@ class HomeComponentAssembler
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      * @return int[]
      */
     private function extractIds(array $data, string $key): array
@@ -151,6 +160,7 @@ class HomeComponentAssembler
                 if ($intValue !== null) {
                     $results[] = $intValue;
                 }
+
                 continue;
             }
 
@@ -166,13 +176,12 @@ class HomeComponentAssembler
      * Extract IDs from simple array format used by Filament .simple()
      * Example: {"products": ["126", "127"]} -> [126, 127]
      *
-     * @param array<string, mixed> $config
-     * @param string $arrayKey
+     * @param  array<string, mixed>  $config
      * @return int[]
      */
     private function extractSimpleIds(array $config, string $arrayKey): array
     {
-        if (!isset($config[$arrayKey]) || !is_array($config[$arrayKey])) {
+        if (! isset($config[$arrayKey]) || ! is_array($config[$arrayKey])) {
             return [];
         }
 
@@ -180,7 +189,7 @@ class HomeComponentAssembler
 
         foreach ($config[$arrayKey] as $item) {
             // Only process non-array items (simple format)
-            if (!is_array($item)) {
+            if (! is_array($item)) {
                 $intValue = $this->toPositiveInt($item);
                 if ($intValue !== null) {
                     $results[] = $intValue;

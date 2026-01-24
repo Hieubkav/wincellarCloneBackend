@@ -48,7 +48,7 @@ class ProductFactory extends Factory
 
         return [
             'name' => $name,
-            'slug' => Str::slug($name) . '-' . $this->faker->unique()->numberBetween(100, 999),
+            'slug' => Str::slug($name).'-'.$this->faker->unique()->numberBetween(100, 999),
             'product_category_id' => \App\Models\ProductCategory::factory(),
             'type_id' => \App\Models\ProductType::factory(),
             'description' => $this->faker->paragraphs(3, true),
@@ -62,4 +62,3 @@ class ProductFactory extends Factory
         ];
     }
 }
-

@@ -8,11 +8,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 class ProductPaginator
 {
     /**
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $perPage
-     * @param int $page
-     * @param array<int, string> $columns
-     * @param string $pageName
+     * @param  array<int, string>  $columns
      */
     public static function paginate(
         Builder $query,

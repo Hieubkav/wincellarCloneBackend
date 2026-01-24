@@ -10,7 +10,7 @@ class EditorialSpotlightTransformer extends AbstractArticleListTransformer
     public function transform(HomeComponent $component, HomeComponentResources $resources): ?array
     {
         $config = $this->normalizeConfig($component);
-        
+
         // Support both 'articles' and 'article_ids' keys for backward compatibility
         $itemsConfig = $this->ensureArray($config['articles'] ?? $config['article_ids'] ?? []);
 

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -19,13 +19,13 @@ return new class extends Migration
         DB::table('settings')->get()->each(function ($setting) {
             $keywords = $setting->meta_default_keywords;
             $keywordsArray = [];
-            
-            if (!empty($keywords)) {
+
+            if (! empty($keywords)) {
                 $keywordsArray = array_map('trim', explode(',', $keywords));
                 $keywordsArray = array_filter($keywordsArray);
                 $keywordsArray = array_values($keywordsArray);
             }
-            
+
             DB::table('settings')
                 ->where('id', $setting->id)
                 ->update(['meta_default_keywords_new' => json_encode($keywordsArray)]);
@@ -52,7 +52,7 @@ return new class extends Migration
         DB::table('settings')->get()->each(function ($setting) {
             $keywords = json_decode($setting->meta_default_keywords, true) ?? [];
             $keywordsString = implode(', ', $keywords);
-            
+
             DB::table('settings')
                 ->where('id', $setting->id)
                 ->update(['meta_default_keywords_new' => $keywordsString]);

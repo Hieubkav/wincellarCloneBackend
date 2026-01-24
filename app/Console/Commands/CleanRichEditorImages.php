@@ -30,10 +30,11 @@ class CleanRichEditorImages extends Command
 
         if (empty($unused)) {
             $this->info('✔ Không có file mồ côi.');
+
             return self::SUCCESS;
         }
 
-        $this->warn('Số file mồ côi: ' . count($unused));
+        $this->warn('Số file mồ côi: '.count($unused));
         $this->line('Danh sách:');
         foreach ($unused as $file) {
             $this->line(" - {$file}");
@@ -41,11 +42,13 @@ class CleanRichEditorImages extends Command
 
         if ($dryRun) {
             $this->info('Dry-run: không xóa file.');
+
             return self::SUCCESS;
         }
 
-        if (!$this->confirm('Xóa toàn bộ các file trên?', false)) {
+        if (! $this->confirm('Xóa toàn bộ các file trên?', false)) {
             $this->info('Đã hủy.');
+
             return self::SUCCESS;
         }
 
@@ -56,7 +59,7 @@ class CleanRichEditorImages extends Command
             }
         }
 
-        $this->info("Đã xóa {$deleted} / " . count($unused) . ' file.');
+        $this->info("Đã xóa {$deleted} / ".count($unused).' file.');
 
         return self::SUCCESS;
     }
@@ -102,12 +105,12 @@ class CleanRichEditorImages extends Command
         $files = [];
 
         foreach ($roots as $root) {
-            if (!File::exists($root)) {
+            if (! File::exists($root)) {
                 continue;
             }
 
             foreach (File::allFiles($root) as $file) {
-                $relative = str_replace(storage_path('app/public') . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+                $relative = str_replace(storage_path('app/public').DIRECTORY_SEPARATOR, '', $file->getRealPath());
                 $relative = str_replace(DIRECTORY_SEPARATOR, '/', $relative);
                 $files[] = $relative;
             }
