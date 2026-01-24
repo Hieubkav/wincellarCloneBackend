@@ -59,21 +59,6 @@ class MenuAssembler
     {
         $children = [];
 
-        // Best Practice: Add "View All [Parent]" as first item
-        if ($parentMenu->href && $parentMenu->href !== '#') {
-            $children[] = [
-                'label' => '',
-                'isViewAll' => true,
-                'children' => [
-                    [
-                        'label' => 'Xem tất cả ' . ($parentMenu->title ?? ''),
-                        'href' => $parentMenu->href,
-                        'isViewAll' => true,
-                    ],
-                ],
-            ];
-        }
-
         foreach ($blocks as $block) {
             // Only include active items
             $activeItems = $block->items->filter(fn ($item) => $item->active);
