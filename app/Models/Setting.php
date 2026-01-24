@@ -35,6 +35,7 @@ class Setting extends Model
         'email',
         'google_map_embed',
         'footer_config',
+        'contact_config',
         'meta_default_title',
         'meta_default_description',
         'meta_default_keywords',
@@ -50,6 +51,7 @@ class Setting extends Model
             'extra' => 'array',
             'meta_default_keywords' => 'array',
             'footer_config' => 'array',
+            'contact_config' => 'array',
         ];
     }
 
