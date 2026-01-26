@@ -41,6 +41,7 @@ Route::middleware(['api', 'throttle:api'])
 
         // Watermark debug endpoint (temporary)
         Route::get('watermark/debug', [\App\Http\Controllers\Api\V1\WatermarkDebugController::class, 'debug'])->name('watermark.debug');
+        Route::get('watermark/test/{imageId}', [\App\Http\Controllers\Api\V1\WatermarkDebugController::class, 'test'])->name('watermark.test');
 
         require __DIR__.'/api/home.php';
         require __DIR__.'/api/menus.php';
