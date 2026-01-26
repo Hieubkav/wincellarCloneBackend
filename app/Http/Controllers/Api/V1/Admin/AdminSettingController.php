@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class AdminSettingController extends Controller
 {
@@ -91,11 +92,61 @@ class AdminSettingController extends Controller
             unset($validated['google_map_embed']);
         }
 
+        // Check if watermark settings changed - need to clear image proxy cache
+        $watermarkFields = [
+            'product_watermark_type',
+            'product_watermark_image_id',
+            'product_watermark_position',
+            'product_watermark_size',
+            'product_watermark_text',
+            'product_watermark_text_size',
+            'product_watermark_text_position',
+            'product_watermark_text_opacity',
+        ];
+        
+        $watermarkChanged = false;
+        foreach ($watermarkFields as $field) {
+            if (array_key_exists($field, $validated) && $setting->$field !== $validated[$field]) {
+                $watermarkChanged = true;
+                break;
+            }
+        }
+
         $setting->update($validated);
+
+        // Clear all image proxy cache when watermark settings change
+        if ($watermarkChanged) {
+            $this->clearImageProxyCache();
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Cập nhật cấu hình thành công',
         ]);
+    }
+
+    /**
+     * Clear all cached watermarked images
+     */
+    private function clearImageProxyCache(): void
+    {
+        // Clear all cache with image_proxy prefix
+        // For file/database cache driver, we need to flush or use tags
+        // Simple approach: flush entire cache (not ideal for production with many cache types)
+        // Better approach: use cache tags if using Redis/Memcached
+        
+        $cacheDriver = config('cache.default');
+        
+        if (in_array($cacheDriver, ['redis', 'memcached'])) {
+            // Use cache tags for better granularity
+            Cache::tags(['image_proxy'])->flush();
+        } else {
+            // For file/database driver, we need to iterate or flush
+            // Since we prefix keys with 'image_proxy:', we can't easily delete by prefix
+            // Best simple solution: store a version number in settings
+            Cache::flush();
+        }
+        
+        \Log::info('Image proxy cache cleared due to watermark settings change');
     }
 }
