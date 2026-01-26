@@ -82,7 +82,7 @@ class AdminProductController extends Controller
                 'type_id' => $p->type_id,
                 'type_name' => $p->type?->name,
                 'category_name' => $p->categories->first()?->name,
-                'cover_image_url' => $p->coverImage?->url,
+                'cover_image_url' => $p->coverImage?->absolute_url ?? $p->cover_image_url,
                 'created_at' => $p->created_at?->toIso8601String(),
             ]),
             'meta' => [
@@ -112,10 +112,10 @@ class AdminProductController extends Controller
                 'active' => $product->active,
                 'type_id' => $product->type_id,
                 'category_ids' => $product->categories->pluck('id'),
-                'cover_image_url' => $product->coverImage?->url,
+                'cover_image_url' => $product->coverImage?->absolute_url ?? $product->cover_image_url,
                 'images' => $product->images->map(fn ($img) => [
                     'id' => $img->id,
-                    'url' => $img->url,
+                    'url' => $img->absolute_url,
                     'path' => $img->file_path,
                 ]),
                 'created_at' => $product->created_at?->toIso8601String(),
