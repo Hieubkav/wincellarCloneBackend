@@ -106,15 +106,32 @@ class WatermarkService
 
         try {
             // Draw text shadow first
-            $image->text($text, $x + 2, $y + 2, $fontPath, $fontSize, 'rgba(0, 0, 0, ' . ($opacity * 0.5 / 100) . ')', 'center');
+            $image->text($text, $x + 2, $y + 2, function ($font) use ($fontPath, $fontSize, $opacity) {
+                if ($fontPath) {
+                    $font->file($fontPath);
+                }
+                $font->size($fontSize);
+                $font->color('rgba(0, 0, 0, ' . ($opacity * 0.5 / 100) . ')');
+                $font->align('center');
+                $font->valign('middle');
+            });
             
             // Draw main text
-            $image->text($text, $x, $y, $fontPath, $fontSize, 'rgba(255, 255, 255, ' . ($opacity / 100) . ')', 'center');
+            $image->text($text, $x, $y, function ($font) use ($fontPath, $fontSize, $opacity) {
+                if ($fontPath) {
+                    $font->file($fontPath);
+                }
+                $font->size($fontSize);
+                $font->color('rgba(255, 255, 255, ' . ($opacity / 100) . ')');
+                $font->align('center');
+                $font->valign('middle');
+            });
 
         } catch (\Exception $e) {
             \Log::error('Text watermark failed', [
                 'error' => $e->getMessage(),
                 'text' => $text,
+                'font_path' => $fontPath,
             ]);
         }
 
