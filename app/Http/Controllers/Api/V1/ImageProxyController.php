@@ -9,6 +9,10 @@ use App\Services\WatermarkService;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\Encoders\PngEncoder;
+use Intervention\Image\Encoders\WebpEncoder;
+use Intervention\Image\Encoders\GifEncoder;
 
 class ImageProxyController extends Controller
 {
@@ -81,12 +85,12 @@ class ImageProxyController extends Controller
         // Apply watermark
         $processedImage = $this->watermarkService->applyWatermark($fullPath);
 
-        // Encode based on mime type
-        $format = $this->getFormatFromMime($mime);
-        $encoded = $processedImage->encode($format, $quality);
+        // Encode based on mime type using Intervention Image v3 Encoder objects
+        $encoder = $this->getEncoderFromMime($mime, $quality);
+        $encoded = $processedImage->encode($encoder);
 
         return [
-            'content' => (string) $encoded,
+            'content' => $encoded->toString(),
             'mime' => $mime,
         ];
     }
@@ -121,7 +125,22 @@ class ImageProxyController extends Controller
     }
 
     /**
+     * Get Intervention Image v3 Encoder from mime type
+     */
+    private function getEncoderFromMime(string $mime, int $quality): \Intervention\Image\Interfaces\EncoderInterface
+    {
+        return match ($mime) {
+            'image/png' => new PngEncoder(),
+            'image/webp' => new WebpEncoder($quality),
+            'image/gif' => new GifEncoder(),
+            'image/jpeg', 'image/jpg' => new JpegEncoder($quality),
+            default => new JpegEncoder($quality),
+        };
+    }
+
+    /**
      * Get image format from mime type
+     * @deprecated Use getEncoderFromMime() instead for Intervention Image v3
      */
     private function getFormatFromMime(string $mime): string
     {
