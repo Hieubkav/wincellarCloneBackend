@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Image;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Interfaces\ImageInterface;
@@ -54,9 +55,18 @@ class WatermarkService
             return $image;
         }
 
-        $watermarkPath = storage_path('app/' . $setting->productWatermarkImage->file_path);
+        $watermarkImage = $setting->productWatermarkImage;
+        $disk = $watermarkImage->disk ?? 'public';
+        
+        // Get correct path using Storage facade
+        $watermarkPath = Storage::disk($disk)->path($watermarkImage->file_path);
         
         if (! file_exists($watermarkPath)) {
+            \Log::warning('Watermark image not found', [
+                'path' => $watermarkPath,
+                'disk' => $disk,
+                'file_path' => $watermarkImage->file_path,
+            ]);
             return $image;
         }
 
