@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Interfaces\ImageInterface;
+use Intervention\Image\Typography\FontFactory;
 
 class WatermarkService
 {
@@ -58,7 +59,6 @@ class WatermarkService
         $watermarkImage = $setting->productWatermarkImage;
         $disk = $watermarkImage->disk ?? 'public';
         
-        // Get correct path using Storage facade
         $watermarkPath = Storage::disk($disk)->path($watermarkImage->file_path);
         
         if (! file_exists($watermarkPath)) {
@@ -73,11 +73,9 @@ class WatermarkService
         try {
             $watermark = $this->manager->read($watermarkPath);
             
-            // Resize watermark
             $size = $this->parseSize($setting->product_watermark_size ?? '128x128');
             $watermark->scale(width: $size, height: $size);
 
-            // Calculate position
             $positionString = $this->getPositionString($position);
 
             // Place watermark with 70% opacity
@@ -94,7 +92,7 @@ class WatermarkService
     }
 
     /**
-     * Apply text watermark
+     * Apply text watermark using Intervention Image v3 API
      */
     private function applyTextWatermark(ImageInterface $image, Setting $setting): ImageInterface
     {
@@ -105,37 +103,46 @@ class WatermarkService
         }
 
         $fontSize = $this->getFontSize($setting->product_watermark_text_size ?? 'medium', $image);
-        $opacity = $setting->product_watermark_text_opacity ?? 50;
+        $opacity = ($setting->product_watermark_text_opacity ?? 50) / 100;
         $position = $setting->product_watermark_text_position ?? 'center';
 
         // Calculate position coordinates
         [$x, $y] = $this->calculateTextPosition($image, $position, $fontSize);
 
-        // Font file path (we'll use system font or fallback)
+        // Font file path
         $fontPath = $this->getFontPath();
 
         try {
-            // Draw text shadow first
-            $image->text($text, $x + 2, $y + 2, function ($font) use ($fontPath, $fontSize, $opacity) {
+            // Draw text shadow first (for better visibility)
+            $shadowOpacity = $opacity * 0.5;
+            $image->text($text, (int)($x + 2), (int)($y + 2), function (FontFactory $font) use ($fontPath, $fontSize, $shadowOpacity) {
                 if ($fontPath) {
-                    $font->file($fontPath);
+                    $font->filename($fontPath);
                 }
                 $font->size($fontSize);
-                $font->color('rgba(0, 0, 0, ' . ($opacity * 0.5 / 100) . ')');
+                $font->color("rgba(0, 0, 0, {$shadowOpacity})");
                 $font->align('center');
                 $font->valign('middle');
             });
             
             // Draw main text
-            $image->text($text, $x, $y, function ($font) use ($fontPath, $fontSize, $opacity) {
+            $image->text($text, (int)$x, (int)$y, function (FontFactory $font) use ($fontPath, $fontSize, $opacity) {
                 if ($fontPath) {
-                    $font->file($fontPath);
+                    $font->filename($fontPath);
                 }
                 $font->size($fontSize);
-                $font->color('rgba(255, 255, 255, ' . ($opacity / 100) . ')');
+                $font->color("rgba(255, 255, 255, {$opacity})");
                 $font->align('center');
                 $font->valign('middle');
             });
+
+            \Log::info('Text watermark applied', [
+                'text' => $text,
+                'fontSize' => $fontSize,
+                'opacity' => $opacity,
+                'position' => [$x, $y],
+                'fontPath' => $fontPath,
+            ]);
 
         } catch (\Exception $e) {
             \Log::error('Text watermark failed', [
@@ -187,7 +194,7 @@ class WatermarkService
     ): array {
         $imgWidth = $image->width();
         $imgHeight = $image->height();
-        $padding = $fontSize;
+        $padding = $fontSize * 2;
 
         return match ($position) {
             'top' => [$imgWidth / 2, $padding],
@@ -202,17 +209,17 @@ class WatermarkService
      */
     private function getFontSize(string $textSize, ImageInterface $image): int
     {
-        $baseSize = min($image->width(), $image->height()) * 0.1;
+        $baseSize = min($image->width(), $image->height()) * 0.08;
 
         return (int) match ($textSize) {
-            'xxsmall' => $baseSize * 0.3,
-            'xsmall' => $baseSize * 0.5,
-            'small' => $baseSize * 0.7,
-            'medium' => $baseSize * 1.0,
-            'large' => $baseSize * 1.3,
-            'xlarge' => $baseSize * 1.6,
-            'xxlarge' => $baseSize * 2.0,
-            default => $baseSize,
+            'xxsmall' => max(12, $baseSize * 0.4),
+            'xsmall' => max(14, $baseSize * 0.6),
+            'small' => max(16, $baseSize * 0.8),
+            'medium' => max(20, $baseSize * 1.0),
+            'large' => max(24, $baseSize * 1.4),
+            'xlarge' => max(32, $baseSize * 1.8),
+            'xxlarge' => max(40, $baseSize * 2.4),
+            default => max(20, $baseSize),
         };
     }
 
@@ -221,11 +228,20 @@ class WatermarkService
      */
     private function getFontPath(): ?string
     {
+        // Check for custom font in storage first
+        $customFont = storage_path('app/fonts/watermark.ttf');
+        if (file_exists($customFont)) {
+            return $customFont;
+        }
+
         // Try common system fonts
         $possiblePaths = [
-            'C:/Windows/Fonts/arial.ttf',           // Windows
-            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',  // Linux
-            '/System/Library/Fonts/Helvetica.ttc',  // macOS
+            'C:/Windows/Fonts/arial.ttf',
+            'C:/Windows/Fonts/Arial.ttf',
+            'C:/Windows/Fonts/segoeui.ttf',
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+            '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
+            '/System/Library/Fonts/Helvetica.ttc',
         ];
 
         foreach ($possiblePaths as $path) {
@@ -234,7 +250,6 @@ class WatermarkService
             }
         }
 
-        // Fallback: no font (will use built-in)
         return null;
     }
 

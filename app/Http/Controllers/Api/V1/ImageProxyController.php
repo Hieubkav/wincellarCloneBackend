@@ -36,13 +36,18 @@ class ImageProxyController extends Controller
         $applyWatermark = request()->boolean('w', true);
         $quality = min(100, max(60, request()->integer('q', 85)));
 
-        // Generate cache key based on image + settings
+        // Generate cache key based on image + settings (includes setting hash for cache busting)
         $cacheKey = $this->getCacheKey($image, $applyWatermark, $quality);
 
-        // Check if browser cache is valid (ETag)
-        $etag = md5($cacheKey);
-        if (request()->header('If-None-Match') === $etag) {
-            return response('', 304)->header('ETag', $etag);
+        // ETag includes settings hash - changes when watermark settings change
+        $etag = '"' . md5($cacheKey) . '"';
+        
+        // Check if browser cache is valid (ETag must match exactly)
+        $ifNoneMatch = request()->header('If-None-Match');
+        if ($ifNoneMatch === $etag) {
+            return response('', 304)
+                ->header('ETag', $etag)
+                ->header('Cache-Control', 'no-cache, must-revalidate');
         }
 
         // Get or cache processed image
@@ -50,10 +55,12 @@ class ImageProxyController extends Controller
             return $this->processImage($image, $applyWatermark, $quality);
         });
 
+        // Use no-cache to force revalidation on each request
+        // This ensures ETag check happens and new watermark is served when settings change
         return response($processed['content'], 200, [
             'Content-Type' => $processed['mime'],
             'ETag' => $etag,
-            'Cache-Control' => 'public, max-age=86400', // 24 hours
+            'Cache-Control' => 'no-cache, must-revalidate',
             'Last-Modified' => $image->updated_at->toRfc7231String(),
             'Content-Disposition' => 'inline; filename="' . basename($image->file_path) . '"',
         ]);
