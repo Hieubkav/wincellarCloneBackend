@@ -21,7 +21,7 @@ class SettingController extends Controller
             'api:v1:settings',
             3600,
             fn () => Setting::query()
-                ->with(['logoImage', 'faviconImage', 'productWatermarkImage'])
+                ->with(['logoImage', 'faviconImage', 'ogImage', 'productWatermarkImage'])
                 ->first()
         );
 

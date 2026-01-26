@@ -11,7 +11,7 @@ class AdminSettingController extends Controller
 {
     public function show(): JsonResponse
     {
-        $setting = Setting::with(['logoImage', 'faviconImage', 'productWatermarkImage'])->first();
+        $setting = Setting::with(['logoImage', 'faviconImage', 'ogImage', 'productWatermarkImage'])->first();
 
         if (! $setting) {
             $setting = Setting::create([]);
@@ -35,6 +35,8 @@ class AdminSettingController extends Controller
                 'logo_image_url' => $setting->logoImage?->url,
                 'favicon_image_id' => $setting->favicon_image_id,
                 'favicon_image_url' => $setting->faviconImage?->url,
+                'og_image_id' => $setting->og_image_id,
+                'og_image_url' => $setting->ogImage?->url,
                 'product_watermark_image_id' => $setting->product_watermark_image_id,
                 'product_watermark_image_url' => $setting->productWatermarkImage?->url,
                 'product_watermark_type' => $setting->product_watermark_type ?? 'image',
@@ -71,6 +73,7 @@ class AdminSettingController extends Controller
             'meta_default_keywords' => ['nullable', 'string', 'max:500'],
             'logo_image_id' => ['nullable', 'integer', 'exists:images,id'],
             'favicon_image_id' => ['nullable', 'integer', 'exists:images,id'],
+            'og_image_id' => ['nullable', 'integer', 'exists:images,id'],
             'product_watermark_image_id' => ['nullable', 'integer', 'exists:images,id'],
             'product_watermark_type' => ['nullable', 'string', 'in:image,text'],
             'product_watermark_position' => ['nullable', 'string', 'in:none,top_left,top_right,bottom_left,bottom_right'],

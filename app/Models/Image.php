@@ -174,6 +174,13 @@ class Image extends Model
                 'updated_at' => now(),
             ]);
 
+        $ogImageUpdated = \DB::table('settings')
+            ->where('og_image_id', $this->id)
+            ->update([
+                'og_image_id' => null,
+                'updated_at' => now(),
+            ]);
+
         $watermarkUpdated = \DB::table('settings')
             ->where('product_watermark_image_id', $this->id)
             ->update([
@@ -181,7 +188,7 @@ class Image extends Model
                 'updated_at' => now(),
             ]);
 
-        return ($logoUpdated + $faviconUpdated + $watermarkUpdated) > 0;
+        return ($logoUpdated + $faviconUpdated + $ogImageUpdated + $watermarkUpdated) > 0;
     }
 
     private function isReferencedInSocialLinks(): bool
