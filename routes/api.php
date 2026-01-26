@@ -36,6 +36,9 @@ Route::middleware(['api', 'throttle:api'])
             Route::post('version/increment', [\App\Http\Controllers\Api\V1\CacheController::class, 'incrementVersion'])->name('version.increment');
         });
 
+        // Image proxy endpoint (public, with watermark)
+        Route::get('images/{id}', [\App\Http\Controllers\Api\V1\ImageProxyController::class, 'show'])->name('images.show');
+
         require __DIR__.'/api/home.php';
         require __DIR__.'/api/menus.php';
         require __DIR__.'/api/products.php';

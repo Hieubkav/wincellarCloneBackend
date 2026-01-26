@@ -101,6 +101,16 @@ class Image extends Model
     }
 
     /**
+     * Get proxy URL (recommended for product images with watermark protection)
+     * Example: http://localhost:8000/api/v1/images/123
+     */
+    public function getProxyUrlAttribute(): string
+    {
+        $baseUrl = config('app.url');
+        return "{$baseUrl}/api/v1/images/{$this->id}";
+    }
+
+    /**
      * Determine image type from model relationship
      */
     private function getImageType(): string

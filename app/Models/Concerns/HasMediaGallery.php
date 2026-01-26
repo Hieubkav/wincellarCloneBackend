@@ -36,7 +36,8 @@ trait HasMediaGallery
         if ($this->relationLoaded('images')) {
             $firstImage = $this->getRelation('images')->first();
             if ($firstImage instanceof Image) {
-                return $firstImage->absolute_url;
+                // Use proxy URL for product images (watermark protection)
+                return $this->shouldUseProxyUrl() ? $firstImage->proxy_url : $firstImage->absolute_url;
             }
         }
 
@@ -46,7 +47,8 @@ trait HasMediaGallery
             : $this->coverImage;
 
         if ($cover instanceof Image) {
-            return $cover->absolute_url;
+            // Use proxy URL for product images (watermark protection)
+            return $this->shouldUseProxyUrl() ? $cover->proxy_url : $cover->absolute_url;
         }
 
         // Fallback to placeholder using service
@@ -63,14 +65,25 @@ trait HasMediaGallery
             ? $this->getRelation('images')
             : $this->images;
 
+        $useProxy = $this->shouldUseProxyUrl();
+
         return $images->map(fn (Image $image) => [
             'id' => $image->id,
-            'url' => $image->absolute_url, // Always absolute
+            'url' => $useProxy ? $image->proxy_url : $image->absolute_url, // Proxy URL for products
             'alt' => $image->alt,
             'order' => $image->order,
             'width' => $image->width,
             'height' => $image->height,
         ]);
+    }
+
+    /**
+     * Determine if proxy URL should be used (for watermark protection)
+     * Only products need watermark protection
+     */
+    protected function shouldUseProxyUrl(): bool
+    {
+        return $this instanceof \App\Models\Product;
     }
 
     public function syncImagesFromPaths(array $paths): void

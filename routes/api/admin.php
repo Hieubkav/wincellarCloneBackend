@@ -102,6 +102,7 @@ Route::prefix('admin')
         Route::put('images/{id}', [AdminImageController::class, 'update'])->name('images.update');
         Route::delete('images/{id}', [AdminImageController::class, 'destroy'])->name('images.destroy');
         Route::post('images/bulk-delete', [AdminImageController::class, 'bulkDestroy'])->name('images.bulk-destroy');
+        Route::post('images/{id}/clear-cache', [\App\Http\Controllers\Api\V1\ImageProxyController::class, 'clearCache'])->name('images.clear-cache');
 
         // Social Links CRUD
         Route::get('social-links', [AdminSocialLinkController::class, 'index'])->name('social-links.index');
