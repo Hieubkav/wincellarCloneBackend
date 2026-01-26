@@ -62,15 +62,17 @@ class ProductController extends Controller
             $sort = $request->input('sort', '-created_at');
             $searchQuery = $request->input('q');
 
-            // Priority 3 Optimization: Smarter cache strategy with tags
+            // Priority 3 Optimization + ROOT CAUSE #6 FIX: 
             // - Semantic cache keys (no MD5)
             // - Tag-based invalidation
             // - Dynamic TTL based on query type
+            // - Cache locks to prevent race conditions
             $cacheKey = ProductCacheManager::buildKey($filters, $sort, $requestedPage, $perPage, $searchQuery);
             $cacheTags = ProductCacheManager::getTags($filters);
             $cacheTtl = ProductCacheManager::getTtl($filters, $searchQuery);
 
-            $paginator = Cache::tags($cacheTags)->remember($cacheKey, $cacheTtl, function () use ($query, $perPage, $requestedPage, $usingCursor) {
+            // Use ProductCacheManager::remember() with lock protection
+            $paginator = ProductCacheManager::remember($cacheKey, $cacheTtl, $cacheTags, function () use ($query, $perPage, $requestedPage, $usingCursor) {
                 return ProductPaginator::paginate(
                     $query,
                     $perPage,

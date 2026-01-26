@@ -8,24 +8,68 @@ use Illuminate\Support\Facades\Cache;
  * ProductCacheManager - Optimized cache strategy for product queries
  *
  * Priority 3 optimization: Smarter cache keys with tag-based invalidation
+ * ROOT CAUSE #6 FIX: Cache race condition prevention with locks and versioning
  *
  * Features:
  * - Semantic cache keys (no MD5 hashing)
  * - Cache tags for easy invalidation by filter type
  * - Separate TTL for different query types
  * - Cache statistics tracking
+ * - Cache locks to prevent race conditions
+ * - Cache versioning to invalidate all caches atomically
  *
  * Usage:
- * $cacheKey = ProductCacheManager::buildKey($filters, $sort, $page, $perPage);
- * $tags = ProductCacheManager::getTags($filters);
- * $ttl = ProductCacheManager::getTtl($filters);
- *
- * $result = Cache::tags($tags)->remember($cacheKey, $ttl, function() {
+ * $result = ProductCacheManager::remember($cacheKey, $ttl, $tags, function() {
  *     return $query->get();
  * });
  */
 class ProductCacheManager
 {
+    /**
+     * Cache version key - increment this to invalidate ALL product caches
+     */
+    private const CACHE_VERSION_KEY = 'products:cache:version';
+
+    /**
+     * Remember cached value with lock protection
+     * Prevents cache stampede and race conditions
+     *
+     * @param  string  $key  Cache key
+     * @param  int  $ttl  Time to live in seconds
+     * @param  array<string>  $tags  Cache tags for invalidation
+     * @param  callable  $callback  Callback to get fresh data
+     * @return mixed
+     */
+    public static function remember(string $key, int $ttl, array $tags, callable $callback): mixed
+    {
+        // Add version to cache key to support global invalidation
+        $version = self::getCacheVersion();
+        $versionedKey = "{$key}:v{$version}";
+
+        // Use cache lock to prevent cache stampede
+        // Block up to 5 seconds waiting for lock, timeout after 10 seconds
+        return Cache::lock("lock:{$versionedKey}", 10)->block(5, function () use ($versionedKey, $ttl, $tags, $callback) {
+            return Cache::tags($tags)->remember($versionedKey, $ttl, $callback);
+        });
+    }
+
+    /**
+     * Get current cache version
+     * Version is incremented when cache needs to be invalidated globally
+     */
+    public static function getCacheVersion(): int
+    {
+        return (int) Cache::get(self::CACHE_VERSION_KEY, 1);
+    }
+
+    /**
+     * Increment cache version to invalidate all caches
+     * More efficient than Cache::tags()->flush() for large datasets
+     */
+    public static function incrementVersion(): void
+    {
+        Cache::increment(self::CACHE_VERSION_KEY);
+    }
     /**
      * Build semantic cache key from filters
      *
@@ -177,9 +221,14 @@ class ProductCacheManager
     /**
      * Invalidate all product caches
      * Useful when products are updated in admin
+     * Uses cache versioning for atomic invalidation
      */
     public static function flushAll(): void
     {
+        // Increment version to invalidate all caches atomically
+        self::incrementVersion();
+        
+        // Also flush tags as fallback
         Cache::tags('products')->flush();
     }
 

@@ -33,6 +33,9 @@ class AdminCategoryController extends Controller
             $query->where('active', $request->boolean('active'));
         }
 
+        // Fix N+1: Eager load type relationship
+        $query->with('type');
+        
         $categories = $query->orderBy('order')->orderBy('name')->paginate($perPage);
 
         $data = $categories->items();

@@ -139,7 +139,9 @@ class AdminDashboardController extends Controller
             ->get();
 
         $productIds = $topProducts->pluck('product_id');
-        $products = Product::with('coverImage')
+        
+        // Fix N+1: Eager load coverImage và thêm categories, type nếu cần
+        $products = Product::with(['coverImage', 'categories', 'type'])
             ->whereIn('id', $productIds)
             ->get()
             ->keyBy('id');
@@ -172,7 +174,9 @@ class AdminDashboardController extends Controller
             ->get();
 
         $articleIds = $topArticles->pluck('article_id');
-        $articles = Article::with('coverImage')
+        
+        // Fix N+1: Consistent eager loading
+        $articles = Article::with(['coverImage'])
             ->whereIn('id', $articleIds)
             ->get()
             ->keyBy('id');
