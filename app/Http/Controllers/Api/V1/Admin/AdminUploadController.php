@@ -89,7 +89,8 @@ class AdminUploadController extends Controller
             ], 422);
         }
 
-        $url = '/storage/'.$path;
+        // Return absolute URL
+        $url = $imageModel->absolute_url;
 
         return response()->json([
             'success' => true,
@@ -173,7 +174,8 @@ class AdminUploadController extends Controller
             ], 422);
         }
 
-        $url = '/storage/'.$path;
+        // Return absolute URL
+        $url = $imageModel->absolute_url;
 
         return response()->json([
             'success' => true,
