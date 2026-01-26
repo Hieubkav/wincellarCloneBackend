@@ -39,6 +39,13 @@ class AppServiceProvider extends ServiceProvider
 
             return new IpHasher($algorithm, $salt);
         });
+
+        // Register MediaConfig singleton
+        $this->app->singleton(\App\ValueObjects\MediaConfig::class, function () {
+            $config = \App\ValueObjects\MediaConfig::fromConfig();
+            $config->validate(); // Validate on boot
+            return $config;
+        });
     }
 
     public function boot(): void

@@ -75,15 +75,46 @@ class Image extends Model
         return $this->morphTo();
     }
 
+    /**
+     * Get relative URL (for backward compatibility)
+     * @deprecated Use getAbsoluteUrlAttribute() instead
+     */
     public function getUrlAttribute(): ?string
     {
         if (! $this->file_path) {
             return null;
         }
 
-        // Always return relative path for portability across environments
-        // Frontend will prepend the correct backend URL from NEXT_PUBLIC_API_BASE_URL
+        // Return relative path (kept for backward compatibility)
         return '/storage/' . ltrim($this->file_path, '/');
+    }
+
+    /**
+     * Get absolute URL using service layer
+     * THIS IS THE RECOMMENDED ACCESSOR
+     */
+    public function getAbsoluteUrlAttribute(): string
+    {
+        // Delegate to service layer (Facade pattern)
+        return app(\App\Services\ImageFallbackService::class)
+            ->getUrlWithFallback($this, $this->getImageType());
+    }
+
+    /**
+     * Determine image type from model relationship
+     */
+    private function getImageType(): string
+    {
+        if (! $this->model_type) {
+            return 'default';
+        }
+
+        return match ($this->model_type) {
+            'App\\Models\\Product' => 'product',
+            'App\\Models\\Article' => 'article',
+            'App\\Models\\CatalogTerm' => 'term',
+            default => 'default',
+        };
     }
 
     private function ensureOrderValue(): void

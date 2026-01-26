@@ -36,7 +36,7 @@ trait HasMediaGallery
         if ($this->relationLoaded('images')) {
             $firstImage = $this->getRelation('images')->first();
             if ($firstImage instanceof Image) {
-                return $firstImage->url;
+                return $firstImage->absolute_url;
             }
         }
 
@@ -46,10 +46,12 @@ trait HasMediaGallery
             : $this->coverImage;
 
         if ($cover instanceof Image) {
-            return $cover->url;
+            return $cover->absolute_url;
         }
 
-        return MediaConfig::placeholder($this->mediaPlaceholderKey());
+        // Fallback to placeholder using service
+        return app(\App\Services\ImageFallbackService::class)
+            ->getUrlWithFallback(null, $this->mediaPlaceholderKey());
     }
 
     /**
@@ -63,7 +65,7 @@ trait HasMediaGallery
 
         return $images->map(fn (Image $image) => [
             'id' => $image->id,
-            'url' => $image->url,
+            'url' => $image->absolute_url, // Always absolute
             'alt' => $image->alt,
             'order' => $image->order,
             'width' => $image->width,
