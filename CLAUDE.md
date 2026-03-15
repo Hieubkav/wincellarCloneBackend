@@ -103,6 +103,6 @@
 - Monitor trước deploy: budget alerts + ước lượng Records × Size × Requests/day; track slow queries >1s.
 
 Nhớ là frontend thì chạy ở localhost:3000
-Backend chạy ở localhost:8000 nha 
+Backend chạy ở localhost:8000 nha
 Filament admin chạy ở localhost:8000/admin nha
 Còn ở frontend có /admin khác nha và nó đang dùng làm cái chính không dùng filament admin nữa

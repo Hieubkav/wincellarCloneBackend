@@ -106,41 +106,23 @@ class WatermarkService
         $opacity = ($setting->product_watermark_text_opacity ?? 50) / 100;
         $position = $setting->product_watermark_text_position ?? 'center';
 
-        // Calculate position coordinates
-        [$x, $y] = $this->calculateTextPosition($image, $position, $fontSize);
-
         // Font file path
         $fontPath = $this->getFontPath();
 
         try {
-            // Draw text shadow first (for better visibility)
-            $shadowOpacity = $opacity * 0.5;
-            $image->text($text, (int)($x + 2), (int)($y + 2), function (FontFactory $font) use ($fontPath, $fontSize, $shadowOpacity) {
-                if ($fontPath) {
-                    $font->filename($fontPath);
-                }
-                $font->size($fontSize);
-                $font->color("rgba(0, 0, 0, {$shadowOpacity})");
-                $font->align('center');
-                $font->valign('middle');
-            });
-            
-            // Draw main text
-            $image->text($text, (int)$x, (int)$y, function (FontFactory $font) use ($fontPath, $fontSize, $opacity) {
-                if ($fontPath) {
-                    $font->filename($fontPath);
-                }
-                $font->size($fontSize);
-                $font->color("rgba(255, 255, 255, {$opacity})");
-                $font->align('center');
-                $font->valign('middle');
-            });
+            if ($setting->product_watermark_text_repeat) {
+                $this->drawRepeatedTextRow($image, $text, $position, $fontSize, $opacity, $fontPath);
+            } else {
+                [$x, $y] = $this->calculateTextPosition($image, $position, $fontSize);
+                $this->drawTextWatermark($image, $text, $x, $y, $fontSize, $opacity, $fontPath);
+            }
 
             \Log::info('Text watermark applied', [
                 'text' => $text,
                 'fontSize' => $fontSize,
                 'opacity' => $opacity,
-                'position' => [$x, $y],
+                'position' => $position,
+                'repeat' => (bool) $setting->product_watermark_text_repeat,
                 'fontPath' => $fontPath,
             ]);
 
@@ -221,6 +203,71 @@ class WatermarkService
             'xxlarge' => max(40, $baseSize * 2.4),
             default => max(20, $baseSize),
         };
+    }
+
+    private function drawRepeatedTextRow(
+        ImageInterface $image,
+        string $text,
+        string $position,
+        int $fontSize,
+        float $opacity,
+        ?string $fontPath
+    ): void {
+        $imgWidth = $image->width();
+        $padding = max(12, (int) ($fontSize * 1.5));
+
+        [, $y] = $this->calculateTextPosition($image, $position, $fontSize);
+
+        $estimatedWidth = $this->estimateTextWidth($text, $fontSize);
+        $gap = max((int) ($fontSize * 2), (int) ($estimatedWidth * 0.25));
+        $step = max(1, $estimatedWidth + $gap);
+
+        $halfWidth = $estimatedWidth / 2;
+        $startX = $padding + $halfWidth;
+        $maxX = $imgWidth - $padding - $halfWidth;
+
+        for ($x = $startX; $x <= $maxX; $x += $step) {
+            $this->drawTextWatermark($image, $text, $x, $y, $fontSize, $opacity, $fontPath);
+        }
+    }
+
+    private function drawTextWatermark(
+        ImageInterface $image,
+        string $text,
+        float $x,
+        float $y,
+        int $fontSize,
+        float $opacity,
+        ?string $fontPath
+    ): void {
+        $shadowOpacity = $opacity * 0.5;
+
+        $image->text($text, (int) ($x + 2), (int) ($y + 2), function (FontFactory $font) use ($fontPath, $fontSize, $shadowOpacity) {
+            if ($fontPath) {
+                $font->filename($fontPath);
+            }
+            $font->size($fontSize);
+            $font->color("rgba(0, 0, 0, {$shadowOpacity})");
+            $font->align('center');
+            $font->valign('middle');
+        });
+
+        $image->text($text, (int) $x, (int) $y, function (FontFactory $font) use ($fontPath, $fontSize, $opacity) {
+            if ($fontPath) {
+                $font->filename($fontPath);
+            }
+            $font->size($fontSize);
+            $font->color("rgba(255, 255, 255, {$opacity})");
+            $font->align('center');
+            $font->valign('middle');
+        });
+    }
+
+    private function estimateTextWidth(string $text, int $fontSize): float
+    {
+        $length = max(1, mb_strlen($text));
+
+        return $length * $fontSize * 0.55;
     }
 
     /**

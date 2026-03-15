@@ -37,6 +37,7 @@ class SettingResource extends JsonResource
             'product_watermark_text_size' => $this->product_watermark_text_size ?? 'medium',
             'product_watermark_text_position' => $this->product_watermark_text_position ?? 'center',
             'product_watermark_text_opacity' => $this->product_watermark_text_opacity ?? 50,
+            'product_watermark_text_repeat' => (bool) ($this->product_watermark_text_repeat ?? false),
 
             // SEO meta defaults (for pages without custom meta)
             'meta_defaults' => [

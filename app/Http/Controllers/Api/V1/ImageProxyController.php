@@ -117,6 +117,7 @@ class ImageProxyController extends Controller
             'text_size' => $setting->product_watermark_text_size,
             'text_position' => $setting->product_watermark_text_position,
             'text_opacity' => $setting->product_watermark_text_opacity,
+            'text_repeat' => $setting->product_watermark_text_repeat,
             'watermark_id' => $setting->product_watermark_image_id,
             'watermark_updated' => $setting->productWatermarkImage?->updated_at,
         ])) : 'no-setting';

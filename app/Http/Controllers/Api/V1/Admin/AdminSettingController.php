@@ -47,6 +47,7 @@ class AdminSettingController extends Controller
                 'product_watermark_text_size' => $setting->product_watermark_text_size ?? 'medium',
                 'product_watermark_text_position' => $setting->product_watermark_text_position ?? 'center',
                 'product_watermark_text_opacity' => $setting->product_watermark_text_opacity ?? 50,
+                'product_watermark_text_repeat' => (bool) ($setting->product_watermark_text_repeat ?? false),
                 'updated_at' => $setting->updated_at?->toIso8601String(),
             ],
         ]);
@@ -83,6 +84,7 @@ class AdminSettingController extends Controller
             'product_watermark_text_size' => ['nullable', 'string', 'in:xxsmall,xsmall,small,medium,large,xlarge,xxlarge'],
             'product_watermark_text_position' => ['nullable', 'string', 'in:top,center,bottom'],
             'product_watermark_text_opacity' => ['nullable', 'integer', 'min:5', 'max:100'],
+            'product_watermark_text_repeat' => ['nullable', 'boolean'],
         ]);
 
         if (isset($validated['google_map_embed'])) {
@@ -102,6 +104,7 @@ class AdminSettingController extends Controller
             'product_watermark_text_size',
             'product_watermark_text_position',
             'product_watermark_text_opacity',
+            'product_watermark_text_repeat',
         ];
         
         $watermarkChanged = false;
