@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Support\Product\ProductCacheManager;
+use App\Http\Responses\ErrorResponse;
+use App\Http\Responses\SuccessResponse;
+use App\Support\Cache\ApiCacheVersionManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
@@ -18,23 +20,19 @@ class CacheController extends Controller
     public function clear(): JsonResponse
     {
         try {
-            // Soft-invalidate API caches by bumping versions
-            ProductCacheManager::incrementVersion();
-            Cache::increment('api_cache_version');
-            Cache::increment('image_proxy:cache:version');
-            Cache::put('last_cache_clear', now()->toIso8601String());
+            ApiCacheVersionManager::bumpFrontendContentVersions();
+            $imageVersion = ApiCacheVersionManager::bumpImageProxyVersion();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Cache cleared successfully',
-                'timestamp' => now()->toIso8601String(),
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to clear cache',
-                'error' => $e->getMessage(),
-            ], 500);
+            return SuccessResponse::make(
+                [
+                    'api_cache_version' => (int) Cache::get('api_cache_version', 0),
+                    'image_proxy_cache_version' => $imageVersion,
+                    'last_clear' => Cache::get('last_cache_clear'),
+                ],
+                'Cache cleared successfully'
+            );
+        } catch (\Throwable) {
+            return ErrorResponse::internalError('Failed to clear cache');
         }
     }
 
@@ -46,12 +44,10 @@ class CacheController extends Controller
         // Store last cache clear time in cache itself
         $lastClear = Cache::get('last_cache_clear');
 
-        return response()->json([
-            'data' => [
-                'last_clear' => $lastClear,
-                'cache_driver' => config('cache.default'),
-                'timestamp' => now()->toIso8601String(),
-            ],
+        return SuccessResponse::make([
+            'last_clear' => $lastClear,
+            'cache_driver' => config('cache.default'),
+            'timestamp' => now()->toIso8601String(),
         ]);
     }
 
@@ -64,11 +60,9 @@ class CacheController extends Controller
     {
         $version = (int) Cache::get('api_cache_version', 0);
 
-        return response()->json([
-            'data' => [
-                'version' => $version,
-                'timestamp' => now()->toIso8601String(),
-            ],
+        return SuccessResponse::make([
+            'version' => $version,
+            'timestamp' => now()->toIso8601String(),
         ]);
     }
 
@@ -80,18 +74,12 @@ class CacheController extends Controller
     public function incrementVersion(): JsonResponse
     {
         $version = (int) Cache::get('api_cache_version', 0);
-        $newVersion = $version + 1;
+        $newVersion = ApiCacheVersionManager::bumpApiVersion();
 
-        Cache::put('api_cache_version', $newVersion);
-        Cache::put('last_cache_clear', now()->toIso8601String());
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'old_version' => $version,
-                'new_version' => $newVersion,
-                'timestamp' => now()->toIso8601String(),
-            ],
+        return SuccessResponse::make([
+            'old_version' => $version,
+            'new_version' => $newVersion,
+            'timestamp' => now()->toIso8601String(),
         ]);
     }
 }

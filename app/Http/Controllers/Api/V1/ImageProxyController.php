@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\SuccessResponse;
 use App\Models\Image;
 use App\Models\Setting;
 use App\Services\WatermarkService;
-use Illuminate\Http\Response;
+use App\Support\Cache\ApiCacheVersionManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Encoders\JpegEncoder;
@@ -183,15 +184,11 @@ class ImageProxyController extends Controller
     {
         $image = Image::findOrFail($id);
 
-        Cache::increment("image_proxy:cache:version:{$image->id}");
+        $version = ApiCacheVersionManager::bumpImageProxyVersion($image->id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Cache cleared for image',
-            'data' => [
-                'image_id' => $image->id,
-                'version' => (int) Cache::get("image_proxy:cache:version:{$image->id}", 1),
-            ],
-        ]);
+        return SuccessResponse::make([
+            'image_id' => $image->id,
+            'version' => $version,
+        ], 'Cache cleared for image');
     }
 }

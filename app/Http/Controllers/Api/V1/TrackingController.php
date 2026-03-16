@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\ErrorResponse;
+use App\Http\Responses\ErrorType;
+use App\Http\Responses\SuccessResponse;
 use App\Models\TrackingEvent;
 use App\Services\TrackingService;
 use Illuminate\Http\JsonResponse;
@@ -29,10 +32,7 @@ class TrackingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
+            return ErrorResponse::validation($validator->errors()->toArray());
         }
 
         try {
@@ -44,18 +44,17 @@ class TrackingController extends Controller
 
             $session = $this->trackingService->getOrCreateSession($visitor);
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'visitor_id' => $visitor->id,
-                    'session_id' => $session->id,
-                ],
+            return SuccessResponse::make([
+                'visitor_id' => $visitor->id,
+                'session_id' => $session->id,
             ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to track visitor',
-            ], 500);
+        } catch (\Throwable) {
+            return ErrorResponse::make(
+                ErrorType::INTERNAL_ERROR,
+                'Failed to track visitor',
+                null,
+                500
+            );
         }
     }
 
@@ -84,10 +83,7 @@ class TrackingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
+            return ErrorResponse::validation($validator->errors()->toArray());
         }
 
         try {
@@ -101,21 +97,20 @@ class TrackingController extends Controller
                 'user_agent' => $request->input('user_agent') ?? $request->userAgent(),
             ]);
 
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'event_id' => $event->id,
-                    'event_type' => $event->event_type,
-                    'occurred_at' => $event->occurred_at->toIso8601String(),
-                ],
+            return SuccessResponse::make([
+                'event_id' => $event->id,
+                'event_type' => $event->event_type,
+                'occurred_at' => $event->occurred_at->toIso8601String(),
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Failed to track event', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to track event',
-            ], 500);
+            return ErrorResponse::make(
+                ErrorType::INTERNAL_ERROR,
+                'Failed to track event',
+                null,
+                500
+            );
         }
     }
 
@@ -125,11 +120,8 @@ class TrackingController extends Controller
      */
     public function generateId(): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'anon_id' => TrackingService::generateAnonId(),
-            ],
+        return SuccessResponse::make([
+            'anon_id' => TrackingService::generateAnonId(),
         ]);
     }
 }

@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Responses\SuccessResponse;
 use App\Models\Setting;
+use App\Support\Cache\ApiCacheVersionManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 
 class AdminSettingController extends Controller
 {
@@ -18,38 +19,36 @@ class AdminSettingController extends Controller
             $setting = Setting::create([]);
         }
 
-        return response()->json([
-            'data' => [
-                'id' => $setting->id,
-                'site_name' => $setting->site_name,
-                'hotline' => $setting->hotline,
-                'email' => $setting->email,
-                'address' => $setting->address,
-                'hours' => $setting->hours,
-                'google_map_embed' => $setting->extra['google_map_embed'] ?? null,
-                'footer_config' => $setting->footer_config,
-                'contact_config' => $setting->contact_config,
-                'meta_default_title' => $setting->meta_default_title,
-                'meta_default_description' => $setting->meta_default_description,
-                'meta_default_keywords' => $setting->meta_default_keywords,
-                'logo_image_id' => $setting->logo_image_id,
-                'logo_image_url' => $setting->logoImage?->url,
-                'favicon_image_id' => $setting->favicon_image_id,
-                'favicon_image_url' => $setting->faviconImage?->url,
-                'og_image_id' => $setting->og_image_id,
-                'og_image_url' => $setting->ogImage?->url,
-                'product_watermark_image_id' => $setting->product_watermark_image_id,
-                'product_watermark_image_url' => $setting->productWatermarkImage?->url,
-                'product_watermark_type' => $setting->product_watermark_type ?? 'image',
-                'product_watermark_position' => $setting->product_watermark_position,
-                'product_watermark_size' => $setting->product_watermark_size,
-                'product_watermark_text' => $setting->product_watermark_text,
-                'product_watermark_text_size' => $setting->product_watermark_text_size ?? 'medium',
-                'product_watermark_text_position' => $setting->product_watermark_text_position ?? 'center',
-                'product_watermark_text_opacity' => $setting->product_watermark_text_opacity ?? 50,
-                'product_watermark_text_repeat' => (bool) ($setting->product_watermark_text_repeat ?? false),
-                'updated_at' => $setting->updated_at?->toIso8601String(),
-            ],
+        return SuccessResponse::make([
+            'id' => $setting->id,
+            'site_name' => $setting->site_name,
+            'hotline' => $setting->hotline,
+            'email' => $setting->email,
+            'address' => $setting->address,
+            'hours' => $setting->hours,
+            'google_map_embed' => $setting->extra['google_map_embed'] ?? null,
+            'footer_config' => $setting->footer_config,
+            'contact_config' => $setting->contact_config,
+            'meta_default_title' => $setting->meta_default_title,
+            'meta_default_description' => $setting->meta_default_description,
+            'meta_default_keywords' => $setting->meta_default_keywords,
+            'logo_image_id' => $setting->logo_image_id,
+            'logo_image_url' => $setting->logoImage?->url,
+            'favicon_image_id' => $setting->favicon_image_id,
+            'favicon_image_url' => $setting->faviconImage?->url,
+            'og_image_id' => $setting->og_image_id,
+            'og_image_url' => $setting->ogImage?->url,
+            'product_watermark_image_id' => $setting->product_watermark_image_id,
+            'product_watermark_image_url' => $setting->productWatermarkImage?->url,
+            'product_watermark_type' => $setting->product_watermark_type ?? 'image',
+            'product_watermark_position' => $setting->product_watermark_position,
+            'product_watermark_size' => $setting->product_watermark_size,
+            'product_watermark_text' => $setting->product_watermark_text,
+            'product_watermark_text_size' => $setting->product_watermark_text_size ?? 'medium',
+            'product_watermark_text_position' => $setting->product_watermark_text_position ?? 'center',
+            'product_watermark_text_opacity' => $setting->product_watermark_text_opacity ?? 50,
+            'product_watermark_text_repeat' => (bool) ($setting->product_watermark_text_repeat ?? false),
+            'updated_at' => $setting->updated_at?->toIso8601String(),
         ]);
     }
 
@@ -117,39 +116,25 @@ class AdminSettingController extends Controller
 
         $setting->update($validated);
 
-        // Clear all image proxy cache when watermark settings change
         if ($watermarkChanged) {
             $this->clearImageProxyCache();
         }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Cập nhật cấu hình thành công',
-        ]);
+        return SuccessResponse::make(
+            [
+                'updated_at' => $setting->fresh()?->updated_at?->toIso8601String(),
+                'watermark_changed' => $watermarkChanged,
+            ],
+            'Cập nhật cấu hình thành công'
+        );
     }
 
-    /**
-     * Clear all cached watermarked images
-     */
     private function clearImageProxyCache(): void
     {
-        // Clear all cache with image_proxy prefix
-        // For file/database cache driver, we need to flush or use tags
-        // Simple approach: flush entire cache (not ideal for production with many cache types)
-        // Better approach: use cache tags if using Redis/Memcached
-        
-        $cacheDriver = config('cache.default');
-        
-        if (in_array($cacheDriver, ['redis', 'memcached'])) {
-            // Use cache tags for better granularity
-            Cache::tags(['image_proxy'])->flush();
-        } else {
-            // For file/database driver, we need to iterate or flush
-            // Since we prefix keys with 'image_proxy:', we can't easily delete by prefix
-            // Best simple solution: store a version number in settings
-            Cache::flush();
-        }
-        
-        \Log::info('Image proxy cache cleared due to watermark settings change');
+        $version = ApiCacheVersionManager::bumpImageProxyVersion();
+
+        \Log::info('Image proxy cache version bumped due to watermark settings change', [
+            'image_proxy_cache_version' => $version,
+        ]);
     }
 }

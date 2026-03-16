@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Setting;
+use App\Support\Cache\ApiCacheVersionManager;
 use Illuminate\Support\Facades\Cache;
 
 class SettingObserver
@@ -12,22 +13,19 @@ class SettingObserver
      */
     private function invalidateCache(string $action): void
     {
-        // Clear settings cache
         Cache::forget('api:v1:settings');
 
-        // Increment global cache version
         $oldVersion = (int) Cache::get('api_cache_version', 0);
-        $newVersion = $oldVersion + 1;
-        Cache::put('api_cache_version', $newVersion);
-        Cache::put('last_cache_clear', now()->toIso8601String());
+        $newVersion = ApiCacheVersionManager::bumpApiVersion();
+        $imageProxyVersion = ApiCacheVersionManager::bumpImageProxyVersion();
 
-        // Log successful invalidation
         \Log::info('Settings cache invalidated', [
             'action' => $action,
             'cache_version' => [
                 'old' => $oldVersion,
                 'new' => $newVersion,
             ],
+            'image_proxy_cache_version' => $imageProxyVersion,
             'timestamp' => now()->toIso8601String(),
         ]);
 
