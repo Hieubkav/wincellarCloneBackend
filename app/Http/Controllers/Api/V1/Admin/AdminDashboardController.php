@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
 use App\Models\TrackingEvent;
+use App\Models\TrackingEventAggregateDaily;
 use App\Models\VisitorSession;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -26,23 +27,36 @@ class AdminDashboardController extends Controller
         $days = $this->resolveDays($request);
         $limit = $this->resolveLimit($request, 5);
 
-        $cacheKey = sprintf('admin_dashboard_bootstrap_v1_%d_%d', $days, $limit);
+        $statsCacheKey = $this->statsCacheKey();
+        $trafficCacheKey = $this->trafficCacheKey($days);
+        $topProductsCacheKey = $this->topProductsCacheKey($days, $limit);
+        $topArticlesCacheKey = $this->topArticlesCacheKey($days, $limit);
 
-        $data = Cache::remember($cacheKey, self::STATS_CACHE_TTL, function () use ($days, $limit) {
-            return [
-                'stats' => $this->buildStatsData(),
-                'traffic_chart' => $this->buildTrafficChartData($days),
-                'top_products' => $this->buildTopProductsData($days, $limit),
-                'top_articles' => $this->buildTopArticlesData($days, $limit),
-            ];
-        });
+        $cacheMeta = [
+            'stats' => Cache::has($statsCacheKey) ? 'hit' : 'miss',
+            'traffic_chart' => Cache::has($trafficCacheKey) ? 'hit' : 'miss',
+            'top_products' => Cache::has($topProductsCacheKey) ? 'hit' : 'miss',
+            'top_articles' => Cache::has($topArticlesCacheKey) ? 'hit' : 'miss',
+        ];
 
-        return response()->json(['data' => $data]);
+        $data = [
+            'stats' => $this->getCachedStats($statsCacheKey),
+            'traffic_chart' => $this->getCachedTrafficChart($trafficCacheKey, $days),
+            'top_products' => $this->getCachedTopProducts($topProductsCacheKey, $days, $limit),
+            'top_articles' => $this->getCachedTopArticles($topArticlesCacheKey, $days, $limit),
+        ];
+
+        return response()->json([
+            'data' => $data,
+            'meta' => [
+                'cache' => $cacheMeta,
+            ],
+        ]);
     }
 
     public function stats(): JsonResponse
     {
-        $data = Cache::remember('admin_dashboard_stats_v1', self::STATS_CACHE_TTL, fn () => $this->buildStatsData());
+        $data = $this->getCachedStats($this->statsCacheKey());
 
         return response()->json(['data' => $data]);
     }
@@ -50,9 +64,9 @@ class AdminDashboardController extends Controller
     public function trafficChart(Request $request): JsonResponse
     {
         $days = $this->resolveDays($request);
-        $cacheKey = sprintf('admin_dashboard_traffic_chart_v1_%d', $days);
+        $cacheKey = $this->trafficCacheKey($days);
 
-        $data = Cache::remember($cacheKey, self::CHART_CACHE_TTL, fn () => $this->buildTrafficChartData($days));
+        $data = $this->getCachedTrafficChart($cacheKey, $days);
 
         return response()->json(['data' => $data]);
     }
@@ -61,9 +75,9 @@ class AdminDashboardController extends Controller
     {
         $days = $this->resolveDays($request);
         $limit = $this->resolveLimit($request);
-        $cacheKey = sprintf('admin_dashboard_top_products_v1_%d_%d', $days, $limit);
+        $cacheKey = $this->topProductsCacheKey($days, $limit);
 
-        $data = Cache::remember($cacheKey, self::TOP_CACHE_TTL, fn () => $this->buildTopProductsData($days, $limit));
+        $data = $this->getCachedTopProducts($cacheKey, $days, $limit);
 
         return response()->json(['data' => $data]);
     }
@@ -72,9 +86,9 @@ class AdminDashboardController extends Controller
     {
         $days = $this->resolveDays($request);
         $limit = $this->resolveLimit($request);
-        $cacheKey = sprintf('admin_dashboard_top_articles_v1_%d_%d', $days, $limit);
+        $cacheKey = $this->topArticlesCacheKey($days, $limit);
 
-        $data = Cache::remember($cacheKey, self::TOP_CACHE_TTL, fn () => $this->buildTopArticlesData($days, $limit));
+        $data = $this->getCachedTopArticles($cacheKey, $days, $limit);
 
         return response()->json(['data' => $data]);
     }
@@ -204,7 +218,181 @@ class AdminDashboardController extends Controller
         $now = Carbon::now($tz);
         $startDate = $now->copy()->startOfDay()->subDays($days - 1);
         $endDate = $now->copy()->endOfDay();
+        $aggregateData = $this->buildTrafficChartFromAggregate($startDate, $days);
 
+        if ($aggregateData !== null) {
+            return $aggregateData;
+        }
+
+        return $this->buildTrafficChartFromRaw($startDate, $endDate, $days);
+    }
+
+    private function buildTopProductsData(int $days, int $limit): array
+    {
+        $startDate = Carbon::now()->subDays($days);
+
+        $aggregateTopProducts = $this->buildTopProductsFromAggregate($startDate, $limit);
+
+        if ($aggregateTopProducts !== null) {
+            return $aggregateTopProducts;
+        }
+
+        $topProducts = TrackingEvent::query()
+            ->select('product_id', DB::raw('COUNT(*) as views'))
+            ->where('event_type', TrackingEvent::TYPE_PRODUCT_VIEW)
+            ->whereNotNull('product_id')
+            ->where('occurred_at', '>=', $startDate)
+            ->groupBy('product_id')
+            ->orderByDesc('views')
+            ->limit($limit)
+            ->get();
+
+        $productIds = $topProducts->pluck('product_id');
+
+        $products = Product::with(['coverImage'])
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
+
+        return $topProducts->map(fn ($item) => [
+            'id' => $item->product_id,
+            'name' => $products[$item->product_id]?->name ?? 'Sản phẩm đã xóa',
+            'slug' => $products[$item->product_id]?->slug,
+            'image_url' => $products[$item->product_id]?->coverImage?->absolute_url
+                ?? $products[$item->product_id]?->cover_image_url,
+            'views' => (int) $item->views,
+        ])->values()->all();
+    }
+
+    private function buildTopArticlesData(int $days, int $limit): array
+    {
+        $startDate = Carbon::now()->subDays($days);
+
+        $aggregateTopArticles = $this->buildTopArticlesFromAggregate($startDate, $limit);
+
+        if ($aggregateTopArticles !== null) {
+            return $aggregateTopArticles;
+        }
+
+        $topArticles = TrackingEvent::query()
+            ->select('article_id', DB::raw('COUNT(*) as views'))
+            ->where('event_type', TrackingEvent::TYPE_ARTICLE_VIEW)
+            ->whereNotNull('article_id')
+            ->where('occurred_at', '>=', $startDate)
+            ->groupBy('article_id')
+            ->orderByDesc('views')
+            ->limit($limit)
+            ->get();
+
+        $articleIds = $topArticles->pluck('article_id');
+
+        $articles = Article::with(['coverImage'])
+            ->whereIn('id', $articleIds)
+            ->get()
+            ->keyBy('id');
+
+        return $topArticles->map(fn ($item) => [
+            'id' => $item->article_id,
+            'title' => $articles[$item->article_id]?->title ?? 'Bài viết đã xóa',
+            'slug' => $articles[$item->article_id]?->slug,
+            'image_url' => $articles[$item->article_id]?->coverImage?->absolute_url
+                ?? $articles[$item->article_id]?->cover_image_url,
+            'views' => (int) $item->views,
+        ])->values()->all();
+    }
+
+    private function resolveDays(Request $request): int
+    {
+        return min($request->integer('days', 7), 90);
+    }
+
+    private function resolveLimit(Request $request, int $default = 10): int
+    {
+        return min($request->integer('limit', $default), 50);
+    }
+
+    private function statsCacheKey(): string
+    {
+        return 'admin_dashboard_stats_v1';
+    }
+
+    private function trafficCacheKey(int $days): string
+    {
+        return sprintf('admin_dashboard_traffic_chart_v1_%d', $days);
+    }
+
+    private function topProductsCacheKey(int $days, int $limit): string
+    {
+        return sprintf('admin_dashboard_top_products_v1_%d_%d', $days, $limit);
+    }
+
+    private function topArticlesCacheKey(int $days, int $limit): string
+    {
+        return sprintf('admin_dashboard_top_articles_v1_%d_%d', $days, $limit);
+    }
+
+    private function getCachedStats(string $cacheKey): array
+    {
+        return Cache::remember($cacheKey, self::STATS_CACHE_TTL, fn () => $this->buildStatsData());
+    }
+
+    private function getCachedTrafficChart(string $cacheKey, int $days): array
+    {
+        return Cache::remember($cacheKey, self::CHART_CACHE_TTL, fn () => $this->buildTrafficChartData($days));
+    }
+
+    private function getCachedTopProducts(string $cacheKey, int $days, int $limit): array
+    {
+        return Cache::remember($cacheKey, self::TOP_CACHE_TTL, fn () => $this->buildTopProductsData($days, $limit));
+    }
+
+    private function getCachedTopArticles(string $cacheKey, int $days, int $limit): array
+    {
+        return Cache::remember($cacheKey, self::TOP_CACHE_TTL, fn () => $this->buildTopArticlesData($days, $limit));
+    }
+
+    private function buildTrafficChartFromAggregate(Carbon $startDate, int $days): ?array
+    {
+        $endDate = $startDate->copy()->addDays($days - 1);
+        $aggregateRows = TrackingEventAggregateDaily::query()
+            ->select('date', 'event_type', DB::raw('SUM(views) as views'))
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->groupBy('date', 'event_type')
+            ->get();
+
+        if ($aggregateRows->isEmpty()) {
+            return null;
+        }
+
+        $grouped = $aggregateRows->groupBy(fn ($row) => $row->date->format('Y-m-d'));
+
+        $chartData = [];
+        for ($i = 0; $i < $days; $i++) {
+            $dayStart = $startDate->copy()->addDays($i)->startOfDay();
+            $date = $dayStart->format('Y-m-d');
+            $dayRows = $grouped->get($date, collect());
+
+            $productViews = (int) $dayRows->firstWhere('event_type', TrackingEvent::TYPE_PRODUCT_VIEW)?->views ?? 0;
+            $articleViews = (int) $dayRows->firstWhere('event_type', TrackingEvent::TYPE_ARTICLE_VIEW)?->views ?? 0;
+            $ctaClicks = (int) $dayRows->firstWhere('event_type', TrackingEvent::TYPE_CTA_CONTACT)?->views ?? 0;
+            $pageViews = $productViews + $articleViews + $ctaClicks;
+
+            $chartData[] = [
+                'date' => $date,
+                'label' => $dayStart->format('d/m'),
+                'visitors' => 0,
+                'page_views' => $pageViews,
+                'product_views' => $productViews,
+                'article_views' => $articleViews,
+                'cta_clicks' => $ctaClicks,
+            ];
+        }
+
+        return $chartData;
+    }
+
+    private function buildTrafficChartFromRaw(Carbon $startDate, Carbon $endDate, int $days): array
+    {
         $statsByDate = TrackingEvent::query()
             ->selectRaw('
                 DATE(occurred_at) as date,
@@ -243,19 +431,22 @@ class AdminDashboardController extends Controller
         return $chartData;
     }
 
-    private function buildTopProductsData(int $days, int $limit): array
+    private function buildTopProductsFromAggregate(Carbon $startDate, int $limit): ?array
     {
-        $startDate = Carbon::now()->subDays($days);
-
-        $topProducts = TrackingEvent::query()
-            ->select('product_id', DB::raw('COUNT(*) as views'))
+        $endDate = Carbon::now();
+        $topProducts = TrackingEventAggregateDaily::query()
+            ->select('product_id', DB::raw('SUM(views) as views'))
             ->where('event_type', TrackingEvent::TYPE_PRODUCT_VIEW)
             ->whereNotNull('product_id')
-            ->where('occurred_at', '>=', $startDate)
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
             ->groupBy('product_id')
             ->orderByDesc('views')
             ->limit($limit)
             ->get();
+
+        if ($topProducts->isEmpty()) {
+            return null;
+        }
 
         $productIds = $topProducts->pluck('product_id');
 
@@ -274,19 +465,22 @@ class AdminDashboardController extends Controller
         ])->values()->all();
     }
 
-    private function buildTopArticlesData(int $days, int $limit): array
+    private function buildTopArticlesFromAggregate(Carbon $startDate, int $limit): ?array
     {
-        $startDate = Carbon::now()->subDays($days);
-
-        $topArticles = TrackingEvent::query()
-            ->select('article_id', DB::raw('COUNT(*) as views'))
+        $endDate = Carbon::now();
+        $topArticles = TrackingEventAggregateDaily::query()
+            ->select('article_id', DB::raw('SUM(views) as views'))
             ->where('event_type', TrackingEvent::TYPE_ARTICLE_VIEW)
             ->whereNotNull('article_id')
-            ->where('occurred_at', '>=', $startDate)
+            ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
             ->groupBy('article_id')
             ->orderByDesc('views')
             ->limit($limit)
             ->get();
+
+        if ($topArticles->isEmpty()) {
+            return null;
+        }
 
         $articleIds = $topArticles->pluck('article_id');
 
@@ -303,15 +497,5 @@ class AdminDashboardController extends Controller
                 ?? $articles[$item->article_id]?->cover_image_url,
             'views' => (int) $item->views,
         ])->values()->all();
-    }
-
-    private function resolveDays(Request $request): int
-    {
-        return min($request->integer('days', 7), 90);
-    }
-
-    private function resolveLimit(Request $request, int $default = 10): int
-    {
-        return min($request->integer('limit', $default), 50);
     }
 }

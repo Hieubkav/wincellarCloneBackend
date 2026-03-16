@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Contracts\Cache\LockProvider;
 
 class HealthController extends Controller
 {
@@ -38,6 +40,11 @@ class HealthController extends Controller
                 'php' => PHP_VERSION,
             ],
             'services' => $checks,
+            'runtime' => [
+                'cache_default_store' => config('cache.default'),
+                'session_driver' => config('session.driver'),
+                'queue_connection' => config('queue.default'),
+            ],
             'performance' => [
                 'response_time_ms' => $responseTime,
                 'memory_usage_mb' => round(memory_get_usage(true) / 1024 / 1024, 2),
@@ -105,6 +112,12 @@ class HealthController extends Controller
                     'message' => 'Cache operations successful',
                     'response_time_ms' => $responseTime,
                     'driver' => config('cache.default'),
+                    'supports_tags' => Cache::supportsTags(),
+                    'supports_locks' => $this->cacheSupportsLocks(),
+                    'redis' => [
+                        'default' => $this->checkRedisConnection('default'),
+                        'cache' => $this->checkRedisConnection('cache'),
+                    ],
                 ];
             }
 
@@ -119,6 +132,37 @@ class HealthController extends Controller
                 'error' => app()->environment('local') ? $e->getMessage() : 'Cache error',
             ];
         }
+    }
+
+    protected function checkRedisConnection(string $connection): array
+    {
+        try {
+            $startTime = microtime(true);
+            $client = Redis::connection($connection);
+            $response = $client->ping();
+            $responseTime = round((microtime(true) - $startTime) * 1000, 2);
+
+            return [
+                'status' => 'healthy',
+                'message' => is_string($response) ? $response : 'PONG',
+                'response_time_ms' => $responseTime,
+                'connection' => $connection,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => 'unhealthy',
+                'message' => 'Redis connection failed',
+                'connection' => $connection,
+                'error' => app()->environment('local') ? $e->getMessage() : 'Redis error',
+            ];
+        }
+    }
+
+    protected function cacheSupportsLocks(): bool
+    {
+        $store = Cache::getStore();
+
+        return $store instanceof LockProvider;
     }
 
     /**
