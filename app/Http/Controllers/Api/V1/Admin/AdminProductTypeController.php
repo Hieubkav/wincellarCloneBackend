@@ -14,6 +14,7 @@ class AdminProductTypeController extends Controller
     {
         $query = ProductType::query()
             ->withCount('products')
+            ->withCount('attributeGroups')
             ->orderBy('order')
             ->orderBy('id');
 
@@ -36,6 +37,7 @@ class AdminProductTypeController extends Controller
                 'order' => $type->order,
                 'active' => $type->active,
                 'products_count' => $type->products_count,
+                'attribute_groups_count' => $type->attribute_groups_count,
                 'created_at' => $type->created_at?->toIso8601String(),
                 'updated_at' => $type->updated_at?->toIso8601String(),
             ]),

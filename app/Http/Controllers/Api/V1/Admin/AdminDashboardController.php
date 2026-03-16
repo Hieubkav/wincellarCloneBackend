@@ -85,28 +85,31 @@ class AdminDashboardController extends Controller
         $startDate = $now->copy()->startOfDay()->subDays($days - 1);
         $endDate = $now->copy()->endOfDay();
 
+        $statsByDate = TrackingEvent::query()
+            ->selectRaw('
+                DATE(occurred_at) as date,
+                COUNT(*) as total_events,
+                COUNT(DISTINCT visitor_id) as unique_visitors,
+                SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as product_views,
+                SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as article_views,
+                SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as cta_clicks,
+                SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as page_views_count
+            ', [
+                TrackingEvent::TYPE_PRODUCT_VIEW,
+                TrackingEvent::TYPE_ARTICLE_VIEW,
+                TrackingEvent::TYPE_CTA_CONTACT,
+                TrackingEvent::TYPE_PAGE_VIEW,
+            ])
+            ->whereBetween('occurred_at', [$startDate, $endDate])
+            ->groupBy('date')
+            ->get()
+            ->keyBy('date');
+
         $chartData = [];
         for ($i = 0; $i < $days; $i++) {
             $dayStart = $startDate->copy()->addDays($i)->startOfDay();
-            $dayEnd = $dayStart->copy()->endOfDay();
             $date = $dayStart->format('Y-m-d');
-
-            $dayStats = TrackingEvent::query()
-                ->selectRaw('
-                    COUNT(*) as total_events,
-                    COUNT(DISTINCT visitor_id) as unique_visitors,
-                    SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as product_views,
-                    SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as article_views,
-                    SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as cta_clicks,
-                    SUM(CASE WHEN event_type = ? THEN 1 ELSE 0 END) as page_views_count
-                ', [
-                    TrackingEvent::TYPE_PRODUCT_VIEW,
-                    TrackingEvent::TYPE_ARTICLE_VIEW,
-                    TrackingEvent::TYPE_CTA_CONTACT,
-                    TrackingEvent::TYPE_PAGE_VIEW,
-                ])
-                ->whereBetween('occurred_at', [$dayStart, $dayEnd])
-                ->first();
+            $dayStats = $statsByDate->get($date);
 
             $chartData[] = [
                 'date' => $date,

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CatalogAttributeGroup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class AdminCatalogAttributeGroupController extends Controller
@@ -13,7 +14,8 @@ class AdminCatalogAttributeGroupController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = CatalogAttributeGroup::query()
-            ->with(['terms', 'productTypes'])
+            ->with(['productTypes'])
+            ->withCount('terms')
             ->orderBy('position')
             ->orderBy('id');
 
@@ -35,18 +37,21 @@ class AdminCatalogAttributeGroupController extends Controller
         $perPage = min($request->integer('per_page', 20), 100);
         $groups = $query->paginate($perPage);
 
+        $groupIds = $groups->pluck('id')->all();
+        $productsCountByGroup = [];
+
+        if (! empty($groupIds)) {
+            $productsCountByGroup = DB::table('catalog_terms')
+                ->join('product_term_assignments', 'product_term_assignments.term_id', '=', 'catalog_terms.id')
+                ->whereIn('catalog_terms.group_id', $groupIds)
+                ->select('catalog_terms.group_id', DB::raw('COUNT(DISTINCT product_term_assignments.product_id) as products_count'))
+                ->groupBy('catalog_terms.group_id')
+                ->pluck('products_count', 'group_id')
+                ->all();
+        }
+
         return response()->json([
-            'data' => $groups->map(function ($group) {
-                $termIds = $group->terms->pluck('id')->toArray();
-
-                // Count products that have any of these terms
-                $productsCount = 0;
-                if (! empty($termIds)) {
-                    $productsCount = \App\Models\Product::whereHas('terms', function ($query) use ($termIds) {
-                        $query->whereIn('catalog_terms.id', $termIds);
-                    })->count();
-                }
-
+            'data' => $groups->map(function ($group) use ($productsCountByGroup) {
                 return [
                     'id' => $group->id,
                     'code' => $group->code,
@@ -56,8 +61,8 @@ class AdminCatalogAttributeGroupController extends Controller
                     'is_filterable' => $group->is_filterable,
                     'position' => $group->position,
                     'icon_path' => $group->icon_path,
-                    'terms_count' => $group->terms->count(),
-                    'products_count' => $productsCount,
+                    'terms_count' => $group->terms_count,
+                    'products_count' => $productsCountByGroup[$group->id] ?? 0,
                     'product_types' => $group->productTypes->map(fn ($type) => [
                         'id' => $type->id,
                         'name' => $type->name,

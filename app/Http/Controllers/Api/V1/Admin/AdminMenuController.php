@@ -13,6 +13,7 @@ class AdminMenuController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $includeItems = $request->boolean('with_items');
         $query = Menu::query()
             ->withCount('blocks')
             ->orderBy('order')
@@ -26,11 +27,39 @@ class AdminMenuController extends Controller
             $query->where('active', $request->boolean('active'));
         }
 
+        if ($includeItems) {
+            $query->with(['blocks.items']);
+        }
+
         $perPage = min($request->integer('per_page', 20), 100);
         $menus = $query->paginate($perPage);
 
-        return response()->json([
-            'data' => $menus->map(fn ($m) => [
+        $data = $includeItems
+            ? $menus->map(fn ($m) => [
+                'id' => $m->id,
+                'title' => $m->title,
+                'type' => $m->type,
+                'href' => $m->href,
+                'order' => $m->order,
+                'active' => $m->active,
+                'blocks' => $m->blocks->map(fn ($b) => [
+                    'id' => $b->id,
+                    'title' => $b->title,
+                    'order' => $b->order,
+                    'active' => $b->active,
+                    'items' => $b->items->map(fn ($i) => [
+                        'id' => $i->id,
+                        'label' => $i->label,
+                        'href' => $i->href,
+                        'badge' => $i->badge,
+                        'order' => $i->order,
+                        'active' => $i->active,
+                    ]),
+                ]),
+                'created_at' => $m->created_at?->toIso8601String(),
+                'updated_at' => $m->updated_at?->toIso8601String(),
+            ])
+            : $menus->map(fn ($m) => [
                 'id' => $m->id,
                 'title' => $m->title,
                 'type' => $m->type,
@@ -39,7 +68,10 @@ class AdminMenuController extends Controller
                 'active' => $m->active,
                 'blocks_count' => $m->blocks_count,
                 'created_at' => $m->created_at?->toIso8601String(),
-            ]),
+            ]);
+
+        return response()->json([
+            'data' => $data,
             'meta' => [
                 'current_page' => $menus->currentPage(),
                 'last_page' => $menus->lastPage(),

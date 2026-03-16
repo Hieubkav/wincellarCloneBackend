@@ -140,13 +140,12 @@ class AdminCategoryController extends Controller
             'ids.*' => 'required|integer|exists:product_categories,id',
         ]);
 
-        $categories = ProductCategory::whereIn('id', $validated['ids'])->get();
+        $categories = ProductCategory::query()
+            ->whereIn('id', $validated['ids'])
+            ->withCount('products')
+            ->get();
 
-        $categoriesWithProducts = $categories->filter(function ($category) {
-            return $category->products()->count() > 0;
-        });
-
-        if ($categoriesWithProducts->isNotEmpty()) {
+        if ($categories->firstWhere('products_count', '>', 0)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Không thể xóa các danh mục có sản phẩm đang sử dụng',

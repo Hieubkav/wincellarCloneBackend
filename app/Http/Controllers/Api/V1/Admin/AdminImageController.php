@@ -96,6 +96,33 @@ class AdminImageController extends Controller
         ]);
     }
 
+    public function batch(Request $request): JsonResponse
+    {
+        $ids = array_filter(array_map('intval', explode(',', (string) $request->query('ids', ''))));
+
+        if (empty($ids)) {
+            return response()->json(['data' => []]);
+        }
+
+        $images = Image::whereIn('id', $ids)->get()->keyBy('id');
+
+        $data = collect($ids)
+            ->map(fn ($id) => $images->get($id))
+            ->filter()
+            ->map(fn (Image $image) => [
+                'id' => $image->id,
+                'file_path' => $image->file_path,
+                'url' => $image->url,
+                'alt' => $image->alt,
+                'width' => $image->width,
+                'height' => $image->height,
+                'mime' => $image->mime,
+            ])
+            ->values();
+
+        return response()->json(['data' => $data]);
+    }
+
     private function getUsedByInfo($image): ?array
     {
         if (! $image->model_type || ! $image->model_id) {

@@ -104,6 +104,7 @@ Route::prefix('admin')
 
         // Images CRUD
         Route::get('images/library', [AdminImageController::class, 'library'])->name('images.library');
+        Route::get('images/batch', [AdminImageController::class, 'batch'])->name('images.batch');
         Route::get('images', [AdminImageController::class, 'index'])->name('images.index');
         Route::get('images/{id}', [AdminImageController::class, 'show'])->name('images.show');
         Route::post('images', [AdminImageController::class, 'store'])->name('images.store');
