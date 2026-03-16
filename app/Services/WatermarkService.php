@@ -219,12 +219,12 @@ class WatermarkService
         [, $y] = $this->calculateTextPosition($image, $position, $fontSize);
 
         $estimatedWidth = $this->estimateTextWidth($text, $fontSize);
-        $gap = max((int) ($fontSize * 2), (int) ($estimatedWidth * 0.25));
-        $step = max(1, $estimatedWidth + $gap);
+        $gap = max((int) ($fontSize * 1.5), (int) ($estimatedWidth * 0.2));
+        $step = max(1, (int) min($estimatedWidth + $gap, $imgWidth * 0.9));
 
         $halfWidth = $estimatedWidth / 2;
-        $startX = $padding + $halfWidth;
-        $maxX = $imgWidth - $padding - $halfWidth;
+        $startX = -$halfWidth + $padding;
+        $maxX = $imgWidth + $halfWidth - $padding;
 
         for ($x = $startX; $x <= $maxX; $x += $step) {
             $this->drawTextWatermark($image, $text, $x, $y, $fontSize, $opacity, $fontPath);
