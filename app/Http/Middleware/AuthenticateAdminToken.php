@@ -6,6 +6,7 @@ use App\Http\Responses\ErrorResponse;
 use App\Models\AdminAccessToken;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthenticateAdminToken
@@ -23,15 +24,22 @@ class AuthenticateAdminToken
             );
         }
 
-        $token = AdminAccessToken::query()
-            ->with('user')
-            ->where('token_hash', hash('sha256', $plainToken))
-            ->first();
+        $tokenHash = hash('sha256', $plainToken);
+        $cacheKey = AdminAccessToken::cacheKeyForHash($tokenHash);
+
+        $token = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($tokenHash) {
+            return AdminAccessToken::query()
+                ->with('user')
+                ->where('token_hash', $tokenHash)
+                ->first();
+        });
 
         if (! $token || ! $token->user || $token->isExpired()) {
-            if ($token && $token->isExpired()) {
+            if ($token instanceof AdminAccessToken && $token->isExpired()) {
                 $token->delete();
             }
+
+            Cache::forget($cacheKey);
 
             return ErrorResponse::make(
                 \App\Http\Responses\ErrorType::UNAUTHORIZED,
@@ -41,10 +49,10 @@ class AuthenticateAdminToken
             );
         }
 
-        if ($token->last_used_at === null || $token->last_used_at->lt(now()->subMinutes(5))) {
+        if ($token->last_used_at === null || $token->last_used_at->lt(now()->subMinutes(30))) {
             $token->forceFill([
                 'last_used_at' => now(),
-            ])->save();
+            ])->saveQuietly();
         }
 
         $request->attributes->set('adminAccessToken', $token);

@@ -34,6 +34,7 @@ class AdminAuthController extends Controller
         $login = trim($validated['login']);
 
         $user = User::query()
+            ->select(['id', 'name', 'email', 'password'])
             ->where('email', $login)
             ->orWhere('name', $login)
             ->first();
@@ -49,7 +50,8 @@ class AdminAuthController extends Controller
 
         AdminAccessToken::query()
             ->where('user_id', $user->id)
-            ->delete();
+            ->get()
+            ->each(fn (AdminAccessToken $token) => $token->delete());
 
         $plainTextToken = Str::random(80);
         $expiresAt = now()->addDays(14);
