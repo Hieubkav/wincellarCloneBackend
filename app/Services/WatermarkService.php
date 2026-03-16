@@ -219,15 +219,25 @@ class WatermarkService
         [, $y] = $this->calculateTextPosition($image, $position, $fontSize);
 
         $estimatedWidth = $this->estimateTextWidth($text, $fontSize);
-        $gap = max((int) ($fontSize * 1.5), (int) ($estimatedWidth * 0.2));
-        $step = max(1, (int) min($estimatedWidth + $gap, $imgWidth * 0.9));
+        $gap = max((int) ($fontSize * 1.2), (int) ($estimatedWidth * 0.15));
+        $baseStep = max($estimatedWidth * 0.75, $fontSize * 2);
+        $step = max(1, (int) min($baseStep + $gap, $imgWidth * 0.75));
 
         $halfWidth = $estimatedWidth / 2;
-        $startX = -$halfWidth + $padding;
+        $minX = -$halfWidth + $padding;
         $maxX = $imgWidth + $halfWidth - $padding;
+        $centerX = $imgWidth / 2;
 
-        for ($x = $startX; $x <= $maxX; $x += $step) {
-            $this->drawTextWatermark($image, $text, $x, $y, $fontSize, $opacity, $fontPath);
+        $this->drawTextWatermark($image, $text, $centerX, $y, $fontSize, $opacity, $fontPath);
+
+        for ($offset = $step; $centerX + $offset <= $maxX || $centerX - $offset >= $minX; $offset += $step) {
+            if ($centerX - $offset >= $minX) {
+                $this->drawTextWatermark($image, $text, $centerX - $offset, $y, $fontSize, $opacity, $fontPath);
+            }
+
+            if ($centerX + $offset <= $maxX) {
+                $this->drawTextWatermark($image, $text, $centerX + $offset, $y, $fontSize, $opacity, $fontPath);
+            }
         }
     }
 
