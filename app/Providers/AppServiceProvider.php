@@ -18,6 +18,7 @@ use App\Observers\ProductCategoryObserver;
 use App\Observers\ProductObserver;
 use App\Observers\ProductTypeObserver;
 use App\Observers\RichEditorMediaObserver;
+use App\Support\AdminOwnerBootstrapper;
 use App\Support\Security\IpHasher;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request as HttpRequest;
@@ -48,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        (new AdminOwnerBootstrapper())->bootstrap();
+
         // Đăng ký Observer
         Article::observe(ArticleObserver::class);
         CatalogAttributeGroup::observe(CatalogAttributeGroupObserver::class);
