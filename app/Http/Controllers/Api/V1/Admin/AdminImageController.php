@@ -58,7 +58,6 @@ class AdminImageController extends Controller
             ->select([
                 'id',
                 'file_path',
-                'url',
                 'alt',
                 'width',
                 'height',
