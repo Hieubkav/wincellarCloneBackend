@@ -61,7 +61,6 @@ class AdminArticleController extends Controller
                 'title',
                 'slug',
                 'active',
-                'cover_image_url',
                 'published_at',
                 'created_at',
             ])
@@ -86,7 +85,7 @@ class AdminArticleController extends Controller
                 'title' => $a->title,
                 'slug' => $a->slug,
                 'active' => $a->active,
-                'cover_image_url' => $a->coverImage?->absolute_url ?? $a->cover_image_url,
+                'cover_image_url' => $a->cover_image_url,
                 'published_at' => $a->published_at?->toIso8601String(),
                 'created_at' => $a->created_at?->toIso8601String(),
             ]),
