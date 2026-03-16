@@ -69,7 +69,7 @@ class AdminProductController extends Controller
                 'created_at',
             ])
             ->with([
-                'coverImage:id,file_path,url,alt,disk,model_id,model_type',
+                'coverImage:id,file_path,alt,disk,model_id,model_type',
                 'categories:id,name',
                 'type:id,name',
             ])
@@ -142,10 +142,10 @@ class AdminProductController extends Controller
                 'created_at',
             ])
             ->with([
-                'coverImage:id,file_path,url,alt,disk,model_id,model_type',
+                'coverImage:id,file_path,alt,disk,model_id,model_type',
                 'categories:id,name',
                 'type:id,name',
-                'images:id,model_id,model_type,file_path,url,alt,disk,order',
+                'images:id,model_id,model_type,file_path,alt,disk,order',
             ]);
 
         if ($request->filled('q')) {

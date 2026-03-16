@@ -65,7 +65,7 @@ class AdminArticleController extends Controller
                 'published_at',
                 'created_at',
             ])
-            ->with(['coverImage:id,file_path,url,alt,disk,model_id,model_type'])
+            ->with(['coverImage:id,file_path,alt,disk,model_id,model_type'])
             ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc');
 
