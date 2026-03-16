@@ -28,6 +28,7 @@ Route::prefix('admin')
             Route::post('auth/logout', [AdminAuthController::class, 'logout'])->name('auth.logout');
 
             // Dashboard & Analytics
+        Route::get('dashboard/bootstrap', [AdminDashboardController::class, 'bootstrap'])->name('dashboard.bootstrap');
         Route::get('dashboard/stats', [AdminDashboardController::class, 'stats'])->name('dashboard.stats');
         Route::get('dashboard/traffic-chart', [AdminDashboardController::class, 'trafficChart'])->name('dashboard.traffic-chart');
         Route::get('dashboard/top-products', [AdminDashboardController::class, 'topProducts'])->name('dashboard.top-products');
