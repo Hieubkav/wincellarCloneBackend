@@ -220,10 +220,8 @@ class WatermarkService
 
         $estimatedWidth = $this->estimateTextWidth($text, $fontSize);
         $visibleWidth = max(1, $imgWidth - ($padding * 2));
-        $fitsFully = $estimatedWidth <= $visibleWidth;
-        $gap = max((int) ($fontSize * 0.6), (int) ($estimatedWidth * 0.05));
-        $baseStep = $estimatedWidth * ($fitsFully ? 0.6 : 0.7);
-        $step = max(1, (int) min($baseStep + $gap, $visibleWidth * 0.9));
+        $gap = max((int) ($fontSize * 0.5), 12);
+        $step = max(1, (int) ($estimatedWidth + $gap));
 
         $halfWidth = $estimatedWidth / 2;
         $minX = -$halfWidth + $padding;
