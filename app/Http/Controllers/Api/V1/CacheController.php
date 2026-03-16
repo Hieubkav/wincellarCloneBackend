@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Support\Product\ProductCacheManager;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 
 class CacheController extends Controller
@@ -18,12 +18,11 @@ class CacheController extends Controller
     public function clear(): JsonResponse
     {
         try {
-            // Clear Laravel caches
-            Cache::flush();
-            Artisan::call('cache:clear');
-            Artisan::call('config:clear');
-            Artisan::call('route:clear');
-            Artisan::call('view:clear');
+            // Soft-invalidate API caches by bumping versions
+            ProductCacheManager::incrementVersion();
+            Cache::increment('api_cache_version');
+            Cache::increment('image_proxy:cache:version');
+            Cache::put('last_cache_clear', now()->toIso8601String());
 
             return response()->json([
                 'success' => true,

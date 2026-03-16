@@ -5,11 +5,16 @@ namespace App\Services;
 use App\Models\TrackingEvent;
 use App\Models\Visitor;
 use App\Models\VisitorSession;
+use App\Support\Security\IpHasher;
 use Illuminate\Support\Str;
 
 class TrackingService
 {
     private const SESSION_TIMEOUT_MINUTES = 30;
+
+    public function __construct(
+        private IpHasher $ipHasher
+    ) {}
 
     /**
      * Find or create a visitor based on anonymous ID
@@ -17,11 +22,12 @@ class TrackingService
     public function findOrCreateVisitor(string $anonId, ?string $ipAddress = null, ?string $userAgent = null): Visitor
     {
         $visitor = Visitor::where('anon_id', $anonId)->first();
+        $ipHash = $ipAddress ? $this->ipHasher->hash($ipAddress) : null;
 
         if (! $visitor) {
             $visitor = Visitor::create([
                 'anon_id' => $anonId,
-                'ip_hash' => $ipAddress ? hash('sha256', $ipAddress) : null,
+                'ip_hash' => $ipHash,
                 'user_agent' => $userAgent,
                 'first_seen_at' => now(),
                 'last_seen_at' => now(),
@@ -30,7 +36,7 @@ class TrackingService
             // Update last_seen_at
             $visitor->update([
                 'last_seen_at' => now(),
-                'ip_hash' => $ipAddress ? hash('sha256', $ipAddress) : $visitor->ip_hash,
+                'ip_hash' => $ipHash ?? $visitor->ip_hash,
                 'user_agent' => $userAgent ?? $visitor->user_agent,
             ]);
         }

@@ -108,6 +108,7 @@ class ImageProxyController extends Controller
     private function getCacheKey(Image $image, bool $applyWatermark, int $quality): string
     {
         $setting = Setting::first();
+        $version = $this->getCacheVersion($image->id);
         
         $settingHash = $setting ? md5(json_encode([
             'type' => $setting->product_watermark_type,
@@ -123,13 +124,25 @@ class ImageProxyController extends Controller
         ])) : 'no-setting';
 
         return sprintf(
-            'image_proxy:%d:%s:%s:%d:%d',
+            'image_proxy:%d:%s:%s:%s:%d:%d',
             $image->id,
             $image->updated_at->timestamp,
             $applyWatermark ? $settingHash : 'no-wm',
+            $version,
             $quality,
             $image->updated_at->timestamp
         );
+    }
+
+    /**
+     * Get cache version token (global + per-image)
+     */
+    private function getCacheVersion(int $imageId): string
+    {
+        $global = (int) Cache::get('image_proxy:cache:version', 1);
+        $perImage = (int) Cache::get("image_proxy:cache:version:{$imageId}", 1);
+
+        return 'g'.$global.'.i'.$perImage;
     }
 
     /**
@@ -169,14 +182,16 @@ class ImageProxyController extends Controller
     public function clearCache(int $id)
     {
         $image = Image::findOrFail($id);
-        
-        // Clear all cache variants for this image
-        $pattern = "image_proxy:{$image->id}:*";
-        Cache::flush(); // Simple approach - could be optimized with Redis SCAN
+
+        Cache::increment("image_proxy:cache:version:{$image->id}");
 
         return response()->json([
             'success' => true,
             'message' => 'Cache cleared for image',
+            'data' => [
+                'image_id' => $image->id,
+                'version' => (int) Cache::get("image_proxy:cache:version:{$image->id}", 1),
+            ],
         ]);
     }
 }

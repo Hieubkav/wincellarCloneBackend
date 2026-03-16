@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Http\Responses\ErrorResponse;
 use App\Models\Article;
 use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
@@ -79,7 +80,14 @@ class AppServiceProvider extends ServiceProvider
                 ? 'user:'.$request->user()->getAuthIdentifier()
                 : 'ip:'.($request->ipHash() ?? 'guest');
 
-            return Limit::perMinutes($decay, $limit)->by($key);
+            return Limit::perMinutes($decay, $limit)
+                ->by($key)
+                ->response(function (HttpRequest $request, array $headers) {
+                    $retryAfter = (int) ($headers['Retry-After'] ?? 60);
+
+                    return ErrorResponse::rateLimitExceeded($retryAfter)
+                        ->withHeaders($headers);
+                });
         });
     }
 

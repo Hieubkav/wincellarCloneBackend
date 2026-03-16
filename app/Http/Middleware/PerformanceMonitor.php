@@ -51,7 +51,7 @@ class PerformanceMonitor
                 'memory_usage_mb' => $memoryUsage,
                 'correlation_id' => $request->header('X-Correlation-ID'),
                 'user_id' => auth()->id(),
-                'ip' => $request->ip(),
+                'ip_hash' => $request->ipHash(),
             ]);
         }
 
