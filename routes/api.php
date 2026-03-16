@@ -39,10 +39,6 @@ Route::middleware(['api', 'throttle:api'])
         // Image proxy endpoint (public, with watermark)
         Route::get('images/{id}', [\App\Http\Controllers\Api\V1\ImageProxyController::class, 'show'])->name('images.show');
 
-        // Watermark debug endpoint (temporary)
-        Route::get('watermark/debug', [\App\Http\Controllers\Api\V1\WatermarkDebugController::class, 'debug'])->name('watermark.debug');
-        Route::get('watermark/test/{imageId}', [\App\Http\Controllers\Api\V1\WatermarkDebugController::class, 'test'])->name('watermark.test');
-
         require __DIR__.'/api/home.php';
         require __DIR__.'/api/menus.php';
         require __DIR__.'/api/products.php';

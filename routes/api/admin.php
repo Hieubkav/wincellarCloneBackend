@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\AdminArticleController;
+use App\Http\Controllers\Api\V1\Admin\AdminAuthController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogAttributeGroupController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogBaselineController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogTermController;
@@ -20,7 +21,13 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admin')
     ->as('admin.')
     ->group(function (): void {
-        // Dashboard & Analytics
+        Route::post('auth/login', [AdminAuthController::class, 'login'])->name('auth.login');
+
+        Route::middleware('admin.token')->group(function (): void {
+            Route::get('auth/me', [AdminAuthController::class, 'me'])->name('auth.me');
+            Route::post('auth/logout', [AdminAuthController::class, 'logout'])->name('auth.logout');
+
+            // Dashboard & Analytics
         Route::get('dashboard/stats', [AdminDashboardController::class, 'stats'])->name('dashboard.stats');
         Route::get('dashboard/traffic-chart', [AdminDashboardController::class, 'trafficChart'])->name('dashboard.traffic-chart');
         Route::get('dashboard/top-products', [AdminDashboardController::class, 'topProducts'])->name('dashboard.top-products');
@@ -96,6 +103,7 @@ Route::prefix('admin')
         Route::post('home-components/reorder', [AdminHomeComponentController::class, 'reorder'])->name('home-components.reorder');
 
         // Images CRUD
+        Route::get('images/library', [AdminImageController::class, 'library'])->name('images.library');
         Route::get('images', [AdminImageController::class, 'index'])->name('images.index');
         Route::get('images/{id}', [AdminImageController::class, 'show'])->name('images.show');
         Route::post('images', [AdminImageController::class, 'store'])->name('images.store');
@@ -142,4 +150,5 @@ Route::prefix('admin')
         Route::post('users', [AdminUserController::class, 'store'])->name('users.store');
         Route::put('users/{id}', [AdminUserController::class, 'update'])->name('users.update');
         Route::delete('users/{id}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+        });
     });

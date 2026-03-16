@@ -13,7 +13,6 @@ return [
 
     'paths' => [
         'api/*',
-        'filament/*',
         'admin/*',
         'sanctum/csrf-cookie',
     ],

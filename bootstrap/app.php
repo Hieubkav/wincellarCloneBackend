@@ -17,6 +17,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'admin.token' => \App\Http\Middleware\AuthenticateAdminToken::class,
+        ]);
+
         // Add correlation ID and performance monitoring middleware for API routes
         $middleware->api(prepend: [
             \App\Http\Middleware\AddCorrelationId::class,

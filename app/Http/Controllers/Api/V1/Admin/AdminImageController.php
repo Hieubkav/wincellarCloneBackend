@@ -9,6 +9,41 @@ use Illuminate\Http\Request;
 
 class AdminImageController extends Controller
 {
+    public function library(Request $request): JsonResponse
+    {
+        $perPage = min(max($request->integer('per_page', 12), 1), 100);
+        $search = trim((string) $request->query('search', ''));
+
+        $query = Image::query()
+            ->where('active', true)
+            ->whereNull('deleted_at')
+            ->orderByDesc('created_at');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $searchTerm = "%{$search}%";
+                $q->where('alt', 'like', $searchTerm)
+                    ->orWhere('file_path', 'like', $searchTerm);
+            });
+        }
+
+        $images = $query->paginate($perPage);
+
+        return response()->json([
+            'data' => collect($images->items())->map(fn (Image $image) => [
+                'id' => $image->id,
+                'url' => $image->url ?? '/images/placeholder.png',
+                'alt' => $image->alt ?? basename($image->file_path ?? ''),
+                'name' => basename($image->file_path ?? ''),
+                'mime' => $image->mime,
+            ])->values(),
+            'current_page' => $images->currentPage(),
+            'last_page' => $images->lastPage(),
+            'total' => $images->total(),
+            'per_page' => $images->perPage(),
+        ]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = Image::query()

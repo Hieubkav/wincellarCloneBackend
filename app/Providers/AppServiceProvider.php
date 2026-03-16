@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Filament\Resources\ProductTypes\RelationManagers\AttributeGroupsRelationManager;
 use App\Models\Article;
 use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
@@ -25,7 +24,6 @@ use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -59,12 +57,6 @@ class AppServiceProvider extends ServiceProvider
         ProductCategory::observe(ProductCategoryObserver::class);
         ProductType::observe(ProductTypeObserver::class);
         RichEditorMedia::observe(RichEditorMediaObserver::class);
-
-        // Đăng ký thủ công Livewire component cho RelationManager (tránh cache cũ)
-        Livewire::component(
-            'app.filament.resources.product-types.relation-managers.attribute-groups-relation-manager',
-            AttributeGroupsRelationManager::class
-        );
 
         $this->normalizeLoopbackAppUrl();
 
