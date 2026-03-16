@@ -11,6 +11,46 @@ use Illuminate\Validation\Rule;
 
 class AdminUserController extends Controller
 {
+    private function getOwnerEmail(): ?string
+    {
+        $value = env('ADMIN_OWNER_EMAIL');
+
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $value = strtolower(trim($value));
+
+        return $value !== '' ? $value : null;
+    }
+
+    private function isOwner(User $user): bool
+    {
+        $ownerEmail = $this->getOwnerEmail();
+
+        if (! $ownerEmail) {
+            return false;
+        }
+
+        return strtolower($user->email) === $ownerEmail;
+    }
+
+    private function transformUser(User $user, ?string $ownerEmail = null): array
+    {
+        $ownerEmail ??= $this->getOwnerEmail();
+        $isOwner = $ownerEmail ? strtolower($user->email) === $ownerEmail : false;
+
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'email_verified_at' => $user->email_verified_at,
+            'created_at' => $user->created_at,
+            'updated_at' => $user->updated_at,
+            'is_owner' => $isOwner,
+        ];
+    }
+
     public function index(Request $request): JsonResponse
     {
         $perPage = (int) $request->input('per_page', 15);
@@ -28,8 +68,13 @@ class AdminUserController extends Controller
 
         $paginated = $query->paginate($perPage, ['*'], 'page', $page);
 
+        $ownerEmail = $this->getOwnerEmail();
+        $items = $paginated->getCollection()->map(function (User $user) use ($ownerEmail) {
+            return $this->transformUser($user, $ownerEmail);
+        })->values();
+
         return response()->json([
-            'data' => $paginated->items(),
+            'data' => $items,
             'meta' => [
                 'current_page' => $paginated->currentPage(),
                 'last_page' => $paginated->lastPage(),
@@ -43,7 +88,7 @@ class AdminUserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        return response()->json(['data' => $user]);
+        return response()->json(['data' => $this->transformUser($user)]);
     }
 
     public function store(Request $request): JsonResponse
@@ -70,6 +115,13 @@ class AdminUserController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $user = User::findOrFail($id);
+
+        if ($this->isOwner($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể chỉnh sửa tài khoản chủ shop',
+            ], 403);
+        }
 
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
@@ -100,6 +152,14 @@ class AdminUserController extends Controller
     public function destroy(int $id): JsonResponse
     {
         $user = User::findOrFail($id);
+
+        if ($this->isOwner($user)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể xóa tài khoản chủ shop',
+            ], 403);
+        }
+
         $user->delete();
 
         return response()->json([
