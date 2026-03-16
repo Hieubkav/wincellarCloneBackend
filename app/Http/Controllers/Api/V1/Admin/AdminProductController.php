@@ -7,6 +7,7 @@ use App\Models\Image;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -48,8 +49,32 @@ class AdminProductController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $sortable = ['id', 'name', 'price', 'original_price', 'active', 'created_at'];
+        $sortBy = $request->input('sort_by', 'id');
+        $sortDir = strtolower((string) $request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        if (! in_array($sortBy, $sortable, true)) {
+            $sortBy = 'id';
+        }
+
         $query = Product::query()
-            ->with(['coverImage', 'categories', 'type'])
+            ->select([
+                'id',
+                'name',
+                'slug',
+                'price',
+                'original_price',
+                'active',
+                'type_id',
+                'cover_image_url',
+                'created_at',
+            ])
+            ->with([
+                'coverImage:id,file_path,url,alt,disk,model_id,model_type',
+                'categories:id,name',
+                'type:id,name',
+            ])
+            ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc');
 
         if ($request->filled('q')) {
@@ -91,6 +116,117 @@ class AdminProductController extends Controller
                 'per_page' => $products->perPage(),
                 'total' => $products->total(),
             ],
+        ]);
+    }
+
+    public function export(Request $request): StreamedResponse
+    {
+        $sortable = ['id', 'name', 'price', 'original_price', 'active', 'created_at'];
+        $sortBy = $request->input('sort_by', 'id');
+        $sortDir = strtolower((string) $request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        if (! in_array($sortBy, $sortable, true)) {
+            $sortBy = 'id';
+        }
+
+        $query = Product::query()
+            ->select([
+                'id',
+                'name',
+                'slug',
+                'description',
+                'price',
+                'original_price',
+                'active',
+                'type_id',
+                'cover_image_url',
+                'extra_attrs',
+                'created_at',
+            ])
+            ->with([
+                'coverImage:id,file_path,url,alt,disk,model_id,model_type',
+                'categories:id,name',
+                'type:id,name',
+                'images:id,model_id,model_type,file_path,url,alt,disk,order',
+            ]);
+
+        if ($request->filled('q')) {
+            $query->where('name', 'like', '%'.$request->input('q').'%');
+        }
+
+        if ($request->filled('type_id')) {
+            $query->where('type_id', $request->input('type_id'));
+        }
+
+        if ($request->filled('category_id')) {
+            $query->whereHas('categories', fn ($q) => $q->where('product_categories.id', $request->input('category_id')));
+        }
+
+        if ($request->filled('active')) {
+            $query->where('active', $request->boolean('active'));
+        }
+
+        $query->orderBy($sortBy, $sortDir)->orderBy('id', 'desc');
+
+        $fileName = 'danh-sach-san-pham-'.now()->format('Ymd_His').'.csv';
+
+        return response()->streamDownload(function () use ($query) {
+            $handle = fopen('php://output', 'w');
+            if ($handle === false) {
+                return;
+            }
+
+            fprintf($handle, "\xEF\xBB\xBF");
+
+            fputcsv($handle, [
+                'ID',
+                'Tên sản phẩm',
+                'Slug',
+                'Phân loại',
+                'Danh mục',
+                'Giá bán',
+                'Giá gốc',
+                'Trạng thái',
+                'Ảnh đại diện',
+                'Ảnh phụ (URLs)',
+                'Mô tả',
+                'Thuộc tính',
+                'Ngày tạo',
+            ]);
+
+            $query->chunk(200, function ($products) use ($handle) {
+                foreach ($products as $product) {
+                    $categoryNames = $product->categories->map(fn ($c) => $c->name)->implode(', ');
+                    $typeName = $product->type?->name ?? '';
+                    $coverImage = $product->coverImage?->absolute_url ?? $product->cover_image_url ?? '';
+                    $additionalImages = $product->images
+                        ->map(function ($img) {
+                            return $img->absolute_url ?? $img->url ?? $img->file_path;
+                        })
+                        ->filter(fn ($url) => $url && $url !== $coverImage)
+                        ->implode('; ');
+
+                    fputcsv($handle, [
+                        $product->id,
+                        $product->name,
+                        $product->slug,
+                        $typeName,
+                        $categoryNames,
+                        $product->price,
+                        $product->original_price,
+                        $product->active ? 'Có' : 'Không',
+                        $coverImage,
+                        $additionalImages,
+                        $product->description,
+                        $product->extra_attrs ? json_encode($product->extra_attrs, JSON_UNESCAPED_UNICODE) : '',
+                        $product->created_at?->toIso8601String(),
+                    ]);
+                }
+            });
+
+            fclose($handle);
+        }, $fileName, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 

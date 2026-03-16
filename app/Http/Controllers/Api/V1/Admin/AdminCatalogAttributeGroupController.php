@@ -13,10 +13,31 @@ class AdminCatalogAttributeGroupController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $sortable = ['position', 'name', 'code', 'filter_type', 'input_type', 'is_filterable', 'created_at', 'updated_at', 'terms_count'];
+        $sortBy = $request->input('sort_by', 'position');
+        $sortDir = strtolower((string) $request->input('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! in_array($sortBy, $sortable, true)) {
+            $sortBy = 'position';
+        }
+
         $query = CatalogAttributeGroup::query()
-            ->with(['productTypes'])
+            ->select([
+                'id',
+                'code',
+                'name',
+                'filter_type',
+                'input_type',
+                'is_filterable',
+                'position',
+                'icon_path',
+                'created_at',
+                'updated_at',
+            ])
+            ->with(['productTypes:id,name'])
             ->withCount('terms')
-            ->orderBy('position')
+            ->when($sortBy === 'terms_count', fn ($q) => $q->orderBy('terms_count', $sortDir))
+            ->when($sortBy !== 'terms_count', fn ($q) => $q->orderBy($sortBy, $sortDir))
             ->orderBy('id');
 
         if ($request->filled('q')) {

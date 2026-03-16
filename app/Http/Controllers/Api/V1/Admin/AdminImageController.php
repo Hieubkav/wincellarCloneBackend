@@ -46,7 +46,30 @@ class AdminImageController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $sortable = ['id', 'created_at', 'alt', 'file_path', 'active'];
+        $sortBy = $request->input('sort_by', 'id');
+        $sortDir = strtolower((string) $request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        if (! in_array($sortBy, $sortable, true)) {
+            $sortBy = 'id';
+        }
+
         $query = Image::query()
+            ->select([
+                'id',
+                'file_path',
+                'url',
+                'alt',
+                'width',
+                'height',
+                'mime',
+                'model_type',
+                'model_id',
+                'order',
+                'active',
+                'created_at',
+            ])
+            ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc');
 
         if ($request->filled('q')) {

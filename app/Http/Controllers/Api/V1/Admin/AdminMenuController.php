@@ -14,9 +14,27 @@ class AdminMenuController extends Controller
     public function index(Request $request): JsonResponse
     {
         $includeItems = $request->boolean('with_items');
+        $sortable = ['order', 'title', 'active', 'created_at'];
+        $sortBy = $request->input('sort_by', 'order');
+        $sortDir = strtolower((string) $request->input('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! in_array($sortBy, $sortable, true)) {
+            $sortBy = 'order';
+        }
+
         $query = Menu::query()
+            ->select([
+                'id',
+                'title',
+                'type',
+                'href',
+                'order',
+                'active',
+                'created_at',
+                'updated_at',
+            ])
             ->withCount('blocks')
-            ->orderBy('order')
+            ->orderBy($sortBy, $sortDir)
             ->orderBy('id');
 
         if ($request->filled('q')) {
@@ -28,7 +46,10 @@ class AdminMenuController extends Controller
         }
 
         if ($includeItems) {
-            $query->with(['blocks.items']);
+            $query->with([
+                'blocks' => fn ($q) => $q->select(['id', 'menu_id', 'title', 'order', 'active']),
+                'blocks.items' => fn ($q) => $q->select(['id', 'menu_block_id', 'label', 'href', 'badge', 'order', 'active']),
+            ]);
         }
 
         $perPage = min($request->integer('per_page', 20), 100);

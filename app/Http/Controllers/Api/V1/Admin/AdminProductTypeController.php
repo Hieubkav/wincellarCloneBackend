@@ -12,10 +12,29 @@ class AdminProductTypeController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $sortable = ['order', 'name', 'slug', 'products_count', 'attribute_groups_count', 'active', 'created_at', 'updated_at'];
+        $sortBy = $request->input('sort_by', 'order');
+        $sortDir = strtolower((string) $request->input('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! in_array($sortBy, $sortable, true)) {
+            $sortBy = 'order';
+        }
+
         $query = ProductType::query()
+            ->select([
+                'id',
+                'name',
+                'slug',
+                'order',
+                'active',
+                'created_at',
+                'updated_at',
+            ])
             ->withCount('products')
             ->withCount('attributeGroups')
-            ->orderBy('order')
+            ->when($sortBy === 'products_count', fn ($q) => $q->orderBy('products_count', $sortDir))
+            ->when($sortBy === 'attribute_groups_count', fn ($q) => $q->orderBy('attribute_groups_count', $sortDir))
+            ->when(! in_array($sortBy, ['products_count', 'attribute_groups_count'], true), fn ($q) => $q->orderBy($sortBy, $sortDir))
             ->orderBy('id');
 
         if ($request->filled('q')) {

@@ -13,8 +13,28 @@ class AdminCategoryController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $perPage = $request->integer('per_page', 50);
-        $query = ProductCategory::with('type')->withCount('products');
+        $sortable = ['order', 'name', 'products_count', 'active', 'created_at', 'updated_at'];
+        $sortBy = $request->input('sort_by', 'order');
+        $sortDir = strtolower((string) $request->input('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! in_array($sortBy, $sortable, true)) {
+            $sortBy = 'order';
+        }
+
+        $perPage = min($request->integer('per_page', 50), 100);
+        $query = ProductCategory::query()
+            ->select([
+                'id',
+                'name',
+                'slug',
+                'type_id',
+                'order',
+                'active',
+                'created_at',
+                'updated_at',
+            ])
+            ->withCount('products')
+            ->with('type:id,name');
 
         if ($request->filled('q')) {
             $search = $request->string('q');
@@ -33,15 +53,27 @@ class AdminCategoryController extends Controller
             $query->where('active', $request->boolean('active'));
         }
 
-        // Fix N+1: Eager load type relationship
-        $query->with('type');
-        
-        $categories = $query->orderBy('order')->orderBy('name')->paginate($perPage);
+        $query
+            ->when($sortBy === 'products_count', fn ($q) => $q->orderBy('products_count', $sortDir))
+            ->when($sortBy !== 'products_count', fn ($q) => $q->orderBy($sortBy, $sortDir))
+            ->orderBy('id');
 
-        $data = $categories->items();
-        foreach ($data as $category) {
-            $category->type_name = $category->type?->name;
-        }
+        $categories = $query->paginate($perPage);
+
+        $data = $categories->getCollection()->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'type_id' => $category->type_id,
+                'type_name' => $category->type?->name,
+                'order' => $category->order,
+                'active' => $category->active,
+                'products_count' => $category->products_count,
+                'created_at' => $category->created_at?->toIso8601String(),
+                'updated_at' => $category->updated_at?->toIso8601String(),
+            ];
+        })->values();
 
         return response()->json([
             'data' => $data,

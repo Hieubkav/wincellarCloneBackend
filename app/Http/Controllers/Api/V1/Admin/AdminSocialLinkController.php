@@ -11,9 +11,26 @@ class AdminSocialLinkController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $sortable = ['order', 'platform', 'active', 'created_at'];
+        $sortBy = $request->input('sort_by', 'order');
+        $sortDir = strtolower((string) $request->input('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if (! in_array($sortBy, $sortable, true)) {
+            $sortBy = 'order';
+        }
+
         $query = SocialLink::query()
-            ->with('iconImage')
-            ->orderBy('order', 'asc')
+            ->select([
+                'id',
+                'platform',
+                'url',
+                'icon_image_id',
+                'order',
+                'active',
+                'created_at',
+            ])
+            ->with('iconImage:id,url')
+            ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc');
 
         if ($request->filled('platform')) {

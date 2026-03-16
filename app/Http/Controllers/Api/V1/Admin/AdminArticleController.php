@@ -47,8 +47,26 @@ class AdminArticleController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $sortable = ['id', 'title', 'published_at', 'active', 'created_at'];
+        $sortBy = $request->input('sort_by', 'id');
+        $sortDir = strtolower((string) $request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        if (! in_array($sortBy, $sortable, true)) {
+            $sortBy = 'id';
+        }
+
         $query = Article::query()
-            ->with(['coverImage'])
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'active',
+                'cover_image_url',
+                'published_at',
+                'created_at',
+            ])
+            ->with(['coverImage:id,file_path,url,alt,disk,model_id,model_type'])
+            ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc');
 
         if ($request->filled('q')) {

@@ -36,6 +36,7 @@ Route::prefix('admin')
 
         // Products CRUD
         Route::get('products/list-for-select', [AdminProductController::class, 'listForSelect'])->name('products.list-for-select');
+        Route::get('products/export', [AdminProductController::class, 'export'])->name('products.export');
         Route::get('products', [AdminProductController::class, 'index'])->name('products.index');
         Route::get('products/{id}', [AdminProductController::class, 'show'])->name('products.show');
         Route::post('products', [AdminProductController::class, 'store'])->name('products.store');
