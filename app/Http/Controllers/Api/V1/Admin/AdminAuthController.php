@@ -10,12 +10,22 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class AdminAuthController extends Controller
 {
     public function login(Request $request): JsonResponse
     {
+        if (! Schema::hasTable('admin_access_tokens')) {
+            return ErrorResponse::make(
+                ErrorType::INTERNAL_ERROR,
+                'Thiếu bảng admin_access_tokens. Vui lòng chạy migrate trước khi đăng nhập admin.',
+                null,
+                503
+            );
+        }
+
         $validated = $request->validate([
             'login' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'min:6'],

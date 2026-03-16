@@ -6,12 +6,22 @@ use App\Http\Responses\ErrorResponse;
 use App\Models\AdminAccessToken;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthenticateAdminToken
 {
     public function handle(Request $request, Closure $next): Response
     {
+        if (! Schema::hasTable('admin_access_tokens')) {
+            return ErrorResponse::make(
+                \App\Http\Responses\ErrorType::INTERNAL_ERROR,
+                'Thiếu bảng admin_access_tokens. Vui lòng chạy migrate trước khi dùng admin.',
+                null,
+                503
+            );
+        }
+
         $plainToken = $this->extractBearerToken($request);
 
         if ($plainToken === null) {

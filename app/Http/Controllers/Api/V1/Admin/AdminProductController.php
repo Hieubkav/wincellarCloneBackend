@@ -66,7 +66,6 @@ class AdminProductController extends Controller
                 'original_price',
                 'active',
                 'type_id',
-                'cover_image_url',
                 'created_at',
             ])
             ->with([
@@ -107,7 +106,7 @@ class AdminProductController extends Controller
                 'type_id' => $p->type_id,
                 'type_name' => $p->type?->name,
                 'category_name' => $p->categories->first()?->name,
-                'cover_image_url' => $p->coverImage?->absolute_url ?? $p->cover_image_url,
+                'cover_image_url' => $p->coverImage?->absolute_url,
                 'created_at' => $p->created_at?->toIso8601String(),
             ]),
             'meta' => [
@@ -139,7 +138,6 @@ class AdminProductController extends Controller
                 'original_price',
                 'active',
                 'type_id',
-                'cover_image_url',
                 'extra_attrs',
                 'created_at',
             ])
@@ -198,7 +196,7 @@ class AdminProductController extends Controller
                 foreach ($products as $product) {
                     $categoryNames = $product->categories->map(fn ($c) => $c->name)->implode(', ');
                     $typeName = $product->type?->name ?? '';
-                    $coverImage = $product->coverImage?->absolute_url ?? $product->cover_image_url ?? '';
+                    $coverImage = $product->coverImage?->absolute_url ?? '';
                     $additionalImages = $product->images
                         ->map(function ($img) {
                             return $img->absolute_url ?? $img->url ?? $img->file_path;
