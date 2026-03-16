@@ -220,24 +220,15 @@ class WatermarkService
 
         $estimatedWidth = $this->estimateTextWidth($text, $fontSize);
         $visibleWidth = max(1, $imgWidth - ($padding * 2));
-        $gap = max((int) ($fontSize * 0.5), 12);
+        $gap = max($fontSize, 24);
         $step = max(1, (int) ($estimatedWidth + $gap));
 
         $halfWidth = $estimatedWidth / 2;
-        $minX = -$halfWidth + $padding;
-        $maxX = $imgWidth + $halfWidth - $padding;
-        $centerX = $imgWidth / 2;
+        $startX = $padding + $halfWidth;
+        $maxX = $imgWidth - $padding + $halfWidth;
 
-        $this->drawTextWatermark($image, $text, $centerX, $y, $fontSize, $opacity, $fontPath);
-
-        for ($offset = $step; $centerX + $offset <= $maxX || $centerX - $offset >= $minX; $offset += $step) {
-            if ($centerX - $offset >= $minX) {
-                $this->drawTextWatermark($image, $text, $centerX - $offset, $y, $fontSize, $opacity, $fontPath);
-            }
-
-            if ($centerX + $offset <= $maxX) {
-                $this->drawTextWatermark($image, $text, $centerX + $offset, $y, $fontSize, $opacity, $fontPath);
-            }
+        for ($x = $startX; $x <= $maxX; $x += $step) {
+            $this->drawTextWatermark($image, $text, $x, $y, $fontSize, $opacity, $fontPath);
         }
     }
 
