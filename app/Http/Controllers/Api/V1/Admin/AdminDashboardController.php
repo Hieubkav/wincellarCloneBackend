@@ -268,7 +268,8 @@ class AdminDashboardController extends Controller
             'id' => $item->product_id,
             'name' => $products[$item->product_id]?->name ?? 'Sản phẩm đã xóa',
             'slug' => $products[$item->product_id]?->slug,
-            'image_url' => $products[$item->product_id]?->coverImage?->url,
+            'image_url' => $products[$item->product_id]?->coverImage?->absolute_url
+                ?? $products[$item->product_id]?->cover_image_url,
             'views' => (int) $item->views,
         ])->values()->all();
     }
@@ -298,7 +299,8 @@ class AdminDashboardController extends Controller
             'id' => $item->article_id,
             'title' => $articles[$item->article_id]?->title ?? 'Bài viết đã xóa',
             'slug' => $articles[$item->article_id]?->slug,
-            'image_url' => $articles[$item->article_id]?->coverImage?->url,
+            'image_url' => $articles[$item->article_id]?->coverImage?->absolute_url
+                ?? $articles[$item->article_id]?->cover_image_url,
             'views' => (int) $item->views,
         ])->values()->all();
     }
