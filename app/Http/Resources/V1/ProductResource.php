@@ -9,6 +9,11 @@ use App\Support\Catalog\AttributeIconResolver;
 class ProductResource extends JsonResource
 {
     /**
+     * @var array<string, array{icon_url: string|null, icon_name: string|null}>
+     */
+    protected static array $attributeIconCache = [];
+
+    /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
@@ -244,13 +249,24 @@ class ProductResource extends JsonResource
             return [];
         }
 
-        return \App\Models\CatalogAttributeGroup::query()
-            ->whereIn('code', $codes)
-            ->get(['code', 'icon_path', 'display_config'])
-            ->mapWithKeys(fn ($group) => [
-                $group->code => AttributeIconResolver::resolveFromGroup($group),
-            ])
-            ->toArray();
+        $codes = array_values(array_unique($codes));
+        $missingCodes = array_values(array_diff($codes, array_keys(self::$attributeIconCache)));
+
+        if (! empty($missingCodes)) {
+            $resolved = \App\Models\CatalogAttributeGroup::query()
+                ->whereIn('code', $missingCodes)
+                ->get(['code', 'icon_path', 'display_config'])
+                ->mapWithKeys(fn ($group) => [
+                    $group->code => AttributeIconResolver::resolveFromGroup($group),
+                ])
+                ->toArray();
+
+            foreach ($missingCodes as $code) {
+                self::$attributeIconCache[$code] = $resolved[$code] ?? ['icon_url' => null, 'icon_name' => null];
+            }
+        }
+
+        return array_intersect_key(self::$attributeIconCache, array_flip($codes));
     }
 
     /**

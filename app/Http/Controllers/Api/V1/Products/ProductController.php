@@ -84,7 +84,7 @@ class ProductController extends Controller
             });
 
             // Load relations for API resources (terms for attributes display)
-            $paginator->getCollection()->load(['terms.group', 'categories', 'type', 'coverImage', 'images']);
+            $paginator->getCollection()->load(['terms.group', 'categories', 'type', 'images']);
 
             // Use ProductCollection with Resources
             return new ProductCollection($paginator);

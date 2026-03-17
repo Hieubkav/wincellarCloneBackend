@@ -45,12 +45,11 @@ class ProductSearchBuilder
             ->active();
 
         $relations = $withRelations ?? ($isList ? [
-            'coverImage',
+            'images' => fn ($relation) => $relation->orderBy('order'),
             'terms.group',
             'categories',
             'type',
         ] : [
-            'coverImage',
             'images' => fn ($relation) => $relation->orderBy('order'),
             'terms.group',
             'categories',
