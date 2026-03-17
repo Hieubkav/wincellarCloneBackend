@@ -85,7 +85,7 @@ class ProductResource extends JsonResource
                     ->groupBy(fn ($term) => $term->group?->code ?? 'other')
                     ->map(function ($terms, $groupCode) {
                         $group = $terms->first()?->group;
-                        $icon = AttributeIconResolver::resolve($group?->icon_path);
+                        $icon = AttributeIconResolver::resolveFromGroup($group);
 
                         return [
                             'group_code' => $groupCode,
@@ -217,15 +217,11 @@ class ProductResource extends JsonResource
 
         $codes = array_keys($extraAttrs);
 
-        $iconMap = \App\Models\CatalogAttributeGroup::query()
-            ->whereIn('code', $codes)
-            ->pluck('icon_path', 'code')
-            ->toArray();
+        $iconMap = $this->buildAttributeIconMap($codes);
 
         $transformed = [];
         foreach ($extraAttrs as $code => $attr) {
-            $iconPath = $iconMap[$code] ?? null;
-            $icon = AttributeIconResolver::resolve($iconPath);
+            $icon = $iconMap[$code] ?? ['icon_url' => null, 'icon_name' => null];
             $transformed[$code] = [
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',
@@ -236,6 +232,25 @@ class ProductResource extends JsonResource
         }
 
         return $transformed;
+    }
+
+    /**
+     * @param  array<int, string>  $codes
+     * @return array<string, array{icon_url: string|null, icon_name: string|null}>
+     */
+    protected function buildAttributeIconMap(array $codes): array
+    {
+        if (empty($codes)) {
+            return [];
+        }
+
+        return \App\Models\CatalogAttributeGroup::query()
+            ->whereIn('code', $codes)
+            ->get(['code', 'icon_path', 'display_config'])
+            ->mapWithKeys(fn ($group) => [
+                $group->code => AttributeIconResolver::resolveFromGroup($group),
+            ])
+            ->toArray();
     }
 
     /**
@@ -280,7 +295,7 @@ class ProductResource extends JsonResource
                     ->groupBy(fn ($term) => $term->group?->code ?? 'other')
                     ->map(function ($terms, $groupCode) {
                         $group = $terms->first()?->group;
-                        $icon = AttributeIconResolver::resolve($group?->icon_path);
+                        $icon = AttributeIconResolver::resolveFromGroup($group);
 
                         return [
                             'group_code' => $groupCode,
@@ -313,15 +328,11 @@ class ProductResource extends JsonResource
 
         $codes = array_keys($extraAttrs);
 
-        $iconMap = \App\Models\CatalogAttributeGroup::query()
-            ->whereIn('code', $codes)
-            ->pluck('icon_path', 'code')
-            ->toArray();
+        $iconMap = $this->buildAttributeIconMap($codes);
 
         $transformed = [];
         foreach ($extraAttrs as $code => $attr) {
-            $iconPath = $iconMap[$code] ?? null;
-            $icon = AttributeIconResolver::resolve($iconPath);
+            $icon = $iconMap[$code] ?? ['icon_url' => null, 'icon_name' => null];
             $transformed[$code] = [
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',

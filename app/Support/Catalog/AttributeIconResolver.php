@@ -4,6 +4,31 @@ namespace App\Support\Catalog;
 
 class AttributeIconResolver
 {
+    public static function resolveFromGroup(?object $group): array
+    {
+        if (! $group) {
+            return ['icon_url' => null, 'icon_name' => null];
+        }
+
+        $iconPath = $group->icon_path ?? null;
+        if ($iconPath) {
+            return self::resolve($iconPath);
+        }
+
+        $displayConfig = $group->display_config ?? null;
+        if (is_string($displayConfig)) {
+            $displayConfig = json_decode($displayConfig, true) ?? [];
+        }
+
+        $displayIcon = is_array($displayConfig) ? ($displayConfig['icon'] ?? null) : null;
+
+        if (! $displayIcon) {
+            return ['icon_url' => null, 'icon_name' => null];
+        }
+
+        return ['icon_url' => null, 'icon_name' => self::normalizeIconName($displayIcon)];
+    }
+
     public static function resolve(?string $iconPath): array
     {
         if (! $iconPath) {
@@ -34,7 +59,13 @@ class AttributeIconResolver
 
     public static function normalizeIconName(string $iconPath): string
     {
-        $parts = preg_split('/[-_\s]+/', $iconPath) ?: [];
+        $normalizedPath = trim($iconPath);
+        if (str_contains($normalizedPath, ':')) {
+            $segments = explode(':', $normalizedPath);
+            $normalizedPath = end($segments) ?: $normalizedPath;
+        }
+
+        $parts = preg_split('/[-_\s]+/', $normalizedPath) ?: [];
         $normalized = array_map(static fn ($part) => $part !== '' ? ucfirst($part) : '', $parts);
 
         return implode('', $normalized);

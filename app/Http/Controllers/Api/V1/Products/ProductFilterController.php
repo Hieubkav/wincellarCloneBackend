@@ -183,7 +183,7 @@ class ProductFilterController extends Controller
                     ->first();
 
                 // Luôn trả về filter ngay cả khi chưa có data, để frontend hiển thị input/range
-                $icon = AttributeIconResolver::resolve($group->icon_path);
+                $icon = AttributeIconResolver::resolveFromGroup($group);
 
                 $filters[] = [
                     'code' => $group->code,
@@ -218,7 +218,7 @@ class ProductFilterController extends Controller
                 $displayConfig = json_decode($displayConfig, true) ?? [];
             }
 
-            $icon = AttributeIconResolver::resolve($group->icon_path);
+            $icon = AttributeIconResolver::resolveFromGroup($group);
 
             $filters[] = [
                 'code' => $group->code,
