@@ -18,12 +18,17 @@ class AttributeIconResolver
             return ['icon_url' => $iconPath, 'icon_name' => null];
         }
 
-        $isFilePath = str_contains($iconPath, '/') || str_contains($iconPath, '.');
+        $isFilePath = self::isFilePath($iconPath);
 
         if ($isFilePath) {
             return ['icon_url' => asset('storage/'.$iconPath), 'icon_name' => null];
         }
 
         return ['icon_url' => null, 'icon_name' => $iconPath];
+    }
+
+    public static function isFilePath(string $iconPath): bool
+    {
+        return str_contains($iconPath, '/') || str_contains($iconPath, '.');
     }
 }

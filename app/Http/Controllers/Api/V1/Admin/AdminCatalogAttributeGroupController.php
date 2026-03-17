@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CatalogAttributeGroup;
+use App\Support\Catalog\AttributeIconResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -135,6 +136,7 @@ class AdminCatalogAttributeGroupController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $iconRule = $this->iconPathRule();
         $validated = $request->validate([
             'code' => ['required', 'string', 'max:255', 'unique:catalog_attribute_groups,code'],
             'name' => ['required', 'string', 'max:255'],
@@ -143,7 +145,7 @@ class AdminCatalogAttributeGroupController extends Controller
             'is_filterable' => ['boolean'],
             'position' => ['nullable', 'integer', 'min:0'],
             'display_config' => ['nullable', 'array'],
-            'icon_path' => ['nullable', 'max:255'],
+            'icon_path' => ['nullable', 'max:255', $iconRule],
         ]);
 
         $validated['is_filterable'] = $validated['is_filterable'] ?? true;
@@ -160,6 +162,7 @@ class AdminCatalogAttributeGroupController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $group = CatalogAttributeGroup::findOrFail($id);
+        $iconRule = $this->iconPathRule();
 
         \Log::info('Update attribute group request:', [
             'id' => $id,
@@ -187,7 +190,7 @@ class AdminCatalogAttributeGroupController extends Controller
             'is_filterable' => ['sometimes', 'boolean'],
             'position' => ['nullable', 'integer', 'min:0'],
             'display_config' => ['nullable', 'array'],
-            'icon_path' => ['nullable', 'max:255'],
+            'icon_path' => ['nullable', 'max:255', $iconRule],
         ]);
 
         $group->update($validated);
@@ -215,5 +218,29 @@ class AdminCatalogAttributeGroupController extends Controller
             'success' => true,
             'message' => 'Xóa nhóm thuộc tính thành công',
         ]);
+    }
+
+    private function iconPathRule(): \Closure
+    {
+        return function (string $attribute, $value, \Closure $fail): void {
+            if (! $value) {
+                return;
+            }
+
+            if (
+                str_starts_with($value, 'http://') ||
+                str_starts_with($value, 'https://') ||
+                str_starts_with($value, '/') ||
+                AttributeIconResolver::isFilePath($value)
+            ) {
+                return;
+            }
+
+            $allowed = config('dynamic_icons.allowed', []);
+
+            if (! in_array($value, $allowed, true)) {
+                $fail('Icon không hợp lệ hoặc chưa được hỗ trợ trên public.');
+            }
+        };
     }
 }
