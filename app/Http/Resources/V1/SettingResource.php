@@ -14,6 +14,24 @@ class SettingResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $contactConfig = $this->contact_config;
+        if (is_array($contactConfig) && isset($contactConfig['cards']) && is_array($contactConfig['cards'])) {
+            $contactConfig['cards'] = array_map(function ($card) {
+                if (! is_array($card)) {
+                    return $card;
+                }
+
+                $icon = $card['icon'] ?? null;
+                if (is_string($icon) && $icon !== '') {
+                    if (! str_starts_with($icon, 'http://') && ! str_starts_with($icon, 'https://') && ! str_starts_with($icon, '/')) {
+                        $card['icon'] = \App\Support\Catalog\AttributeIconResolver::normalizeIconName($icon);
+                    }
+                }
+
+                return $card;
+            }, $contactConfig['cards']);
+        }
+
         return [
             'id' => $this->id,
             'site_name' => $this->site_name,
@@ -23,7 +41,7 @@ class SettingResource extends JsonResource
             'email' => $this->email,
             'google_map_embed' => $this->google_map_embed,
             'footer_config' => $this->footer_config,
-            'contact_config' => $this->contact_config,
+            'contact_config' => $contactConfig,
 
             // Logo and favicon URLs
             'logo_url' => $this->logoImage?->url ?? '/placeholder/logo.svg',

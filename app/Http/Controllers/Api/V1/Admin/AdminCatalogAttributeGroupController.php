@@ -148,6 +148,10 @@ class AdminCatalogAttributeGroupController extends Controller
             'icon_path' => ['nullable', 'max:255', $iconRule],
         ]);
 
+        if (array_key_exists('icon_path', $validated)) {
+            $validated['icon_path'] = $this->normalizeIconPathInput($validated['icon_path']);
+        }
+
         $validated['is_filterable'] = $validated['is_filterable'] ?? true;
 
         $group = CatalogAttributeGroup::create($validated);
@@ -192,6 +196,10 @@ class AdminCatalogAttributeGroupController extends Controller
             'display_config' => ['nullable', 'array'],
             'icon_path' => ['nullable', 'max:255', $iconRule],
         ]);
+
+        if (array_key_exists('icon_path', $validated)) {
+            $validated['icon_path'] = $this->normalizeIconPathInput($validated['icon_path']);
+        }
 
         $group->update($validated);
 
@@ -243,5 +251,35 @@ class AdminCatalogAttributeGroupController extends Controller
                 $fail('Icon không hợp lệ hoặc chưa được hỗ trợ trên public.');
             }
         };
+    }
+
+    private function normalizeIconPathInput(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+
+        if (
+            str_starts_with($trimmed, 'http://') ||
+            str_starts_with($trimmed, 'https://')
+        ) {
+            return $trimmed;
+        }
+
+        if (str_starts_with($trimmed, '/storage/')) {
+            return preg_replace('#^/?storage/#', '', $trimmed) ?: null;
+        }
+
+        if (str_starts_with($trimmed, 'storage/')) {
+            return preg_replace('#^storage/#', '', $trimmed) ?: null;
+        }
+
+        if (AttributeIconResolver::isFilePath($trimmed)) {
+            return ltrim($trimmed, '/');
+        }
+
+        return AttributeIconResolver::normalizeIconName($trimmed);
     }
 }

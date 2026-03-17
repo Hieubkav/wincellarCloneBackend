@@ -48,11 +48,11 @@ class SocialLink extends Model
     public function getIconUrlAttribute(): ?string
     {
         if ($this->relationLoaded('iconImage') && $this->iconImage) {
-            return $this->iconImage->url;
+            return $this->iconImage->absolute_url;
         }
 
         if ($this->icon_image_id && $this->iconImage) {
-            return $this->iconImage->url;
+            return $this->iconImage->absolute_url;
         }
 
         return \App\Support\Media\MediaConfig::placeholder('term');
