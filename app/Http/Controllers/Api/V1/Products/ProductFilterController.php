@@ -7,6 +7,7 @@ use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
+use App\Support\Catalog\AttributeIconResolver;
 use App\Support\Product\TermCountCache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,29 +15,6 @@ use Illuminate\Support\Collection;
 
 class ProductFilterController extends Controller
 {
-    protected static function resolveIcon(?string $iconPath): array
-    {
-        if (! $iconPath) {
-            return ['icon_url' => null, 'icon_name' => null];
-        }
-
-        if (
-            str_starts_with($iconPath, 'http://') ||
-            str_starts_with($iconPath, 'https://') ||
-            str_starts_with($iconPath, '/')
-        ) {
-            return ['icon_url' => $iconPath, 'icon_name' => null];
-        }
-
-        $isFilePath = str_contains($iconPath, '/') || str_contains($iconPath, '.');
-
-        if ($isFilePath) {
-            return ['icon_url' => asset('storage/'.$iconPath), 'icon_name' => null];
-        }
-
-        return ['icon_url' => null, 'icon_name' => $iconPath];
-    }
-
     public function index(Request $request): JsonResponse
     {
         $typeId = $request->integer('type_id');
@@ -205,7 +183,7 @@ class ProductFilterController extends Controller
                     ->first();
 
                 // Luôn trả về filter ngay cả khi chưa có data, để frontend hiển thị input/range
-                $icon = static::resolveIcon($group->icon_path);
+                $icon = AttributeIconResolver::resolve($group->icon_path);
 
                 $filters[] = [
                     'code' => $group->code,
@@ -240,7 +218,7 @@ class ProductFilterController extends Controller
                 $displayConfig = json_decode($displayConfig, true) ?? [];
             }
 
-            $icon = static::resolveIcon($group->icon_path);
+            $icon = AttributeIconResolver::resolve($group->icon_path);
 
             $filters[] = [
                 'code' => $group->code,

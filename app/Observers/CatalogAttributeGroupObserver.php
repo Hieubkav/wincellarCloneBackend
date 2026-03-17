@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\CatalogAttributeGroup;
+use App\Services\RevalidationService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,7 @@ class CatalogAttributeGroupObserver
     public function created(CatalogAttributeGroup $catalogAttributeGroup): void
     {
         $this->clearFilterCache();
+        $this->triggerRevalidation();
     }
 
     /**
@@ -36,6 +38,7 @@ class CatalogAttributeGroupObserver
         }
 
         $this->clearFilterCache();
+        $this->triggerRevalidation();
     }
 
     /**
@@ -65,6 +68,7 @@ class CatalogAttributeGroupObserver
         }
 
         $this->clearFilterCache();
+        $this->triggerRevalidation();
     }
 
     /**
@@ -78,6 +82,7 @@ class CatalogAttributeGroupObserver
         }
 
         $this->clearFilterCache();
+        $this->triggerRevalidation();
     }
 
     private function clearFilterCache(): void
@@ -92,5 +97,10 @@ class CatalogAttributeGroupObserver
                 Cache::forget($pattern.':'.$i);
             }
         }
+    }
+
+    private function triggerRevalidation(): void
+    {
+        app(RevalidationService::class)->triggerRevalidation(tags: ['products', 'filters']);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Resources\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Support\Catalog\AttributeIconResolver;
 
 class ProductResource extends JsonResource
 {
@@ -84,7 +85,7 @@ class ProductResource extends JsonResource
                     ->groupBy(fn ($term) => $term->group?->code ?? 'other')
                     ->map(function ($terms, $groupCode) {
                         $group = $terms->first()?->group;
-                        $icon = $this->resolveIcon($group?->icon_path);
+                        $icon = AttributeIconResolver::resolve($group?->icon_path);
 
                         return [
                             'group_code' => $groupCode,
@@ -224,7 +225,7 @@ class ProductResource extends JsonResource
         $transformed = [];
         foreach ($extraAttrs as $code => $attr) {
             $iconPath = $iconMap[$code] ?? null;
-            $icon = $this->resolveIcon($iconPath);
+            $icon = AttributeIconResolver::resolve($iconPath);
             $transformed[$code] = [
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',
@@ -279,7 +280,7 @@ class ProductResource extends JsonResource
                     ->groupBy(fn ($term) => $term->group?->code ?? 'other')
                     ->map(function ($terms, $groupCode) {
                         $group = $terms->first()?->group;
-                        $icon = $this->resolveIcon($group?->icon_path);
+                        $icon = AttributeIconResolver::resolve($group?->icon_path);
 
                         return [
                             'group_code' => $groupCode,
@@ -320,7 +321,7 @@ class ProductResource extends JsonResource
         $transformed = [];
         foreach ($extraAttrs as $code => $attr) {
             $iconPath = $iconMap[$code] ?? null;
-            $icon = $this->resolveIcon($iconPath);
+            $icon = AttributeIconResolver::resolve($iconPath);
             $transformed[$code] = [
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',
@@ -331,29 +332,6 @@ class ProductResource extends JsonResource
         }
 
         return $transformed;
-    }
-
-    protected function resolveIcon(?string $iconPath): array
-    {
-        if (! $iconPath) {
-            return ['icon_url' => null, 'icon_name' => null];
-        }
-
-        if (
-            str_starts_with($iconPath, 'http://') ||
-            str_starts_with($iconPath, 'https://') ||
-            str_starts_with($iconPath, '/')
-        ) {
-            return ['icon_url' => $iconPath, 'icon_name' => null];
-        }
-
-        $isFilePath = str_contains($iconPath, '/') || str_contains($iconPath, '.');
-
-        if ($isFilePath) {
-            return ['icon_url' => asset('storage/'.$iconPath), 'icon_name' => null];
-        }
-
-        return ['icon_url' => null, 'icon_name' => $iconPath];
     }
 
     /**
