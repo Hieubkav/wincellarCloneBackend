@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CatalogTerm;
+use App\Support\Catalog\AttributeIconResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -105,6 +106,10 @@ class AdminCatalogTermController extends Controller
             $validated['position'] = ($maxPosition ?? 0) + 1;
         }
 
+        if (($validated['icon_type'] ?? null) === 'lucide' && isset($validated['icon_value'])) {
+            $validated['icon_value'] = AttributeIconResolver::normalizeIconName($validated['icon_value']);
+        }
+
         $term = CatalogTerm::create($validated);
 
         return response()->json([
@@ -131,6 +136,11 @@ class AdminCatalogTermController extends Controller
 
         if (isset($validated['name']) && ! isset($validated['slug'])) {
             $validated['slug'] = Str::slug($validated['name']);
+        }
+
+        $iconType = $validated['icon_type'] ?? $term->icon_type;
+        if ($iconType === 'lucide' && array_key_exists('icon_value', $validated)) {
+            $validated['icon_value'] = AttributeIconResolver::normalizeIconName((string) $validated['icon_value']);
         }
 
         $term->update($validated);

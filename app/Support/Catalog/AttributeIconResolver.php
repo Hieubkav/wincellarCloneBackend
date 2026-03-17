@@ -2,6 +2,8 @@
 
 namespace App\Support\Catalog;
 
+use App\Models\Image;
+
 class AttributeIconResolver
 {
     public static function resolveFromGroup(?object $group): array
@@ -82,5 +84,28 @@ class AttributeIconResolver
         $normalized = array_map(static fn ($part) => $part !== '' ? ucfirst($part) : '', $parts);
 
         return implode('', $normalized);
+    }
+
+    public static function resolveFromTerm(?string $iconType, ?string $iconValue): array
+    {
+        if (! $iconType || ! $iconValue) {
+            return ['icon_url' => null, 'icon_name' => null];
+        }
+
+        if ($iconType === 'lucide') {
+            return ['icon_url' => null, 'icon_name' => self::normalizeIconName($iconValue)];
+        }
+
+        if ($iconType === 'image') {
+            if (is_numeric($iconValue)) {
+                $image = Image::find((int) $iconValue);
+
+                return ['icon_url' => $image?->absolute_url, 'icon_name' => null];
+            }
+
+            return self::resolve($iconValue);
+        }
+
+        return ['icon_url' => null, 'icon_name' => null];
     }
 }

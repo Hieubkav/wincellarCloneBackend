@@ -20,7 +20,7 @@ class SpeedDialTransformer extends AbstractComponentTransformer
             $iconUrl = null;
             if ($iconType === 'custom' && $iconImageId) {
                 $image = Image::find($iconImageId);
-                $iconUrl = $image?->url;
+                $iconUrl = $image?->absolute_url;
             }
 
             return [

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use App\Models\Setting;
 use App\Support\Cache\ApiCacheVersionManager;
+use App\Support\Catalog\AttributeIconResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,6 +20,8 @@ class AdminSettingController extends Controller
             $setting = Setting::create([]);
         }
 
+        $contactConfig = $this->normalizeContactConfig($setting->contact_config);
+
         return SuccessResponse::make([
             'id' => $setting->id,
             'site_name' => $setting->site_name,
@@ -28,7 +31,7 @@ class AdminSettingController extends Controller
             'hours' => $setting->hours,
             'google_map_embed' => $setting->extra['google_map_embed'] ?? null,
             'footer_config' => $setting->footer_config,
-            'contact_config' => $setting->contact_config,
+            'contact_config' => $contactConfig,
             'meta_default_title' => $setting->meta_default_title,
             'meta_default_description' => $setting->meta_default_description,
             'meta_default_keywords' => $setting->meta_default_keywords,
@@ -86,6 +89,10 @@ class AdminSettingController extends Controller
             'product_watermark_text_repeat' => ['nullable', 'boolean'],
         ]);
 
+        if (array_key_exists('contact_config', $validated)) {
+            $validated['contact_config'] = $this->normalizeContactConfig($validated['contact_config']);
+        }
+
         if (isset($validated['google_map_embed'])) {
             $extra = $setting->extra ?? [];
             $extra['google_map_embed'] = $validated['google_map_embed'];
@@ -136,5 +143,33 @@ class AdminSettingController extends Controller
         \Log::info('Image proxy cache version bumped due to watermark settings change', [
             'image_proxy_cache_version' => $version,
         ]);
+    }
+
+    private function normalizeContactConfig(?array $contactConfig): ?array
+    {
+        if (! is_array($contactConfig)) {
+            return $contactConfig;
+        }
+
+        if (! isset($contactConfig['cards']) || ! is_array($contactConfig['cards'])) {
+            return $contactConfig;
+        }
+
+        $contactConfig['cards'] = array_map(function ($card) {
+            if (! is_array($card)) {
+                return $card;
+            }
+
+            $icon = $card['icon'] ?? null;
+            if (is_string($icon) && $icon !== '') {
+                if (! str_starts_with($icon, 'http://') && ! str_starts_with($icon, 'https://') && ! str_starts_with($icon, '/')) {
+                    $card['icon'] = AttributeIconResolver::normalizeIconName($icon);
+                }
+            }
+
+            return $card;
+        }, $contactConfig['cards']);
+
+        return $contactConfig;
     }
 }

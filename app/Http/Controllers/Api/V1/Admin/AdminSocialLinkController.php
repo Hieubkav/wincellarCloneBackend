@@ -29,7 +29,7 @@ class AdminSocialLinkController extends Controller
                 'active',
                 'created_at',
             ])
-            ->with('iconImage:id,url')
+            ->with('iconImage:id,file_path,disk,model_type,model_id')
             ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc');
 

@@ -7,6 +7,7 @@ use App\Models\CatalogTerm;
 use App\Models\HomeComponent;
 use App\Models\Image;
 use App\Models\Product;
+use App\Support\Catalog\AttributeIconResolver;
 use Illuminate\Support\Collection;
 
 class HomeComponentResources
@@ -97,6 +98,8 @@ class HomeComponentResources
 
     public function mapTermSummary(CatalogTerm $term): array
     {
+        $icon = AttributeIconResolver::resolveFromTerm($term->icon_type, $term->icon_value);
+
         return [
             'id' => $term->id,
             'name' => $term->name,
@@ -108,6 +111,8 @@ class HomeComponentResources
             ] : null,
             'icon_type' => $term->icon_type,
             'icon_value' => $term->icon_value,
+            'icon_url' => $icon['icon_url'],
+            'icon_name' => $icon['icon_name'],
         ];
     }
 
