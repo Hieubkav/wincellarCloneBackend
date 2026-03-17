@@ -3,6 +3,7 @@
 namespace App\Support\Product;
 
 use App\Models\ProductType;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * TermCountCache - In-memory cache for term product counts
@@ -45,6 +46,13 @@ class TermCountCache
             return self::$cache[$cacheKey];
         }
 
+        $persistentKey = "product_term_counts_v1:{$cacheKey}";
+        $cached = Cache::tags(['products', 'product-filters'])->get($persistentKey);
+        if (is_array($cached)) {
+            self::$cache[$cacheKey] = $cached;
+            return $cached;
+        }
+
         // Build and execute query
         $query = \DB::table('product_term_assignments as pta')
             ->join('products', 'products.id', '=', 'pta.product_id')
@@ -65,6 +73,7 @@ class TermCountCache
 
         // Store in cache and return
         self::$cache[$cacheKey] = $counts;
+        Cache::tags(['products', 'product-filters'])->put($persistentKey, $counts, 3600);
 
         return $counts;
     }

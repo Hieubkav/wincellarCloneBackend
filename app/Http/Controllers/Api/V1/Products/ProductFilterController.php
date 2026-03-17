@@ -12,6 +12,7 @@ use App\Support\Product\TermCountCache;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class ProductFilterController extends Controller
 {
@@ -166,21 +167,24 @@ class ProductFilterController extends Controller
                 $jsonPath = '$."'.$group->code.'"';
                 $jsonPathValue = '$."'.$group->code.'".value';
 
-                $statsQuery = \DB::table('products')
-                    ->where('active', true)
-                    ->whereRaw('JSON_EXTRACT(extra_attrs, ?) IS NOT NULL', [$jsonPath]);
+                $rangeCacheKey = 'product_filter_range_v1:'.($type?->id ?? 'all').':'.$group->code;
+                $stats = Cache::tags(['products', 'product-filters'])->remember($rangeCacheKey, 3600, function () use ($type, $jsonPath, $jsonPathValue) {
+                    $statsQuery = \DB::table('products')
+                        ->where('active', true)
+                        ->whereRaw('JSON_EXTRACT(extra_attrs, ?) IS NOT NULL', [$jsonPath]);
 
-                // Filter theo type nếu có
-                if ($type) {
-                    $statsQuery->where('type_id', $type->id);
-                }
+                    // Filter theo type nếu có
+                    if ($type) {
+                        $statsQuery->where('type_id', $type->id);
+                    }
 
-                $stats = $statsQuery->selectRaw(
-                    'MIN(CAST(JSON_UNQUOTE(JSON_EXTRACT(extra_attrs, ?)) AS DECIMAL(10,2))) as min_val,
-                        MAX(CAST(JSON_UNQUOTE(JSON_EXTRACT(extra_attrs, ?)) AS DECIMAL(10,2))) as max_val',
-                    [$jsonPathValue, $jsonPathValue]
-                )
-                    ->first();
+                    return $statsQuery->selectRaw(
+                        'MIN(CAST(JSON_UNQUOTE(JSON_EXTRACT(extra_attrs, ?)) AS DECIMAL(10,2))) as min_val,
+                            MAX(CAST(JSON_UNQUOTE(JSON_EXTRACT(extra_attrs, ?)) AS DECIMAL(10,2))) as max_val',
+                        [$jsonPathValue, $jsonPathValue]
+                    )
+                        ->first();
+                });
 
                 // Luôn trả về filter ngay cả khi chưa có data, để frontend hiển thị input/range
                 $icon = AttributeIconResolver::resolveFromGroup($group);
