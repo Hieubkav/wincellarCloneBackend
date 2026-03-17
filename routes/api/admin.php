@@ -36,6 +36,7 @@ Route::prefix('admin')
         Route::get('dashboard/recent-events', [AdminDashboardController::class, 'recentEvents'])->name('dashboard.recent-events');
 
         // Products CRUD
+        Route::get('products/filters', [AdminProductController::class, 'filters'])->name('products.filters');
         Route::get('products/list-for-select', [AdminProductController::class, 'listForSelect'])->name('products.list-for-select');
         Route::get('products/export', [AdminProductController::class, 'export'])->name('products.export');
         Route::get('products', [AdminProductController::class, 'index'])->name('products.index');

@@ -5,14 +5,57 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Image;
 use App\Models\Product;
+use App\Models\ProductCategory;
+use App\Models\ProductType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class AdminProductController extends Controller
 {
+    public function filters(Request $request): JsonResponse
+    {
+        $typeId = $request->integer('type_id');
+
+        $types = ProductType::query()
+            ->where('active', true)
+            ->orderBy('order')
+            ->orderBy('id')
+            ->get(['id', 'name', 'slug']);
+
+        $categoriesQuery = ProductCategory::query()
+            ->where('active', true)
+            ->orderBy('order')
+            ->orderBy('id');
+
+        if ($typeId) {
+            $categoriesQuery->where(function ($query) use ($typeId) {
+                $query->where('type_id', $typeId)
+                    ->orWhereNull('type_id');
+            });
+        }
+
+        $categories = $categoriesQuery->get(['id', 'name', 'slug']);
+
+        return response()->json([
+            'data' => [
+                'types' => $types->map(fn (ProductType $type) => [
+                    'id' => $type->id,
+                    'name' => $type->name,
+                    'slug' => $type->slug,
+                ])->values(),
+                'categories' => $categories->map(fn (ProductCategory $category) => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                ])->values(),
+            ],
+        ]);
+    }
+
     public function listForSelect(Request $request): JsonResponse
     {
         $query = Product::query()
@@ -59,22 +102,31 @@ class AdminProductController extends Controller
 
         $query = Product::query()
             ->select([
-                'id',
-                'name',
-                'slug',
-                'price',
-                'original_price',
-                'active',
-                'type_id',
-                'created_at',
+                'products.id',
+                'products.name',
+                'products.slug',
+                'products.price',
+                'products.original_price',
+                'products.active',
+                'products.type_id',
+                'products.created_at',
             ])
+            ->selectSub(
+                DB::table('product_category_product')
+                    ->join('product_categories', 'product_categories.id', '=', 'product_category_product.product_category_id')
+                    ->whereColumn('product_category_product.product_id', 'products.id')
+                    ->orderBy('product_categories.order')
+                    ->orderBy('product_categories.id')
+                    ->limit(1)
+                    ->select('product_categories.name'),
+                'category_name'
+            )
             ->with([
-                'coverImage:id,file_path,alt,disk,model_id,model_type',
-                'categories:id,name',
+                'coverImage:id,file_path,alt,disk,model_id,model_type,order',
                 'type:id,name',
             ])
             ->orderBy($sortBy, $sortDir)
-            ->orderBy('id', 'desc');
+            ->orderBy('products.id', 'desc');
 
         if ($request->filled('q')) {
             $query->where('name', 'like', '%'.$request->input('q').'%');
@@ -105,8 +157,8 @@ class AdminProductController extends Controller
                 'active' => $p->active,
                 'type_id' => $p->type_id,
                 'type_name' => $p->type?->name,
-                'category_name' => $p->categories->first()?->name,
-                'cover_image_url' => $p->coverImage?->absolute_url,
+                'category_name' => $p->category_name,
+                'cover_image_url' => $p->coverImage?->proxy_url ?? $p->coverImage?->url,
                 'created_at' => $p->created_at?->toIso8601String(),
             ]),
             'meta' => [

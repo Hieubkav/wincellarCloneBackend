@@ -50,8 +50,7 @@ class AdminAuthController extends Controller
 
         AdminAccessToken::query()
             ->where('user_id', $user->id)
-            ->get()
-            ->each(fn (AdminAccessToken $token) => $token->delete());
+            ->delete();
 
         $plainTextToken = Str::random(80);
         $expiresAt = now()->addDays(14);

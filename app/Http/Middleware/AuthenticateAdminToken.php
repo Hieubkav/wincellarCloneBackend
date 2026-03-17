@@ -4,9 +4,9 @@ namespace App\Http\Middleware;
 
 use App\Http\Responses\ErrorResponse;
 use App\Models\AdminAccessToken;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthenticateAdminToken
@@ -24,22 +24,26 @@ class AuthenticateAdminToken
             );
         }
 
-        $tokenHash = hash('sha256', $plainToken);
-        $cacheKey = AdminAccessToken::cacheKeyForHash($tokenHash);
+        $token = AdminAccessToken::query()
+            ->select([
+                'admin_access_tokens.id',
+                'admin_access_tokens.user_id',
+                'admin_access_tokens.name',
+                'admin_access_tokens.token_hash',
+                'admin_access_tokens.last_used_at',
+                'admin_access_tokens.expires_at',
+                'users.id as auth_user_id',
+                'users.name as auth_user_name',
+                'users.email as auth_user_email',
+            ])
+            ->join('users', 'users.id', '=', 'admin_access_tokens.user_id')
+            ->where('admin_access_tokens.token_hash', hash('sha256', $plainToken))
+            ->first();
 
-        $token = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($tokenHash) {
-            return AdminAccessToken::query()
-                ->with('user')
-                ->where('token_hash', $tokenHash)
-                ->first();
-        });
-
-        if (! $token || ! $token->user || $token->isExpired()) {
+        if (! $token || $token->isExpired()) {
             if ($token instanceof AdminAccessToken && $token->isExpired()) {
                 $token->delete();
             }
-
-            Cache::forget($cacheKey);
 
             return ErrorResponse::make(
                 \App\Http\Responses\ErrorType::UNAUTHORIZED,
@@ -49,14 +53,24 @@ class AuthenticateAdminToken
             );
         }
 
-        if ($token->last_used_at === null || $token->last_used_at->lt(now()->subMinutes(30))) {
-            $token->forceFill([
-                'last_used_at' => now(),
-            ])->saveQuietly();
+        $user = new User();
+        $user->forceFill([
+            'id' => $token->getAttribute('auth_user_id'),
+            'name' => $token->getAttribute('auth_user_name'),
+            'email' => $token->getAttribute('auth_user_email'),
+        ]);
+        $user->exists = true;
+
+        if ($token->last_used_at === null || $token->last_used_at->lt(now()->subHours(6))) {
+            AdminAccessToken::query()
+                ->whereKey($token->id)
+                ->update(['last_used_at' => now()]);
+            $token->last_used_at = now();
         }
 
+        $token->setRelation('user', $user);
         $request->attributes->set('adminAccessToken', $token);
-        auth()->setUser($token->user);
+        auth()->setUser($user);
 
         return $next($request);
     }
