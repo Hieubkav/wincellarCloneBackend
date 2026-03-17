@@ -48,7 +48,7 @@ class ImageProxyController extends Controller
         if ($ifNoneMatch === $etag) {
             return response('', 304)
                 ->header('ETag', $etag)
-                ->header('Cache-Control', 'no-cache, must-revalidate');
+                ->header('Cache-Control', 'public, max-age=600, stale-while-revalidate=86400');
         }
 
         // Get or cache processed image
@@ -56,12 +56,10 @@ class ImageProxyController extends Controller
             return $this->processImage($image, $applyWatermark, $quality);
         });
 
-        // Use no-cache to force revalidation on each request
-        // This ensures ETag check happens and new watermark is served when settings change
         return response($processed['content'], 200, [
             'Content-Type' => $processed['mime'],
             'ETag' => $etag,
-            'Cache-Control' => 'no-cache, must-revalidate',
+            'Cache-Control' => 'public, max-age=600, stale-while-revalidate=86400',
             'Last-Modified' => $image->updated_at->toRfc7231String(),
             'Content-Disposition' => 'inline; filename="' . basename($image->file_path) . '"',
         ]);

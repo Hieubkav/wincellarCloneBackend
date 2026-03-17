@@ -45,12 +45,39 @@ class ProductCacheManager
         // Add version to cache key to support global invalidation
         $version = self::getCacheVersion();
         $versionedKey = "{$key}:v{$version}";
+        $taggedCache = Cache::tags($tags);
 
-        // Use cache lock to prevent cache stampede
-        // Block up to 5 seconds waiting for lock, timeout after 10 seconds
-        return Cache::lock("lock:{$versionedKey}", 10)->block(5, function () use ($versionedKey, $ttl, $tags, $callback) {
-            return Cache::tags($tags)->remember($versionedKey, $ttl, $callback);
-        });
+        $cached = $taggedCache->get($versionedKey);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $lock = Cache::lock("lock:{$versionedKey}", 10);
+
+        if ($lock->get()) {
+            try {
+                $cachedAfterLock = $taggedCache->get($versionedKey);
+                if ($cachedAfterLock !== null) {
+                    return $cachedAfterLock;
+                }
+
+                $value = $callback();
+                $taggedCache->put($versionedKey, $value, $ttl);
+
+                return $value;
+            } finally {
+                $lock->release();
+            }
+        }
+
+        usleep(150000);
+
+        $cachedAfterWait = $taggedCache->get($versionedKey);
+        if ($cachedAfterWait !== null) {
+            return $cachedAfterWait;
+        }
+
+        return $callback();
     }
 
     /**
