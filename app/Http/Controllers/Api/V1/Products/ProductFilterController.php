@@ -14,6 +14,29 @@ use Illuminate\Support\Collection;
 
 class ProductFilterController extends Controller
 {
+    protected static function resolveIcon(?string $iconPath): array
+    {
+        if (! $iconPath) {
+            return ['icon_url' => null, 'icon_name' => null];
+        }
+
+        if (
+            str_starts_with($iconPath, 'http://') ||
+            str_starts_with($iconPath, 'https://') ||
+            str_starts_with($iconPath, '/')
+        ) {
+            return ['icon_url' => $iconPath, 'icon_name' => null];
+        }
+
+        $isFilePath = str_contains($iconPath, '/') || str_contains($iconPath, '.');
+
+        if ($isFilePath) {
+            return ['icon_url' => asset('storage/'.$iconPath), 'icon_name' => null];
+        }
+
+        return ['icon_url' => null, 'icon_name' => $iconPath];
+    }
+
     public function index(Request $request): JsonResponse
     {
         $typeId = $request->integer('type_id');
@@ -182,17 +205,15 @@ class ProductFilterController extends Controller
                     ->first();
 
                 // Luôn trả về filter ngay cả khi chưa có data, để frontend hiển thị input/range
-                // Phân biệt giữa file path và Lucide icon name
-                // File path thường có extension (.svg, .png) hoặc chứa dấu /
-                $isFilePath = $group->icon_path && (str_contains($group->icon_path, '/') || str_contains($group->icon_path, '.'));
+                $icon = static::resolveIcon($group->icon_path);
 
                 $filters[] = [
                     'code' => $group->code,
                     'name' => $group->name,
                     'filter_type' => $group->filter_type,
                     'input_type' => $group->input_type,
-                    'icon_url' => $isFilePath ? asset('storage/'.$group->icon_path) : null,
-                    'icon_name' => ! $isFilePath ? $group->icon_path : null, // Lucide icon name
+                    'icon_url' => $icon['icon_url'],
+                    'icon_name' => $icon['icon_name'],
                     'range' => [
                         'min' => (float) ($stats->min_val ?? 0),
                         'max' => (float) ($stats->max_val ?? 100),
@@ -219,9 +240,7 @@ class ProductFilterController extends Controller
                 $displayConfig = json_decode($displayConfig, true) ?? [];
             }
 
-            // Phân biệt giữa file path và Lucide icon name
-            // File path thường có extension (.svg, .png) hoặc chứa dấu /
-            $isFilePath = $group->icon_path && (str_contains($group->icon_path, '/') || str_contains($group->icon_path, '.'));
+            $icon = static::resolveIcon($group->icon_path);
 
             $filters[] = [
                 'code' => $group->code,
@@ -229,8 +248,8 @@ class ProductFilterController extends Controller
                 'filter_type' => $group->filter_type,
                 'input_type' => $group->input_type,
                 'display_config' => $displayConfig,
-                'icon_url' => $isFilePath ? asset('storage/'.$group->icon_path) : null,
-                'icon_name' => ! $isFilePath ? $group->icon_path : null, // Lucide icon name
+                'icon_url' => $icon['icon_url'],
+                'icon_name' => $icon['icon_name'],
                 'options' => $terms,
             ];
         }

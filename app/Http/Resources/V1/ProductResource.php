@@ -84,17 +84,13 @@ class ProductResource extends JsonResource
                     ->groupBy(fn ($term) => $term->group?->code ?? 'other')
                     ->map(function ($terms, $groupCode) {
                         $group = $terms->first()?->group;
-
-                        $iconPath = $group?->icon_path;
-                        // Phân biệt: nếu icon_path là URL (bắt đầu với http//) thì dùng icon_url
-                        // Còn lại là tên Lucide icon thì dùng icon_name
-                        $isUrl = $iconPath && (str_starts_with($iconPath, 'http://') || str_starts_with($iconPath, 'https://') || str_starts_with($iconPath, '/'));
+                        $icon = $this->resolveIcon($group?->icon_path);
 
                         return [
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
-                            'icon_url' => $isUrl ? $iconPath : null,
-                            'icon_name' => ! $isUrl ? $iconPath : null,
+                            'icon_url' => $icon['icon_url'],
+                            'icon_name' => $icon['icon_name'],
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,
@@ -228,11 +224,12 @@ class ProductResource extends JsonResource
         $transformed = [];
         foreach ($extraAttrs as $code => $attr) {
             $iconPath = $iconMap[$code] ?? null;
+            $icon = $this->resolveIcon($iconPath);
             $transformed[$code] = [
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',
                 'type' => $attr['type'] ?? 'text',
-                'icon_name' => $iconPath,
+                'icon_name' => $icon['icon_name'],
             ];
         }
 
@@ -281,17 +278,13 @@ class ProductResource extends JsonResource
                     ->groupBy(fn ($term) => $term->group?->code ?? 'other')
                     ->map(function ($terms, $groupCode) {
                         $group = $terms->first()?->group;
-
-                        $iconPath = $group?->icon_path;
-                        // Phân biệt: nếu icon_path là URL (bắt đầu với http//) thì dùng icon_url
-                        // Còn lại là tên Lucide icon thì dùng icon_name
-                        $isUrl = $iconPath && (str_starts_with($iconPath, 'http://') || str_starts_with($iconPath, 'https://') || str_starts_with($iconPath, '/'));
+                        $icon = $this->resolveIcon($group?->icon_path);
 
                         return [
                             'group_code' => $groupCode,
                             'group_name' => $group?->name,
-                            'icon_url' => $isUrl ? $iconPath : null,
-                            'icon_name' => ! $isUrl ? $iconPath : null,
+                            'icon_url' => $icon['icon_url'],
+                            'icon_name' => $icon['icon_name'],
                             'terms' => $terms->map(fn ($t) => [
                                 'id' => $t->id,
                                 'name' => $t->name,
@@ -326,15 +319,39 @@ class ProductResource extends JsonResource
         $transformed = [];
         foreach ($extraAttrs as $code => $attr) {
             $iconPath = $iconMap[$code] ?? null;
+            $icon = $this->resolveIcon($iconPath);
             $transformed[$code] = [
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',
                 'type' => $attr['type'] ?? 'text',
-                'icon_name' => $iconPath,
+                'icon_name' => $icon['icon_name'],
             ];
         }
 
         return $transformed;
+    }
+
+    protected function resolveIcon(?string $iconPath): array
+    {
+        if (! $iconPath) {
+            return ['icon_url' => null, 'icon_name' => null];
+        }
+
+        if (
+            str_starts_with($iconPath, 'http://') ||
+            str_starts_with($iconPath, 'https://') ||
+            str_starts_with($iconPath, '/')
+        ) {
+            return ['icon_url' => $iconPath, 'icon_name' => null];
+        }
+
+        $isFilePath = str_contains($iconPath, '/') || str_contains($iconPath, '.');
+
+        if ($isFilePath) {
+            return ['icon_url' => asset('storage/'.$iconPath), 'icon_name' => null];
+        }
+
+        return ['icon_url' => null, 'icon_name' => $iconPath];
     }
 
     /**
