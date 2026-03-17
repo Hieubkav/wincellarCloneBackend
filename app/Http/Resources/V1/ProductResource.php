@@ -204,7 +204,7 @@ class ProductResource extends JsonResource
     /**
      * Transform extra_attrs to include icon_name from CatalogAttributeGroup.
      *
-     * @return array<string, array{label: string, value: string|int|float, type: string, icon_name: string|null}>
+     * @return array<string, array{label: string, value: string|int|float, type: string, icon_url: string|null, icon_name: string|null}>
      */
     protected function transformExtraAttrs(): array
     {
@@ -229,6 +229,7 @@ class ProductResource extends JsonResource
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',
                 'type' => $attr['type'] ?? 'text',
+                'icon_url' => $icon['icon_url'],
                 'icon_name' => $icon['icon_name'],
             ];
         }
@@ -324,6 +325,7 @@ class ProductResource extends JsonResource
                 'label' => $attr['label'] ?? $code,
                 'value' => $attr['value'] ?? '',
                 'type' => $attr['type'] ?? 'text',
+                'icon_url' => $icon['icon_url'],
                 'icon_name' => $icon['icon_name'],
             ];
         }
