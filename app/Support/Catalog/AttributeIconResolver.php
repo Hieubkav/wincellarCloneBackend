@@ -24,11 +24,19 @@ class AttributeIconResolver
             return ['icon_url' => asset('storage/'.$iconPath), 'icon_name' => null];
         }
 
-        return ['icon_url' => null, 'icon_name' => $iconPath];
+        return ['icon_url' => null, 'icon_name' => self::normalizeIconName($iconPath)];
     }
 
     public static function isFilePath(string $iconPath): bool
     {
         return str_contains($iconPath, '/') || str_contains($iconPath, '.');
+    }
+
+    public static function normalizeIconName(string $iconPath): string
+    {
+        $parts = preg_split('/[-_\s]+/', $iconPath) ?: [];
+        $normalized = array_map(static fn ($part) => $part !== '' ? ucfirst($part) : '', $parts);
+
+        return implode('', $normalized);
     }
 }

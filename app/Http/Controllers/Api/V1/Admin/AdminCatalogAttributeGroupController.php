@@ -237,8 +237,9 @@ class AdminCatalogAttributeGroupController extends Controller
             }
 
             $allowed = config('dynamic_icons.allowed', []);
+            $normalized = AttributeIconResolver::normalizeIconName($value);
 
-            if (! in_array($value, $allowed, true)) {
+            if (! in_array($value, $allowed, true) && ! in_array($normalized, $allowed, true)) {
                 $fail('Icon không hợp lệ hoặc chưa được hỗ trợ trên public.');
             }
         };
