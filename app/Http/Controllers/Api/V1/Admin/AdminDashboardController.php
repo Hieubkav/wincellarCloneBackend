@@ -19,7 +19,9 @@ use Illuminate\Support\Facades\DB;
 class AdminDashboardController extends Controller
 {
     private const STATS_CACHE_TTL = 60;
+
     private const CHART_CACHE_TTL = 120;
+
     private const TOP_CACHE_TTL = 120;
 
     public function bootstrap(Request $request): JsonResponse

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Add composite indexes for performance optimization
      * Fixes ROOT CAUSE #4: Missing Database Indexes
      */
@@ -18,10 +18,10 @@ return new class extends Migration
         Schema::table('products', function (Blueprint $table) {
             // Index for: WHERE type_id = ? AND active = ? ORDER BY created_at
             $table->index(['type_id', 'active', 'created_at'], 'idx_products_type_active_created');
-            
+
             // Index for: WHERE active = ? AND price BETWEEN ? AND ?
             $table->index(['active', 'price'], 'idx_products_active_price');
-            
+
             // Index for: WHERE type_id = ? AND active = ? AND price BETWEEN ?
             $table->index(['type_id', 'active', 'price'], 'idx_products_type_active_price');
         });
@@ -30,13 +30,13 @@ return new class extends Migration
         Schema::table('tracking_events', function (Blueprint $table) {
             // Index for: WHERE visitor_id = ? ORDER BY occurred_at
             $table->index(['visitor_id', 'occurred_at'], 'idx_tracking_visitor_occurred');
-            
+
             // Index for: WHERE event_type = ? AND occurred_at >= ?
             $table->index(['event_type', 'occurred_at'], 'idx_tracking_type_occurred');
-            
+
             // Index for: WHERE event_type = ? AND product_id IS NOT NULL AND occurred_at >= ?
             $table->index(['event_type', 'product_id', 'occurred_at'], 'idx_tracking_type_product_occurred');
-            
+
             // Index for: WHERE event_type = ? AND article_id IS NOT NULL AND occurred_at >= ?
             $table->index(['event_type', 'article_id', 'occurred_at'], 'idx_tracking_type_article_occurred');
         });
@@ -51,7 +51,7 @@ return new class extends Migration
         Schema::table('articles', function (Blueprint $table) {
             // Index for: WHERE active = ? ORDER BY published_at DESC
             $table->index(['active', 'published_at'], 'idx_articles_active_published');
-            
+
             // Index for: WHERE active = ? ORDER BY created_at DESC
             $table->index(['active', 'created_at'], 'idx_articles_active_created');
         });

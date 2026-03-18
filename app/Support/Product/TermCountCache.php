@@ -50,6 +50,7 @@ class TermCountCache
         $cached = Cache::tags(['products', 'product-filters'])->get($persistentKey);
         if (is_array($cached)) {
             self::$cache[$cacheKey] = $cached;
+
             return $cached;
         }
 

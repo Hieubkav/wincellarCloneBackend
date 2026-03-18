@@ -62,7 +62,7 @@ class ProductController extends Controller
             $sort = $request->input('sort', '-created_at');
             $searchQuery = $request->input('q');
 
-            // Priority 3 Optimization + ROOT CAUSE #6 FIX: 
+            // Priority 3 Optimization + ROOT CAUSE #6 FIX:
             // - Semantic cache keys (no MD5)
             // - Tag-based invalidation
             // - Dynamic TTL based on query type

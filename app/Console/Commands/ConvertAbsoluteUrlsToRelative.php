@@ -49,17 +49,17 @@ class ConvertAbsoluteUrlsToRelative extends Command
         $this->newLine();
         $this->info("=== Total changes: {$totalChanges} ===");
 
-        if ($exportSql && !empty($this->sqlStatements)) {
+        if ($exportSql && ! empty($this->sqlStatements)) {
             $this->newLine();
             $this->info('=== SQL Statements for Production ===');
             $this->newLine();
-            
+
             $sqlOutput = implode("\n\n", $this->sqlStatements);
             $this->line($sqlOutput);
-            
+
             // Save to file
             $sqlFile = database_path('sql/convert_urls_to_relative.sql');
-            if (!is_dir(dirname($sqlFile))) {
+            if (! is_dir(dirname($sqlFile))) {
                 mkdir(dirname($sqlFile), 0755, true);
             }
             file_put_contents($sqlFile, $sqlOutput);
@@ -73,7 +73,7 @@ class ConvertAbsoluteUrlsToRelative extends Command
     private function processHomeComponents(bool $dryRun, bool $exportSql): int
     {
         $this->info('Processing home_components.config...');
-        
+
         $components = DB::table('home_components')->get();
         $changesCount = 0;
 
@@ -94,7 +94,7 @@ class ConvertAbsoluteUrlsToRelative extends Command
                     $this->sqlStatements[] = "UPDATE home_components SET config = '{$escapedConfig}', updated_at = NOW() WHERE id = {$component->id};";
                 }
 
-                if (!$dryRun && !$exportSql) {
+                if (! $dryRun && ! $exportSql) {
                     DB::table('home_components')
                         ->where('id', $component->id)
                         ->update([
@@ -106,15 +106,17 @@ class ConvertAbsoluteUrlsToRelative extends Command
         }
 
         $this->info("  => {$changesCount} home_components updated");
+
         return $changesCount;
     }
 
     private function processArticlesContent(bool $dryRun, bool $exportSql): int
     {
         $this->info('Processing articles.content...');
-        
-        if (!DB::getSchemaBuilder()->hasTable('articles')) {
+
+        if (! DB::getSchemaBuilder()->hasTable('articles')) {
             $this->warn('  Table articles does not exist, skipping...');
+
             return 0;
         }
 
@@ -134,7 +136,7 @@ class ConvertAbsoluteUrlsToRelative extends Command
                     $this->sqlStatements[] = "UPDATE articles SET content = '{$escapedContent}', updated_at = NOW() WHERE id = {$article->id};";
                 }
 
-                if (!$dryRun && !$exportSql) {
+                if (! $dryRun && ! $exportSql) {
                     DB::table('articles')
                         ->where('id', $article->id)
                         ->update([
@@ -146,15 +148,17 @@ class ConvertAbsoluteUrlsToRelative extends Command
         }
 
         $this->info("  => {$changesCount} articles updated");
+
         return $changesCount;
     }
 
     private function processProductsDescription(bool $dryRun, bool $exportSql): int
     {
         $this->info('Processing products.description...');
-        
-        if (!DB::getSchemaBuilder()->hasTable('products')) {
+
+        if (! DB::getSchemaBuilder()->hasTable('products')) {
             $this->warn('  Table products does not exist, skipping...');
+
             return 0;
         }
 
@@ -174,7 +178,7 @@ class ConvertAbsoluteUrlsToRelative extends Command
                     $this->sqlStatements[] = "UPDATE products SET description = '{$escapedDesc}', updated_at = NOW() WHERE id = {$product->id};";
                 }
 
-                if (!$dryRun && !$exportSql) {
+                if (! $dryRun && ! $exportSql) {
                     DB::table('products')
                         ->where('id', $product->id)
                         ->update([
@@ -186,13 +190,14 @@ class ConvertAbsoluteUrlsToRelative extends Command
         }
 
         $this->info("  => {$changesCount} products updated");
+
         return $changesCount;
     }
 
     private function convertUrlsInString(string $content): string
     {
         $result = $content;
-        
+
         foreach ($this->urlPatterns as $pattern) {
             $result = str_replace($pattern, '/storage/', $result);
         }

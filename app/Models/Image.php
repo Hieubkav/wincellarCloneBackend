@@ -77,6 +77,7 @@ class Image extends Model
 
     /**
      * Get relative URL (for backward compatibility)
+     *
      * @deprecated Use getAbsoluteUrlAttribute() instead
      */
     public function getUrlAttribute(): ?string
@@ -86,7 +87,7 @@ class Image extends Model
         }
 
         // Return relative path (kept for backward compatibility)
-        return '/storage/' . ltrim($this->file_path, '/');
+        return '/storage/'.ltrim($this->file_path, '/');
     }
 
     /**
@@ -103,13 +104,14 @@ class Image extends Model
     /**
      * Get proxy URL (recommended for product images with watermark protection)
      * Example: http://localhost:8000/api/v1/images/123?v=5
-     * 
+     *
      * Includes cache version param to bust Next.js/browser cache when watermark settings change
      */
     public function getProxyUrlAttribute(): string
     {
         $baseUrl = config('app.url');
         $cacheVersion = \Cache::get('api_cache_version', 0);
+
         return "{$baseUrl}/api/v1/images/{$this->id}?v={$cacheVersion}";
     }
 

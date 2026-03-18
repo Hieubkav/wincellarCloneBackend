@@ -46,6 +46,7 @@ class AttributeIconResolver
 
         if (str_starts_with($iconPath, '/storage/')) {
             $normalized = ltrim($iconPath, '/');
+
             return ['icon_url' => asset($normalized), 'icon_name' => null];
         }
 
@@ -61,6 +62,7 @@ class AttributeIconResolver
 
         if ($isFilePath) {
             $normalizedPath = str_starts_with($iconPath, 'storage/') ? $iconPath : 'storage/'.$iconPath;
+
             return ['icon_url' => asset($normalizedPath), 'icon_name' => null];
         }
 

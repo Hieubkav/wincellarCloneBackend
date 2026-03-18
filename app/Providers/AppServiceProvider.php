@@ -44,13 +44,14 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\ValueObjects\MediaConfig::class, function () {
             $config = \App\ValueObjects\MediaConfig::fromConfig();
             $config->validate(); // Validate on boot
+
             return $config;
         });
     }
 
     public function boot(): void
     {
-        (new AdminOwnerBootstrapper())->bootstrap();
+        (new AdminOwnerBootstrapper)->bootstrap();
 
         // Đăng ký Observer
         Article::observe(ArticleObserver::class);

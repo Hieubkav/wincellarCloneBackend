@@ -14,14 +14,14 @@ class CDNStorageStrategy implements ImageStorageStrategy
 
     public function getAbsoluteUrl(Image $image): ?string
     {
-        if (!$image->file_path || !$this->config->shouldUseCdn()) {
+        if (! $image->file_path || ! $this->config->shouldUseCdn()) {
             return null;
         }
 
         // CDN best practice: Always return absolute URL with CDN domain
         $cdnUrl = rtrim($this->config->cdnUrl, '/');
         $filePath = ltrim($image->file_path, '/');
-        
+
         return "{$cdnUrl}/{$filePath}";
     }
 
@@ -29,8 +29,8 @@ class CDNStorageStrategy implements ImageStorageStrategy
     {
         $placeholderPath = $this->config->getPlaceholder($type);
         $cdnUrl = rtrim($this->config->cdnUrl, '/');
-        
-        return "{$cdnUrl}/" . ltrim($placeholderPath, '/');
+
+        return "{$cdnUrl}/".ltrim($placeholderPath, '/');
     }
 
     public function supports(Image $image): bool

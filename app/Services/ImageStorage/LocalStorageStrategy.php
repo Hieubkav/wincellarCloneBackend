@@ -15,34 +15,35 @@ class LocalStorageStrategy implements ImageStorageStrategy
 
     public function getAbsoluteUrl(Image $image): ?string
     {
-        if (!$image->file_path) {
+        if (! $image->file_path) {
             return null;
         }
 
         // Laravel best practice: Use Storage::url() for proper URL generation
         if ($image->disk && Storage::disk($image->disk)->exists($image->file_path)) {
             $url = Storage::disk($image->disk)->url($image->file_path);
-            
+
             // Ensure absolute URL
             return $this->ensureAbsolute($url);
         }
 
         // Fallback: construct URL manually
         $baseUrl = $this->config->getBaseUrl('local');
-        return rtrim($baseUrl, '/') . '/storage/' . ltrim($image->file_path, '/');
+
+        return rtrim($baseUrl, '/').'/storage/'.ltrim($image->file_path, '/');
     }
 
     public function getPlaceholderUrl(string $type): string
     {
         $placeholderPath = $this->config->getPlaceholder($type);
         $baseUrl = $this->config->getBaseUrl('local');
-        
-        return rtrim($baseUrl, '/') . '/storage/' . ltrim($placeholderPath, '/');
+
+        return rtrim($baseUrl, '/').'/storage/'.ltrim($placeholderPath, '/');
     }
 
     public function supports(Image $image): bool
     {
-        return $this->config->storageDriver === 'local' 
+        return $this->config->storageDriver === 'local'
             && $image->disk === 'public';
     }
 
@@ -58,6 +59,7 @@ class LocalStorageStrategy implements ImageStorageStrategy
         }
 
         $baseUrl = $this->config->getBaseUrl('local');
-        return rtrim($baseUrl, '/') . '/' . ltrim($url, '/');
+
+        return rtrim($baseUrl, '/').'/'.ltrim($url, '/');
     }
 }

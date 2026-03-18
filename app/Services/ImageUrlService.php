@@ -25,7 +25,7 @@ class ImageUrlService
             $cdn,
             $s3,
             $local,
-        ])->sortByDesc(fn(ImageStorageStrategy $s) => $s->getPriority());
+        ])->sortByDesc(fn (ImageStorageStrategy $s) => $s->getPriority());
     }
 
     /**
@@ -36,7 +36,7 @@ class ImageUrlService
         foreach ($this->strategies as $strategy) {
             if ($strategy->supports($image)) {
                 $url = $strategy->getAbsoluteUrl($image);
-                
+
                 if ($url) {
                     return $url;
                 }

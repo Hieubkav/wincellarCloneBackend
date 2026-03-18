@@ -15,7 +15,7 @@ class S3StorageStrategy implements ImageStorageStrategy
 
     public function getAbsoluteUrl(Image $image): ?string
     {
-        if (!$image->file_path) {
+        if (! $image->file_path) {
             return null;
         }
 
@@ -31,7 +31,7 @@ class S3StorageStrategy implements ImageStorageStrategy
     public function getPlaceholderUrl(string $type): string
     {
         $placeholderPath = $this->config->getPlaceholder($type);
-        
+
         // Check if placeholder exists in S3
         if (Storage::disk('s3')->exists($placeholderPath)) {
             return Storage::disk('s3')->url($placeholderPath);
@@ -39,7 +39,8 @@ class S3StorageStrategy implements ImageStorageStrategy
 
         // Fallback to local placeholder
         $baseUrl = $this->config->getBaseUrl('local');
-        return rtrim($baseUrl, '/') . '/storage/' . ltrim($placeholderPath, '/');
+
+        return rtrim($baseUrl, '/').'/storage/'.ltrim($placeholderPath, '/');
     }
 
     public function supports(Image $image): bool

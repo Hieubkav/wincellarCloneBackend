@@ -3,7 +3,6 @@
 namespace App\Models\Concerns;
 
 use App\Models\Image;
-use App\Support\Media\MediaConfig;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Collection;

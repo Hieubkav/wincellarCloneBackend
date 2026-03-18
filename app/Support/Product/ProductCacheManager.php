@@ -38,7 +38,6 @@ class ProductCacheManager
      * @param  int  $ttl  Time to live in seconds
      * @param  array<string>  $tags  Cache tags for invalidation
      * @param  callable  $callback  Callback to get fresh data
-     * @return mixed
      */
     public static function remember(string $key, int $ttl, array $tags, callable $callback): mixed
     {
@@ -97,6 +96,7 @@ class ProductCacheManager
     {
         Cache::increment(self::CACHE_VERSION_KEY);
     }
+
     /**
      * Build semantic cache key from filters
      *
@@ -254,7 +254,7 @@ class ProductCacheManager
     {
         // Increment version to invalidate all caches atomically
         self::incrementVersion();
-        
+
         // Also flush tags as fallback
         Cache::tags('products')->flush();
     }

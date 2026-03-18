@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use App\Models\Setting;
 use App\Support\Cache\ApiCacheVersionManager;
-use App\Support\Settings\FontRegistry;
 use App\Support\Catalog\AttributeIconResolver;
+use App\Support\Settings\FontRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -94,12 +94,12 @@ class AdminSettingController extends Controller
             'product_watermark_text_position' => ['nullable', 'string', 'in:top,center,bottom'],
             'product_watermark_text_opacity' => ['nullable', 'integer', 'min:5', 'max:100'],
             'product_watermark_text_repeat' => ['nullable', 'boolean'],
-            'global_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
-            'home_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
-            'product_list_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
-            'product_detail_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
-            'article_list_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
-            'article_detail_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
+            'global_font_key' => ['nullable', 'string', 'in:'.implode(',', FontRegistry::all())],
+            'home_font_key' => ['nullable', 'string', 'in:'.implode(',', FontRegistry::all())],
+            'product_list_font_key' => ['nullable', 'string', 'in:'.implode(',', FontRegistry::all())],
+            'product_detail_font_key' => ['nullable', 'string', 'in:'.implode(',', FontRegistry::all())],
+            'article_list_font_key' => ['nullable', 'string', 'in:'.implode(',', FontRegistry::all())],
+            'article_detail_font_key' => ['nullable', 'string', 'in:'.implode(',', FontRegistry::all())],
         ]);
 
         $fontFields = [
@@ -140,10 +140,10 @@ class AdminSettingController extends Controller
             'product_watermark_text_opacity',
             'product_watermark_text_repeat',
         ];
-        
+
         $watermarkChanged = false;
         foreach ($watermarkFields as $field) {
-            if (array_key_exists($field, $validated) && $setting->$field !== $validated[$field]) {
+            if (array_key_exists($field, $validated) && $validated[$field] !== $setting->$field) {
                 $watermarkChanged = true;
                 break;
             }

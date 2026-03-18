@@ -10,10 +10,10 @@ use App\Services\WatermarkService;
 use App\Support\Cache\ApiCacheVersionManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Encoders\GifEncoder;
 use Intervention\Image\Encoders\JpegEncoder;
 use Intervention\Image\Encoders\PngEncoder;
 use Intervention\Image\Encoders\WebpEncoder;
-use Intervention\Image\Encoders\GifEncoder;
 
 class ImageProxyController extends Controller
 {
@@ -23,7 +23,7 @@ class ImageProxyController extends Controller
 
     /**
      * Serve image with watermark applied
-     * 
+     *
      * GET /api/v1/images/{id}
      * Query params:
      * - w: watermark enabled (default: 1)
@@ -32,7 +32,7 @@ class ImageProxyController extends Controller
     public function show(int $id)
     {
         $image = Image::findOrFail($id);
-        
+
         // Check if watermark should be applied
         $applyWatermark = request()->boolean('w', true);
         $quality = min(100, max(60, request()->integer('q', 85)));
@@ -41,8 +41,8 @@ class ImageProxyController extends Controller
         $cacheKey = $this->getCacheKey($image, $applyWatermark, $quality);
 
         // ETag includes settings hash - changes when watermark settings change
-        $etag = '"' . md5($cacheKey) . '"';
-        
+        $etag = '"'.md5($cacheKey).'"';
+
         // Check if browser cache is valid (ETag must match exactly)
         $ifNoneMatch = request()->header('If-None-Match');
         if ($ifNoneMatch === $etag) {
@@ -61,7 +61,7 @@ class ImageProxyController extends Controller
             'ETag' => $etag,
             'Cache-Control' => 'public, max-age=600, stale-while-revalidate=86400',
             'Last-Modified' => $image->updated_at->toRfc7231String(),
-            'Content-Disposition' => 'inline; filename="' . basename($image->file_path) . '"',
+            'Content-Disposition' => 'inline; filename="'.basename($image->file_path).'"',
         ]);
     }
 
@@ -108,7 +108,7 @@ class ImageProxyController extends Controller
     {
         $setting = Setting::first();
         $version = $this->getCacheVersion($image->id);
-        
+
         $settingHash = $setting ? md5(json_encode([
             'type' => $setting->product_watermark_type,
             'position' => $setting->product_watermark_position,
@@ -150,9 +150,9 @@ class ImageProxyController extends Controller
     private function getEncoderFromMime(string $mime, int $quality): \Intervention\Image\Interfaces\EncoderInterface
     {
         return match ($mime) {
-            'image/png' => new PngEncoder(),
+            'image/png' => new PngEncoder,
             'image/webp' => new WebpEncoder($quality),
-            'image/gif' => new GifEncoder(),
+            'image/gif' => new GifEncoder,
             'image/jpeg', 'image/jpg' => new JpegEncoder($quality),
             default => new JpegEncoder($quality),
         };
@@ -160,6 +160,7 @@ class ImageProxyController extends Controller
 
     /**
      * Get image format from mime type
+     *
      * @deprecated Use getEncoderFromMime() instead for Intervention Image v3
      */
     private function getFormatFromMime(string $mime): string
@@ -175,7 +176,7 @@ class ImageProxyController extends Controller
 
     /**
      * Clear cache for specific image (admin utility)
-     * 
+     *
      * POST /api/v1/images/{id}/clear-cache
      */
     public function clearCache(int $id)

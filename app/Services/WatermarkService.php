@@ -16,7 +16,7 @@ class WatermarkService
 
     public function __construct()
     {
-        $this->manager = new ImageManager(new Driver());
+        $this->manager = new ImageManager(new Driver);
     }
 
     /**
@@ -25,7 +25,7 @@ class WatermarkService
     public function applyWatermark(string $imagePath, ?Setting $setting = null): ImageInterface
     {
         $setting = $setting ?? Setting::first();
-        
+
         $image = $this->manager->read($imagePath);
 
         if (! $setting) {
@@ -51,28 +51,29 @@ class WatermarkService
     private function applyImageWatermark(ImageInterface $image, Setting $setting): ImageInterface
     {
         $position = $setting->product_watermark_position ?? 'none';
-        
+
         if ($position === 'none' || ! $setting->productWatermarkImage) {
             return $image;
         }
 
         $watermarkImage = $setting->productWatermarkImage;
         $disk = $watermarkImage->disk ?? 'public';
-        
+
         $watermarkPath = Storage::disk($disk)->path($watermarkImage->file_path);
-        
+
         if (! file_exists($watermarkPath)) {
             \Log::warning('Watermark image not found', [
                 'path' => $watermarkPath,
                 'disk' => $disk,
                 'file_path' => $watermarkImage->file_path,
             ]);
+
             return $image;
         }
 
         try {
             $watermark = $this->manager->read($watermarkPath);
-            
+
             $size = $this->parseSize($setting->product_watermark_size ?? '128x128');
             $watermark->scale(width: $size, height: $size);
 
@@ -97,7 +98,7 @@ class WatermarkService
     private function applyTextWatermark(ImageInterface $image, Setting $setting): ImageInterface
     {
         $text = $setting->product_watermark_text;
-        
+
         if (! $text) {
             return $image;
         }
@@ -316,6 +317,7 @@ class WatermarkService
 
         if ($type === 'image') {
             $position = $setting->product_watermark_position ?? 'none';
+
             return $position !== 'none' && $setting->productWatermarkImage !== null;
         }
 

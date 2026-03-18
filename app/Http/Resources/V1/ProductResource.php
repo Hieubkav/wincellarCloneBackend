@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Support\Catalog\AttributeIconResolver;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Support\Catalog\AttributeIconResolver;
 
 class ProductResource extends JsonResource
 {

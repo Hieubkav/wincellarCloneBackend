@@ -53,7 +53,7 @@ class AuthenticateAdminToken
             );
         }
 
-        $user = new User();
+        $user = new User;
         $user->forceFill([
             'id' => $token->getAttribute('auth_user_id'),
             'name' => $token->getAttribute('auth_user_name'),

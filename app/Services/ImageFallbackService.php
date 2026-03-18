@@ -49,7 +49,7 @@ class ImageFallbackService
     public function getUrlsWithFallback(iterable $images, string $type = 'default'): array
     {
         $urls = [];
-        
+
         foreach ($images as $image) {
             $urls[] = $this->getUrlWithFallback($image, $type);
         }

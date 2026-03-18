@@ -31,10 +31,10 @@ class MediaConfig
         );
     }
 
-    public function getBaseUrl(string $driver = null): string
+    public function getBaseUrl(?string $driver = null): string
     {
         $driver = $driver ?? $this->storageDriver;
-        
+
         return $this->baseUrls[$driver] ?? $this->baseUrls['local'] ?? '';
     }
 
@@ -45,7 +45,7 @@ class MediaConfig
 
     public function shouldUseCdn(): bool
     {
-        return $this->cdnEnabled && !empty($this->cdnUrl);
+        return $this->cdnEnabled && ! empty($this->cdnUrl);
     }
 
     public function getStoragePath(string $type = 'images'): string
@@ -62,7 +62,7 @@ class MediaConfig
             \Log::warning('CDN is enabled but MEDIA_CDN_URL is not set. Falling back to local storage.');
         }
 
-        if (!in_array($this->storageDriver, ['local', 's3', 'cdn'])) {
+        if (! in_array($this->storageDriver, ['local', 's3', 'cdn'])) {
             throw new \InvalidArgumentException("Invalid storage driver: {$this->storageDriver}");
         }
     }
