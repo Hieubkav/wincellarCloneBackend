@@ -14,23 +14,25 @@ class MenuController extends Controller
 
     public function __invoke(): JsonResponse
     {
-        $menus = Menu::query()
-            ->with([
-                'blocks' => function ($query) {
-                    $query->active()->orderBy('order');
-                },
-                'blocks.items' => function ($query) {
-                    $query->active()->orderBy('order');
-                },
-            ])
-            ->active()
-            ->orderBy('order')
-            ->get();
-
-        $payload = $this->assembler->build($menus);
-
-        // Include cache version for frontend cache invalidation
         $cacheVersion = (int) Cache::get('api_cache_version', 0);
+        $cacheKey = "api:v1:menus:{$cacheVersion}";
+
+        $payload = Cache::remember($cacheKey, 600, function () {
+            $menus = Menu::query()
+                ->with([
+                    'blocks' => function ($query) {
+                        $query->active()->orderBy('order');
+                    },
+                    'blocks.items' => function ($query) {
+                        $query->active()->orderBy('order');
+                    },
+                ])
+                ->active()
+                ->orderBy('order')
+                ->get();
+
+            return $this->assembler->build($menus);
+        });
 
         return response()->json([
             'data' => $payload,

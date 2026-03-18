@@ -6,8 +6,6 @@ use App\Enums\HomeComponentType;
 use App\Http\Controllers\Controller;
 use App\Models\HomeComponent;
 use App\Services\Api\V1\Home\HomeComponentAssembler;
-use App\Services\Api\V1\Home\HomeComponentResources;
-use App\Services\Api\V1\Home\Transformers\SpeedDialTransformer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 
@@ -55,15 +53,7 @@ class HomeController extends Controller
                 return null;
             }
 
-            $resources = new HomeComponentResources(
-                collect(),
-                collect(),
-                collect(),
-                collect(),
-                static fn () => null,
-            );
-
-            return (new SpeedDialTransformer())->transform($component, $resources);
+            return $this->assembler->buildSingle($component);
         });
 
         return response()->json([

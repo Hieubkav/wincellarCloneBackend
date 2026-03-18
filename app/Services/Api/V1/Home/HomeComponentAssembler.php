@@ -76,17 +76,7 @@ class HomeComponentAssembler
             return [];
         }
 
-        $referenceIds = $this->collectReferenceIds($components);
-        $resources = $this->resolveResources($referenceIds);
-
-        $resourceBag = new HomeComponentResources(
-            $resources['products'],
-            $resources['articles'],
-            $resources['images'],
-            $resources['terms'],
-            fn (HomeComponent $component, string $type, int $id) => $this->logMissing($component, $type, $id),
-        );
-
+        $resourceBag = $this->buildResourceBag($components);
         $payload = [];
 
         foreach ($components as $component) {
@@ -98,6 +88,27 @@ class HomeComponentAssembler
         }
 
         return $payload;
+    }
+
+    public function buildSingle(HomeComponent $component): ?array
+    {
+        $resourceBag = $this->buildResourceBag(collect([$component]));
+
+        return $this->transformComponent($component, $resourceBag);
+    }
+
+    private function buildResourceBag(Collection $components): HomeComponentResources
+    {
+        $referenceIds = $this->collectReferenceIds($components);
+        $resources = $this->resolveResources($referenceIds);
+
+        return new HomeComponentResources(
+            $resources['products'],
+            $resources['articles'],
+            $resources['images'],
+            $resources['terms'],
+            fn (HomeComponent $component, string $type, int $id) => $this->logMissing($component, $type, $id),
+        );
     }
 
     /**

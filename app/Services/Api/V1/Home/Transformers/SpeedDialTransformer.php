@@ -3,7 +3,6 @@
 namespace App\Services\Api\V1\Home\Transformers;
 
 use App\Models\HomeComponent;
-use App\Models\Image;
 use App\Services\Api\V1\Home\HomeComponentResources;
 
 class SpeedDialTransformer extends AbstractComponentTransformer
@@ -13,14 +12,13 @@ class SpeedDialTransformer extends AbstractComponentTransformer
         $config = $this->normalizeConfig($component);
         $items = $this->ensureArray($config['items'] ?? []);
 
-        $transformedItems = array_map(function ($item) {
+        $transformedItems = array_map(function ($item) use ($component, $resources) {
             $iconType = $item['icon_type'] ?? 'home';
             $iconImageId = $this->toPositiveInt($item['icon_image_id'] ?? null);
 
             $iconUrl = null;
             if ($iconType === 'custom' && $iconImageId) {
-                $image = Image::find($iconImageId);
-                $iconUrl = $image?->absolute_url;
+                $iconUrl = $resources->image($component, $iconImageId)?->absolute_url;
             }
 
             return [
