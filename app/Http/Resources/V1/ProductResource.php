@@ -59,6 +59,7 @@ class ProductResource extends JsonResource
 
             // Conditional fields for detail view
             'description' => $this->when($request->routeIs('api.v1.products.show'), $this->description),
+            'shopee_url' => $this->when($request->routeIs('api.v1.products.show'), $this->shopee_url),
 
             'grape_terms' => $this->when($request->routeIs('api.v1.products.show') && $this->relationLoaded('terms'), function () {
                 return $this->termsByGroup('grape')->map(fn ($term) => [

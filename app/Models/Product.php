@@ -43,6 +43,7 @@ class Product extends Model
         'active',
         'meta_title',
         'meta_description',
+        'shopee_url',
     ];
 
     /**

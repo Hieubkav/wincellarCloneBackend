@@ -40,6 +40,7 @@ class Setting extends Model
         'footer_config',
         'contact_config',
         'product_contact_cta_config',
+        'product_shopee_link_enabled',
         'meta_default_title',
         'meta_default_description',
         'meta_default_keywords',
@@ -76,6 +77,7 @@ class Setting extends Model
             'footer_config' => 'array',
             'contact_config' => 'array',
             'product_contact_cta_config' => 'array',
+            'product_shopee_link_enabled' => 'boolean',
         ];
     }
 
