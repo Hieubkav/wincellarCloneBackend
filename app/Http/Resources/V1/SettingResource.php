@@ -42,6 +42,7 @@ class SettingResource extends JsonResource
             'google_map_embed' => $this->google_map_embed,
             'footer_config' => $this->footer_config,
             'contact_config' => $contactConfig,
+            'product_contact_cta_config' => $this->product_contact_cta_config,
 
             // Logo and favicon URLs
             'logo_url' => $this->logoImage?->url ?? '/placeholder/logo.svg',

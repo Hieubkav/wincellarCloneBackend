@@ -22,6 +22,7 @@ class AdminSettingController extends Controller
         }
 
         $contactConfig = $this->normalizeContactConfig($setting->contact_config);
+        $productContactCtaConfig = $this->normalizeProductContactCtaConfig($setting->product_contact_cta_config);
 
         return SuccessResponse::make([
             'id' => $setting->id,
@@ -33,6 +34,7 @@ class AdminSettingController extends Controller
             'google_map_embed' => $setting->extra['google_map_embed'] ?? null,
             'footer_config' => $setting->footer_config,
             'contact_config' => $contactConfig,
+            'product_contact_cta_config' => $productContactCtaConfig,
             'meta_default_title' => $setting->meta_default_title,
             'meta_default_description' => $setting->meta_default_description,
             'meta_default_keywords' => $setting->meta_default_keywords,
@@ -90,6 +92,13 @@ class AdminSettingController extends Controller
             'google_map_embed' => ['nullable', 'string'],
             'footer_config' => ['nullable', 'array'],
             'contact_config' => ['nullable', 'array'],
+            'product_contact_cta_config' => ['nullable', 'array'],
+            'product_contact_cta_config.mode' => ['nullable', 'string', 'in:contact_page,social_4_buttons'],
+            'product_contact_cta_config.items' => ['nullable', 'array'],
+            'product_contact_cta_config.items.facebook' => ['nullable', 'string', 'max:255'],
+            'product_contact_cta_config.items.zalo' => ['nullable', 'string', 'max:255'],
+            'product_contact_cta_config.items.phone' => ['nullable', 'string', 'max:255'],
+            'product_contact_cta_config.items.tiktok' => ['nullable', 'string', 'max:255'],
             'meta_default_title' => ['nullable', 'string', 'max:255'],
             'meta_default_description' => ['nullable', 'string', 'max:500'],
             'meta_default_keywords' => ['nullable', 'string', 'max:500'],
@@ -142,6 +151,12 @@ class AdminSettingController extends Controller
 
         if (array_key_exists('contact_config', $validated)) {
             $validated['contact_config'] = $this->normalizeContactConfig($validated['contact_config']);
+        }
+
+        if (array_key_exists('product_contact_cta_config', $validated)) {
+            $validated['product_contact_cta_config'] = $this->normalizeProductContactCtaConfig(
+                $validated['product_contact_cta_config']
+            );
         }
 
         if (isset($validated['google_map_embed'])) {
@@ -222,5 +237,43 @@ class AdminSettingController extends Controller
         }, $contactConfig['cards']);
 
         return $contactConfig;
+    }
+
+    private function normalizeProductContactCtaConfig(?array $config): ?array
+    {
+        if (! is_array($config)) {
+            return $config;
+        }
+
+        $mode = $config['mode'] ?? 'contact_page';
+        $allowedModes = ['contact_page', 'social_4_buttons'];
+        if (! in_array($mode, $allowedModes, true)) {
+            $mode = 'contact_page';
+        }
+
+        $items = is_array($config['items'] ?? null) ? $config['items'] : [];
+
+        $normalizedItems = [
+            'facebook' => $this->normalizeStringValue($items['facebook'] ?? null),
+            'zalo' => $this->normalizeStringValue($items['zalo'] ?? null),
+            'phone' => $this->normalizeStringValue($items['phone'] ?? null),
+            'tiktok' => $this->normalizeStringValue($items['tiktok'] ?? null),
+        ];
+
+        return [
+            'mode' => $mode,
+            'items' => $normalizedItems,
+        ];
+    }
+
+    private function normalizeStringValue(mixed $value): ?string
+    {
+        if (! is_string($value)) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 }
