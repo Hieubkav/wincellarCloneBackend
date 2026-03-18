@@ -14,6 +14,7 @@ class SettingObserver
     private function invalidateCache(Setting $setting, string $action): void
     {
         Cache::forget('api:v1:settings');
+        Cache::forget('api:v1:settings:payload');
 
         $oldVersion = (int) Cache::get('api_cache_version', 0);
         $newVersion = ApiCacheVersionManager::bumpApiVersion();

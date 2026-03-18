@@ -2,7 +2,6 @@
 
 namespace App\Services\Api\V1\Home\Transformers;
 
-use App\Models\CatalogTerm;
 use App\Models\HomeComponent;
 use App\Services\Api\V1\Home\HomeComponentResources;
 
@@ -20,17 +19,11 @@ class CategoryGridTransformer extends AbstractComponentTransformer
                 continue;
             }
 
-            // Get term info
             $termId = $this->toPositiveInt($item['term_id'] ?? null);
-            $term = null;
-            if ($termId) {
-                $term = CatalogTerm::find($termId);
-            }
+            $term = $termId ? $resources->term($component, $termId) : null;
 
-            // Get image (required) - support both formats
             $imageData = null;
 
-            // Format 1: image_id reference to Image model
             $imageId = $this->toPositiveInt($item['image_id'] ?? null);
             if ($imageId) {
                 $image = $resources->image($component, $imageId);
@@ -39,7 +32,6 @@ class CategoryGridTransformer extends AbstractComponentTransformer
                 }
             }
 
-            // Format 2: Direct image object from JSON (e.g., from file upload in admin)
             if (! $imageData && isset($item['image']) && is_array($item['image'])) {
                 $imageObj = $item['image'];
                 if (! empty($imageObj['url'])) {
@@ -51,19 +43,15 @@ class CategoryGridTransformer extends AbstractComponentTransformer
                 }
             }
 
-            // Skip if no valid image found
             if (! $imageData) {
                 continue;
             }
 
-            // Build category item
-            $categoryItem = [
+            $categories[] = [
                 'title' => $item['title'] ?? ($term?->name ?? 'Untitled'),
                 'href' => $item['href'] ?? ($term ? "/categories/{$term->slug}" : '#'),
                 'image' => $imageData,
             ];
-
-            $categories[] = $categoryItem;
         }
 
         if (empty($categories)) {

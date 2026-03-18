@@ -7,15 +7,35 @@ use App\Http\Controllers\Controller;
 use App\Models\HomeComponent;
 use App\Services\Api\V1\Home\HomeComponentAssembler;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
     public function __construct(private readonly HomeComponentAssembler $assembler) {}
 
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
         $cacheVersion = (int) Cache::get('api_cache_version', 0);
+
+        if ($request->boolean('audit')) {
+            $components = HomeComponent::query()
+                ->active()
+                ->orderBy('order')
+                ->orderBy('id')
+                ->get();
+
+            $result = $this->assembler->buildWithAudit($components);
+
+            return response()->json([
+                'data' => $result['payload'],
+                'meta' => [
+                    'cache_version' => $cacheVersion,
+                    'audit' => $result['audit'],
+                ],
+            ]);
+        }
+
         $cacheKey = "api:v1:home:{$cacheVersion}";
 
         $payload = Cache::remember($cacheKey, 600, function () {

@@ -97,6 +97,62 @@ class HomeComponentAssembler
         return $this->transformComponent($component, $resourceBag);
     }
 
+    /**
+     * @param  \Illuminate\Support\Collection<int, \App\Models\HomeComponent>  $components
+     * @return array{
+     *     payload: array<int, array<string, mixed>>,
+     *     audit: array<string, mixed>
+     * }
+     */
+    public function buildWithAudit(Collection $components): array
+    {
+        if ($components->isEmpty()) {
+            return [
+                'payload' => [],
+                'audit' => [
+                    'total_ms' => 0,
+                    'components' => [],
+                    'slowest_component' => null,
+                ],
+            ];
+        }
+
+        $resourceBag = $this->buildResourceBag($components);
+        $payload = [];
+        $auditComponents = [];
+        $startedAt = hrtime(true);
+
+        foreach ($components as $component) {
+            $componentStartedAt = hrtime(true);
+            $transformed = $this->transformComponent($component, $resourceBag);
+            $durationMs = round((hrtime(true) - $componentStartedAt) / 1_000_000, 2);
+
+            $auditEntry = [
+                'component_id' => $component->id,
+                'type' => $component->type,
+                'duration_ms' => $durationMs,
+                'transformed' => $transformed !== null,
+            ];
+
+            $auditComponents[] = $auditEntry;
+
+            if ($transformed !== null) {
+                $payload[] = $transformed;
+            }
+        }
+
+        usort($auditComponents, static fn (array $left, array $right) => $right['duration_ms'] <=> $left['duration_ms']);
+
+        return [
+            'payload' => $payload,
+            'audit' => [
+                'total_ms' => round((hrtime(true) - $startedAt) / 1_000_000, 2),
+                'components' => $auditComponents,
+                'slowest_component' => $auditComponents[0] ?? null,
+            ],
+        ];
+    }
+
     private function buildResourceBag(Collection $components): HomeComponentResources
     {
         $referenceIds = $this->collectReferenceIds($components);
