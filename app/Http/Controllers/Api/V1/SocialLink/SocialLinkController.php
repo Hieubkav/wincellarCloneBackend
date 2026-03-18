@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\SocialLink;
 use App\Http\Controllers\Controller;
 use App\Models\SocialLink;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class SocialLinkController extends Controller
@@ -15,11 +16,15 @@ class SocialLinkController extends Controller
      * Returns list of social media links with icon URLs
      * Cache: 5 minutes (invalidated by SocialLinkObserver)
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $startedAt = hrtime(true);
+        $cacheKey = 'api:v1:social-links';
+        $cacheHit = Cache::has($cacheKey);
+
         $socialLinks = Cache::remember(
-            'api:v1:social-links',
-            300, // 5 minutes
+            $cacheKey,
+            300,
             fn () => SocialLink::query()
                 ->active()
                 ->with('iconImage')
@@ -34,12 +39,22 @@ class SocialLinkController extends Controller
                 ])
         );
 
+        $meta = [
+            'api_version' => 'v1',
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        if ($request->boolean('audit')) {
+            $meta['audit'] = [
+                'cache_hit' => $cacheHit,
+                'cache_key' => $cacheKey,
+                'server_ms' => round((hrtime(true) - $startedAt) / 1_000_000, 2),
+            ];
+        }
+
         return response()->json([
             'data' => $socialLinks,
-            'meta' => [
-                'api_version' => 'v1',
-                'timestamp' => now()->toIso8601String(),
-            ],
+            'meta' => $meta,
         ]);
     }
 }

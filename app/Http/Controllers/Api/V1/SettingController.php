@@ -19,6 +19,7 @@ class SettingController extends Controller
         $cacheKey = 'api:v1:settings:payload';
 
         if ($request->boolean('audit')) {
+            $startedAt = hrtime(true);
             $cacheHit = Cache::has($cacheKey);
             $cacheReadStartedAt = hrtime(true);
             $cachedPayload = Cache::get($cacheKey);
@@ -48,6 +49,7 @@ class SettingController extends Controller
                 'cache_read_ms' => $cacheReadMs,
                 'query_ms' => $queryMs,
                 'serialize_ms' => $serializeMs,
+                'server_ms' => round((hrtime(true) - $startedAt) / 1_000_000, 2),
             ];
 
             return response()->json($payload);

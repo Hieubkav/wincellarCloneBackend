@@ -16,6 +16,7 @@ class HomeController extends Controller
 
     public function __invoke(Request $request): JsonResponse
     {
+        $startedAt = hrtime(true);
         $cacheVersion = (int) Cache::get('api_cache_version', 0);
 
         if ($request->boolean('audit')) {
@@ -26,6 +27,7 @@ class HomeController extends Controller
                 ->get();
 
             $result = $this->assembler->buildWithAudit($components);
+            $result['audit']['server_ms'] = round((hrtime(true) - $startedAt) / 1_000_000, 2);
 
             return response()->json([
                 'data' => $result['payload'],
@@ -37,6 +39,7 @@ class HomeController extends Controller
         }
 
         $cacheKey = "api:v1:home:{$cacheVersion}";
+        $cacheHit = Cache::has($cacheKey);
 
         $payload = Cache::remember($cacheKey, 600, function () {
             $components = HomeComponent::query()
@@ -48,18 +51,30 @@ class HomeController extends Controller
             return $this->assembler->build($components);
         });
 
+        $meta = [
+            'cache_version' => $cacheVersion,
+        ];
+
+        if ($request->boolean('audit_cached')) {
+            $meta['audit'] = [
+                'cache_hit' => $cacheHit,
+                'cache_key' => $cacheKey,
+                'server_ms' => round((hrtime(true) - $startedAt) / 1_000_000, 2),
+            ];
+        }
+
         return response()->json([
             'data' => $payload,
-            'meta' => [
-                'cache_version' => $cacheVersion,
-            ],
+            'meta' => $meta,
         ]);
     }
 
-    public function speedDial(): JsonResponse
+    public function speedDial(Request $request): JsonResponse
     {
+        $startedAt = hrtime(true);
         $cacheVersion = (int) Cache::get('api_cache_version', 0);
         $cacheKey = "api:v1:home:speed-dial:{$cacheVersion}";
+        $cacheHit = Cache::has($cacheKey);
 
         $payload = Cache::remember($cacheKey, 600, function () {
             $component = HomeComponent::query()
@@ -76,11 +91,21 @@ class HomeController extends Controller
             return $this->assembler->buildSingle($component);
         });
 
+        $meta = [
+            'cache_version' => $cacheVersion,
+        ];
+
+        if ($request->boolean('audit')) {
+            $meta['audit'] = [
+                'cache_hit' => $cacheHit,
+                'cache_key' => $cacheKey,
+                'server_ms' => round((hrtime(true) - $startedAt) / 1_000_000, 2),
+            ];
+        }
+
         return response()->json([
             'data' => $payload,
-            'meta' => [
-                'cache_version' => $cacheVersion,
-            ],
+            'meta' => $meta,
         ]);
     }
 }
