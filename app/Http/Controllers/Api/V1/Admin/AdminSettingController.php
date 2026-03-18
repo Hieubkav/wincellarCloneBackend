@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
 use App\Models\Setting;
 use App\Support\Cache\ApiCacheVersionManager;
+use App\Support\Settings\FontRegistry;
 use App\Support\Catalog\AttributeIconResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,6 +52,12 @@ class AdminSettingController extends Controller
             'product_watermark_text_position' => $setting->product_watermark_text_position ?? 'center',
             'product_watermark_text_opacity' => $setting->product_watermark_text_opacity ?? 50,
             'product_watermark_text_repeat' => (bool) ($setting->product_watermark_text_repeat ?? false),
+            'global_font_key' => $setting->global_font_key,
+            'home_font_key' => $setting->home_font_key,
+            'product_list_font_key' => $setting->product_list_font_key,
+            'product_detail_font_key' => $setting->product_detail_font_key,
+            'article_list_font_key' => $setting->article_list_font_key,
+            'article_detail_font_key' => $setting->article_detail_font_key,
             'updated_at' => $setting->updated_at?->toIso8601String(),
         ]);
     }
@@ -87,7 +94,28 @@ class AdminSettingController extends Controller
             'product_watermark_text_position' => ['nullable', 'string', 'in:top,center,bottom'],
             'product_watermark_text_opacity' => ['nullable', 'integer', 'min:5', 'max:100'],
             'product_watermark_text_repeat' => ['nullable', 'boolean'],
+            'global_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
+            'home_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
+            'product_list_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
+            'product_detail_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
+            'article_list_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
+            'article_detail_font_key' => ['nullable', 'string', 'in:' . implode(',', FontRegistry::all())],
         ]);
+
+        $fontFields = [
+            'global_font_key',
+            'home_font_key',
+            'product_list_font_key',
+            'product_detail_font_key',
+            'article_list_font_key',
+            'article_detail_font_key',
+        ];
+
+        foreach ($fontFields as $field) {
+            if (array_key_exists($field, $validated) && $validated[$field] === '') {
+                $validated[$field] = null;
+            }
+        }
 
         if (array_key_exists('contact_config', $validated)) {
             $validated['contact_config'] = $this->normalizeContactConfig($validated['contact_config']);

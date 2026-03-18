@@ -56,6 +56,12 @@ class SettingResource extends JsonResource
             'product_watermark_text_position' => $this->product_watermark_text_position ?? 'center',
             'product_watermark_text_opacity' => $this->product_watermark_text_opacity ?? 50,
             'product_watermark_text_repeat' => (bool) ($this->product_watermark_text_repeat ?? false),
+            'global_font_key' => $this->global_font_key,
+            'home_font_key' => $this->home_font_key,
+            'product_list_font_key' => $this->product_list_font_key,
+            'product_detail_font_key' => $this->product_detail_font_key,
+            'article_list_font_key' => $this->article_list_font_key,
+            'article_detail_font_key' => $this->article_detail_font_key,
 
             // SEO meta defaults (for pages without custom meta)
             'meta_defaults' => [

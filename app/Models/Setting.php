@@ -41,6 +41,12 @@ class Setting extends Model
         'meta_default_title',
         'meta_default_description',
         'meta_default_keywords',
+        'global_font_key',
+        'home_font_key',
+        'product_list_font_key',
+        'product_detail_font_key',
+        'article_list_font_key',
+        'article_detail_font_key',
         'extra',
     ];
 
