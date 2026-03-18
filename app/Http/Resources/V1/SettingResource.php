@@ -69,6 +69,17 @@ class SettingResource extends JsonResource
                 'description' => $this->meta_default_description,
                 'keywords' => $this->meta_default_keywords,
             ],
+            'site_tagline' => $this->site_tagline,
+            'organization_legal_name' => $this->organization_legal_name,
+            'organization_short_name' => $this->organization_short_name,
+            'primary_phone' => $this->primary_phone,
+            'primary_email' => $this->primary_email,
+            'price_range' => $this->price_range,
+            'social_links_schema' => $this->social_links_schema,
+            'default_meta_title_template' => $this->default_meta_title_template,
+            'default_og_title' => $this->default_og_title,
+            'default_og_description' => $this->default_og_description,
+            'indexing_enabled' => $this->indexing_enabled,
 
             // Extra settings (consistent structure - always returns array)
             'extra' => $this->extra ?? [],
