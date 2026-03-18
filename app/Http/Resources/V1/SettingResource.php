@@ -55,6 +55,7 @@ class SettingResource extends JsonResource
             'product_watermark_text' => $this->product_watermark_text,
             'product_watermark_text_size' => $this->product_watermark_text_size ?? 'medium',
             'product_watermark_text_position' => $this->product_watermark_text_position ?? 'center',
+            'product_watermark_text_position_y' => $this->product_watermark_text_position_y,
             'product_watermark_text_opacity' => $this->product_watermark_text_opacity ?? 50,
             'product_watermark_text_repeat' => (bool) ($this->product_watermark_text_repeat ?? false),
             'global_font_key' => $this->global_font_key,

@@ -105,16 +105,16 @@ class WatermarkService
 
         $fontSize = $this->getFontSize($setting->product_watermark_text_size ?? 'medium', $image);
         $opacity = ($setting->product_watermark_text_opacity ?? 50) / 100;
-        $position = $setting->product_watermark_text_position ?? 'center';
+        $positionY = $this->resolveTextPositionY($setting);
 
         // Font file path
         $fontPath = $this->getFontPath();
 
         try {
             if ($setting->product_watermark_text_repeat) {
-                $this->drawRepeatedTextRow($image, $text, $position, $fontSize, $opacity, $fontPath);
+                $this->drawRepeatedTextRow($image, $text, $positionY, $fontSize, $opacity, $fontPath);
             } else {
-                [$x, $y] = $this->calculateTextPosition($image, $position, $fontSize);
+                [$x, $y] = $this->calculateTextPosition($image, $positionY, $fontSize);
                 $this->drawTextWatermark($image, $text, $x, $y, $fontSize, $opacity, $fontPath);
             }
 
@@ -122,7 +122,7 @@ class WatermarkService
                 'text' => $text,
                 'fontSize' => $fontSize,
                 'opacity' => $opacity,
-                'position' => $position,
+                'position_y' => $positionY,
                 'repeat' => (bool) $setting->product_watermark_text_repeat,
                 'fontPath' => $fontPath,
             ]);
@@ -172,18 +172,32 @@ class WatermarkService
      */
     private function calculateTextPosition(
         ImageInterface $image,
-        string $position,
+        int $positionY,
         int $fontSize
     ): array {
         $imgWidth = $image->width();
         $imgHeight = $image->height();
         $padding = $fontSize * 2;
 
-        return match ($position) {
-            'top' => [$imgWidth / 2, $padding],
-            'center' => [$imgWidth / 2, $imgHeight / 2],
-            'bottom' => [$imgWidth / 2, $imgHeight - $padding],
-            default => [$imgWidth / 2, $imgHeight / 2],
+        $clamped = max(0, min(100, $positionY));
+        $availableHeight = max(1, $imgHeight - ($padding * 2));
+        $y = $padding + ($availableHeight * ($clamped / 100));
+
+        return [$imgWidth / 2, $y];
+    }
+
+    private function resolveTextPositionY(Setting $setting): int
+    {
+        $positionY = $setting->product_watermark_text_position_y;
+
+        if (is_numeric($positionY)) {
+            return (int) max(0, min(100, (int) $positionY));
+        }
+
+        return match ($setting->product_watermark_text_position ?? 'center') {
+            'top' => 15,
+            'bottom' => 85,
+            default => 50,
         };
     }
 
@@ -209,7 +223,7 @@ class WatermarkService
     private function drawRepeatedTextRow(
         ImageInterface $image,
         string $text,
-        string $position,
+        int $positionY,
         int $fontSize,
         float $opacity,
         ?string $fontPath
@@ -217,7 +231,7 @@ class WatermarkService
         $imgWidth = $image->width();
         $padding = max(12, (int) ($fontSize * 1.5));
 
-        [, $y] = $this->calculateTextPosition($image, $position, $fontSize);
+        [, $y] = $this->calculateTextPosition($image, $positionY, $fontSize);
 
         $estimatedWidth = $this->estimateTextWidth($text, $fontSize);
         $visibleWidth = max(1, $imgWidth - ($padding * 2));

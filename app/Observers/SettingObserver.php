@@ -83,6 +83,7 @@ class SettingObserver
             'product_watermark_text',
             'product_watermark_text_size',
             'product_watermark_text_position',
+            'product_watermark_text_position_y',
             'product_watermark_text_opacity',
             'product_watermark_text_repeat',
         ])) > 0;
