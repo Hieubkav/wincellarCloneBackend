@@ -9,6 +9,7 @@ use App\Models\ProductCategory;
 use App\Models\ProductType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -19,29 +20,30 @@ class AdminProductController extends Controller
     public function filters(Request $request): JsonResponse
     {
         $typeId = $request->integer('type_id');
+        $cacheKey = 'admin:products:filters:'.($typeId ?? 'all');
 
-        $types = ProductType::query()
-            ->where('active', true)
-            ->orderBy('order')
-            ->orderBy('id')
-            ->get(['id', 'name', 'slug']);
+        $payload = Cache::remember($cacheKey, 60, function () use ($typeId) {
+            $types = ProductType::query()
+                ->where('active', true)
+                ->orderBy('order')
+                ->orderBy('id')
+                ->get(['id', 'name', 'slug']);
 
-        $categoriesQuery = ProductCategory::query()
-            ->where('active', true)
-            ->orderBy('order')
-            ->orderBy('id');
+            $categoriesQuery = ProductCategory::query()
+                ->where('active', true)
+                ->orderBy('order')
+                ->orderBy('id');
 
-        if ($typeId) {
-            $categoriesQuery->where(function ($query) use ($typeId) {
-                $query->where('type_id', $typeId)
-                    ->orWhereNull('type_id');
-            });
-        }
+            if ($typeId) {
+                $categoriesQuery->where(function ($query) use ($typeId) {
+                    $query->where('type_id', $typeId)
+                        ->orWhereNull('type_id');
+                });
+            }
 
-        $categories = $categoriesQuery->get(['id', 'name', 'slug']);
+            $categories = $categoriesQuery->get(['id', 'name', 'slug']);
 
-        return response()->json([
-            'data' => [
+            return [
                 'types' => $types->map(fn (ProductType $type) => [
                     'id' => $type->id,
                     'name' => $type->name,
@@ -52,7 +54,11 @@ class AdminProductController extends Controller
                     'name' => $category->name,
                     'slug' => $category->slug,
                 ])->values(),
-            ],
+            ];
+        });
+
+        return response()->json([
+            'data' => $payload,
         ]);
     }
 

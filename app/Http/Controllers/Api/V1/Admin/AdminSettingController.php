@@ -13,6 +13,21 @@ use Illuminate\Http\Request;
 
 class AdminSettingController extends Controller
 {
+    public function lite(): JsonResponse
+    {
+        $setting = Setting::query()->select(['id', 'product_shopee_link_enabled', 'updated_at'])->first();
+
+        if (! $setting) {
+            $setting = Setting::create([]);
+        }
+
+        return SuccessResponse::make([
+            'id' => $setting->id,
+            'product_shopee_link_enabled' => (bool) ($setting->product_shopee_link_enabled ?? false),
+            'updated_at' => $setting->updated_at?->toIso8601String(),
+        ]);
+    }
+
     public function show(): JsonResponse
     {
         $setting = Setting::with(['logoImage', 'faviconImage', 'ogImage', 'productWatermarkImage'])->first();

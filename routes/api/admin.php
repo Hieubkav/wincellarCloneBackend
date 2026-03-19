@@ -126,6 +126,7 @@ Route::prefix('admin')
             Route::post('social-links/reorder', [AdminSocialLinkController::class, 'reorder'])->name('social-links.reorder');
 
             // Settings (singleton)
+            Route::get('settings/lite', [AdminSettingController::class, 'lite'])->name('settings.lite');
             Route::get('settings', [AdminSettingController::class, 'show'])->name('settings.show');
             Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
 
