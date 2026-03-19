@@ -1,10 +1,17 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 
 // Homepage - Landing page with navigation cards
 Route::get('/', function () {
     return view('home');
+});
+
+// Run storage link - for production deployment
+Route::get('/run-storage-link', function () {
+    Artisan::call('storage:link');
+    return response()->json(['message' => 'Storage linked successfully!'], 200);
 });
 
 // Tổng quan - System overview
