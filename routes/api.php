@@ -9,6 +9,16 @@ Route::middleware(['api', 'throttle:api'])
         // Health check endpoint (no auth required)
         Route::get('health', \App\Http\Controllers\Api\V1\HealthController::class)->name('health');
 
+        Route::get('dev/probe/ping', function () {
+            $startedAt = microtime(true);
+
+            return response()->json([
+                'ok' => true,
+                'server_time' => now()->toISOString(),
+                'controller_ms' => round((microtime(true) - $startedAt) * 1000, 2),
+            ]);
+        })->name('dev.probe.ping');
+
         // Cache management endpoints
         Route::prefix('cache')->as('cache.')->middleware('admin.token')->group(function (): void {
             Route::post('clear', [\App\Http\Controllers\Api\V1\CacheController::class, 'clear'])->name('clear');

@@ -27,6 +27,16 @@ Route::prefix('admin')
             Route::get('auth/me', [AdminAuthController::class, 'me'])->name('auth.me');
             Route::post('auth/logout', [AdminAuthController::class, 'logout'])->name('auth.logout');
 
+            Route::get('dev/probe/auth-ping', function () {
+                $startedAt = microtime(true);
+
+                return response()->json([
+                    'ok' => true,
+                    'server_time' => now()->toISOString(),
+                    'controller_ms' => round((microtime(true) - $startedAt) * 1000, 2),
+                ]);
+            })->name('dev.probe.auth-ping');
+
             // Dashboard & Analytics
             Route::get('dashboard/bootstrap', [AdminDashboardController::class, 'bootstrap'])->name('dashboard.bootstrap');
             Route::get('dashboard/stats', [AdminDashboardController::class, 'stats'])->name('dashboard.stats');
