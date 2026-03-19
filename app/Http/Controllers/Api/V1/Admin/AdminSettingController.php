@@ -68,6 +68,7 @@ class AdminSettingController extends Controller
             'product_contact_cta_config' => $productContactCtaConfig,
             'product_shopee_link_enabled' => (bool) ($setting->product_shopee_link_enabled ?? false),
             'product_mobile_main_image_height' => $setting->product_mobile_main_image_height,
+            'product_detail_rules' => $setting->product_detail_rules,
             'meta_default_title' => $setting->meta_default_title,
             'meta_default_description' => $setting->meta_default_description,
             'meta_default_keywords' => $setting->meta_default_keywords,
@@ -143,6 +144,8 @@ class AdminSettingController extends Controller
             'product_contact_cta_config.items.tiktok' => ['nullable', 'string', 'max:255'],
             'product_shopee_link_enabled' => ['nullable', 'boolean'],
             'product_mobile_main_image_height' => ['nullable', 'integer', 'min:240', 'max:520'],
+            'product_detail_rules' => ['nullable', 'array'],
+            'product_detail_rules.*' => ['nullable', 'string', 'max:255'],
             'meta_default_title' => ['nullable', 'string', 'max:255'],
             'meta_default_description' => ['nullable', 'string', 'max:500'],
             'meta_default_keywords' => ['nullable', 'string', 'max:500'],
@@ -201,6 +204,12 @@ class AdminSettingController extends Controller
         if (array_key_exists('product_contact_cta_config', $validated)) {
             $validated['product_contact_cta_config'] = $this->normalizeProductContactCtaConfig(
                 $validated['product_contact_cta_config']
+            );
+        }
+
+        if (array_key_exists('product_detail_rules', $validated)) {
+            $validated['product_detail_rules'] = $this->normalizeStringArray(
+                $validated['product_detail_rules']
             );
         }
 
@@ -321,6 +330,29 @@ class AdminSettingController extends Controller
         $trimmed = trim($value);
 
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function normalizeStringArray(mixed $values): ?array
+    {
+        if (! is_array($values)) {
+            return null;
+        }
+
+        $normalized = [];
+        foreach ($values as $value) {
+            if (! is_string($value)) {
+                continue;
+            }
+
+            $trimmed = trim($value);
+            if ($trimmed === '') {
+                continue;
+            }
+
+            $normalized[] = $trimmed;
+        }
+
+        return $normalized === [] ? null : array_values($normalized);
     }
 
     private function buildAuditMeta(Request $request, float $controllerStart, float $queryMs, float $transformMs): ?array

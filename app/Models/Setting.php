@@ -42,6 +42,7 @@ class Setting extends Model
         'product_contact_cta_config',
         'product_shopee_link_enabled',
         'product_mobile_main_image_height',
+        'product_detail_rules',
         'meta_default_title',
         'meta_default_description',
         'meta_default_keywords',
@@ -80,6 +81,7 @@ class Setting extends Model
             'product_contact_cta_config' => 'array',
             'product_shopee_link_enabled' => 'boolean',
             'product_mobile_main_image_height' => 'integer',
+            'product_detail_rules' => 'array',
         ];
     }
 
