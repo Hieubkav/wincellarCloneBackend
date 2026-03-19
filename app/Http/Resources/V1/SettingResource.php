@@ -44,6 +44,7 @@ class SettingResource extends JsonResource
             'contact_config' => $contactConfig,
             'product_contact_cta_config' => $this->product_contact_cta_config,
             'product_shopee_link_enabled' => (bool) ($this->product_shopee_link_enabled ?? false),
+            'product_mobile_main_image_height' => $this->product_mobile_main_image_height,
 
             // Logo and favicon URLs
             'logo_url' => $this->logoImage?->url ?? '/placeholder/logo.svg',
