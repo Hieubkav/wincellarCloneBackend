@@ -13,24 +13,39 @@ use Illuminate\Http\Request;
 
 class AdminSettingController extends Controller
 {
-    public function lite(): JsonResponse
+    public function lite(Request $request): JsonResponse
     {
+        $controllerStart = microtime(true);
+        $queryStart = microtime(true);
         $setting = Setting::query()->select(['id', 'product_shopee_link_enabled', 'updated_at'])->first();
+        $queryMs = (microtime(true) - $queryStart) * 1000;
 
         if (! $setting) {
             $setting = Setting::create([]);
         }
 
-        return SuccessResponse::make([
+        $transformStart = microtime(true);
+        $payload = [
             'id' => $setting->id,
             'product_shopee_link_enabled' => (bool) ($setting->product_shopee_link_enabled ?? false),
             'updated_at' => $setting->updated_at?->toIso8601String(),
-        ]);
+        ];
+        $transformMs = (microtime(true) - $transformStart) * 1000;
+
+        return SuccessResponse::make($payload, null, 200, $this->buildAuditMeta(
+            $request,
+            $controllerStart,
+            $queryMs,
+            $transformMs
+        ));
     }
 
-    public function show(): JsonResponse
+    public function show(Request $request): JsonResponse
     {
+        $controllerStart = microtime(true);
+        $queryStart = microtime(true);
         $setting = Setting::with(['logoImage', 'faviconImage', 'ogImage', 'productWatermarkImage'])->first();
+        $queryMs = (microtime(true) - $queryStart) * 1000;
 
         if (! $setting) {
             $setting = Setting::create([]);
@@ -39,7 +54,8 @@ class AdminSettingController extends Controller
         $contactConfig = $this->normalizeContactConfig($setting->contact_config);
         $productContactCtaConfig = $this->normalizeProductContactCtaConfig($setting->product_contact_cta_config);
 
-        return SuccessResponse::make([
+        $transformStart = microtime(true);
+        $payload = [
             'id' => $setting->id,
             'site_name' => $setting->site_name,
             'hotline' => $setting->hotline,
@@ -89,7 +105,15 @@ class AdminSettingController extends Controller
             'article_list_font_key' => $setting->article_list_font_key,
             'article_detail_font_key' => $setting->article_detail_font_key,
             'updated_at' => $setting->updated_at?->toIso8601String(),
-        ]);
+        ];
+        $transformMs = (microtime(true) - $transformStart) * 1000;
+
+        return SuccessResponse::make($payload, null, 200, $this->buildAuditMeta(
+            $request,
+            $controllerStart,
+            $queryMs,
+            $transformMs
+        ));
     }
 
     public function update(Request $request): JsonResponse
@@ -295,5 +319,19 @@ class AdminSettingController extends Controller
         $trimmed = trim($value);
 
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function buildAuditMeta(Request $request, float $controllerStart, float $queryMs, float $transformMs): ?array
+    {
+        if (! $request->boolean('audit')) {
+            return null;
+        }
+
+        $audit = $request->attributes->get('audit', []);
+        $audit['query_ms'] = (int) round($queryMs);
+        $audit['transform_ms'] = (int) round($transformMs);
+        $audit['controller_ms'] = (int) round((microtime(true) - $controllerStart) * 1000);
+
+        return ['audit' => $audit];
     }
 }

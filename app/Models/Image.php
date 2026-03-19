@@ -12,6 +12,8 @@ class Image extends Model
     use HasFactory;
     use SoftDeletes;
 
+    private static ?int $proxyCacheVersion = null;
+
     /**
      * @var list<string>
      */
@@ -110,9 +112,25 @@ class Image extends Model
     public function getProxyUrlAttribute(): string
     {
         $baseUrl = config('app.url');
-        $cacheVersion = \Cache::get('api_cache_version', 0);
+        $cacheVersion = static::getProxyCacheVersion();
 
         return "{$baseUrl}/api/v1/images/{$this->id}?v={$cacheVersion}";
+    }
+
+    public static function primeProxyCacheVersion(?int $version = null): int
+    {
+        static::$proxyCacheVersion = $version ?? (int) \Cache::get('api_cache_version', 0);
+
+        return static::$proxyCacheVersion;
+    }
+
+    private static function getProxyCacheVersion(): int
+    {
+        if (static::$proxyCacheVersion === null) {
+            static::$proxyCacheVersion = (int) \Cache::get('api_cache_version', 0);
+        }
+
+        return static::$proxyCacheVersion;
     }
 
     /**

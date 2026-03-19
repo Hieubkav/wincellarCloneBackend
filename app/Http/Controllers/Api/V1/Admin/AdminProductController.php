@@ -19,9 +19,11 @@ class AdminProductController extends Controller
 {
     public function filters(Request $request): JsonResponse
     {
+        $controllerStart = microtime(true);
         $typeId = $request->integer('type_id');
         $cacheKey = 'admin:products:filters:'.($typeId ?? 'all');
 
+        $queryStart = microtime(true);
         $payload = Cache::remember($cacheKey, 60, function () use ($typeId) {
             $types = ProductType::query()
                 ->where('active', true)
@@ -56,10 +58,18 @@ class AdminProductController extends Controller
                 ])->values(),
             ];
         });
+        $queryMs = (microtime(true) - $queryStart) * 1000;
 
-        return response()->json([
-            'data' => $payload,
-        ]);
+        $transformStart = microtime(true);
+        $transformMs = (microtime(true) - $transformStart) * 1000;
+
+        $audit = $this->buildAudit($request, $controllerStart, $queryMs, $transformMs);
+        $response = ['data' => $payload];
+        if ($audit) {
+            $response['meta'] = ['audit' => $audit];
+        }
+
+        return response()->json($response);
     }
 
     public function listForSelect(Request $request): JsonResponse
@@ -98,6 +108,7 @@ class AdminProductController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $controllerStart = microtime(true);
         $sortable = ['id', 'name', 'price', 'original_price', 'active', 'created_at'];
         $sortBy = $request->input('sort_by', 'id');
         $sortDir = strtolower((string) $request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
@@ -151,28 +162,42 @@ class AdminProductController extends Controller
         }
 
         $perPage = min($request->integer('per_page', 20), 100);
+        Image::primeProxyCacheVersion();
+        $queryStart = microtime(true);
         $products = $query->paginate($perPage);
+        $queryMs = (microtime(true) - $queryStart) * 1000;
+
+        $transformStart = microtime(true);
+        $items = $products->map(fn ($p) => [
+            'id' => $p->id,
+            'name' => $p->name,
+            'slug' => $p->slug,
+            'price' => $p->price,
+            'original_price' => $p->original_price,
+            'active' => $p->active,
+            'type_id' => $p->type_id,
+            'type_name' => $p->type?->name,
+            'category_name' => $p->category_name,
+            'cover_image_url' => $p->coverImage?->proxy_url ?? $p->coverImage?->url,
+            'created_at' => $p->created_at?->toIso8601String(),
+        ]);
+        $transformMs = (microtime(true) - $transformStart) * 1000;
+
+        $meta = [
+            'current_page' => $products->currentPage(),
+            'last_page' => $products->lastPage(),
+            'per_page' => $products->perPage(),
+            'total' => $products->total(),
+        ];
+
+        $audit = $this->buildAudit($request, $controllerStart, $queryMs, $transformMs);
+        if ($audit) {
+            $meta['audit'] = $audit;
+        }
 
         return response()->json([
-            'data' => $products->map(fn ($p) => [
-                'id' => $p->id,
-                'name' => $p->name,
-                'slug' => $p->slug,
-                'price' => $p->price,
-                'original_price' => $p->original_price,
-                'active' => $p->active,
-                'type_id' => $p->type_id,
-                'type_name' => $p->type?->name,
-                'category_name' => $p->category_name,
-                'cover_image_url' => $p->coverImage?->proxy_url ?? $p->coverImage?->url,
-                'created_at' => $p->created_at?->toIso8601String(),
-            ]),
-            'meta' => [
-                'current_page' => $products->currentPage(),
-                'last_page' => $products->lastPage(),
-                'per_page' => $products->perPage(),
-                'total' => $products->total(),
-            ],
+            'data' => $items,
+            'meta' => $meta,
         ]);
     }
 
@@ -286,37 +311,48 @@ class AdminProductController extends Controller
         ]);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
+        $controllerStart = microtime(true);
+        $queryStart = microtime(true);
         $product = Product::with(['coverImage', 'images', 'categories', 'type', 'terms.group'])
             ->findOrFail($id);
+        $queryMs = (microtime(true) - $queryStart) * 1000;
 
-        return response()->json([
-            'data' => [
-                'id' => $product->id,
-                'name' => $product->name,
-                'slug' => $product->slug,
-                'description' => $product->description,
-                'meta_title' => $product->meta_title,
-                'meta_description' => $product->meta_description,
-                'shopee_url' => $product->shopee_url,
-                'price' => $product->price,
-                'original_price' => $product->original_price,
-                'extra_attrs' => $product->extra_attrs,
-                'term_ids' => $product->terms->pluck('id'),
-                'active' => $product->active,
-                'type_id' => $product->type_id,
-                'category_ids' => $product->categories->pluck('id'),
-                'cover_image_url' => $product->coverImage?->absolute_url ?? $product->cover_image_url,
-                'images' => $product->images->map(fn ($img) => [
-                    'id' => $img->id,
-                    'url' => $img->absolute_url,
-                    'path' => $img->file_path,
-                ]),
-                'created_at' => $product->created_at?->toIso8601String(),
-                'updated_at' => $product->updated_at?->toIso8601String(),
-            ],
-        ]);
+        $transformStart = microtime(true);
+        $payload = [
+            'id' => $product->id,
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'description' => $product->description,
+            'meta_title' => $product->meta_title,
+            'meta_description' => $product->meta_description,
+            'shopee_url' => $product->shopee_url,
+            'price' => $product->price,
+            'original_price' => $product->original_price,
+            'extra_attrs' => $product->extra_attrs,
+            'term_ids' => $product->terms->pluck('id'),
+            'active' => $product->active,
+            'type_id' => $product->type_id,
+            'category_ids' => $product->categories->pluck('id'),
+            'cover_image_url' => $product->coverImage?->absolute_url ?? $product->cover_image_url,
+            'images' => $product->images->map(fn ($img) => [
+                'id' => $img->id,
+                'url' => $img->absolute_url,
+                'path' => $img->file_path,
+            ]),
+            'created_at' => $product->created_at?->toIso8601String(),
+            'updated_at' => $product->updated_at?->toIso8601String(),
+        ];
+        $transformMs = (microtime(true) - $transformStart) * 1000;
+
+        $audit = $this->buildAudit($request, $controllerStart, $queryMs, $transformMs);
+        $response = ['data' => $payload];
+        if ($audit) {
+            $response['meta'] = ['audit' => $audit];
+        }
+
+        return response()->json($response);
     }
 
     public function store(Request $request): JsonResponse
@@ -479,5 +515,19 @@ class AdminProductController extends Controller
     {
         $termIds = array_filter(array_map('intval', $termIds));
         $product->terms()->sync($termIds);
+    }
+
+    private function buildAudit(Request $request, float $controllerStart, float $queryMs, float $transformMs): ?array
+    {
+        if (! $request->boolean('audit')) {
+            return null;
+        }
+
+        $audit = $request->attributes->get('audit', []);
+        $audit['query_ms'] = (int) round($queryMs);
+        $audit['transform_ms'] = (int) round($transformMs);
+        $audit['controller_ms'] = (int) round((microtime(true) - $controllerStart) * 1000);
+
+        return $audit;
     }
 }

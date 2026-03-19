@@ -47,6 +47,7 @@ class AdminArticleController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $controllerStart = microtime(true);
         $sortable = ['id', 'title', 'published_at', 'active', 'created_at'];
         $sortBy = $request->input('sort_by', 'id');
         $sortDir = strtolower((string) $request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
@@ -77,51 +78,75 @@ class AdminArticleController extends Controller
         }
 
         $perPage = min($request->integer('per_page', 20), 100);
+        $queryStart = microtime(true);
         $articles = $query->paginate($perPage);
+        $queryMs = (microtime(true) - $queryStart) * 1000;
+
+        $transformStart = microtime(true);
+        $items = $articles->map(fn ($a) => [
+            'id' => $a->id,
+            'title' => $a->title,
+            'slug' => $a->slug,
+            'active' => $a->active,
+            'cover_image_url' => $a->cover_image_url,
+            'published_at' => $a->published_at?->toIso8601String(),
+            'created_at' => $a->created_at?->toIso8601String(),
+        ]);
+        $transformMs = (microtime(true) - $transformStart) * 1000;
+
+        $meta = [
+            'current_page' => $articles->currentPage(),
+            'last_page' => $articles->lastPage(),
+            'per_page' => $articles->perPage(),
+            'total' => $articles->total(),
+        ];
+
+        $audit = $this->buildAudit($request, $controllerStart, $queryMs, $transformMs);
+        if ($audit) {
+            $meta['audit'] = $audit;
+        }
 
         return response()->json([
-            'data' => $articles->map(fn ($a) => [
-                'id' => $a->id,
-                'title' => $a->title,
-                'slug' => $a->slug,
-                'active' => $a->active,
-                'cover_image_url' => $a->cover_image_url,
-                'published_at' => $a->published_at?->toIso8601String(),
-                'created_at' => $a->created_at?->toIso8601String(),
-            ]),
-            'meta' => [
-                'current_page' => $articles->currentPage(),
-                'last_page' => $articles->lastPage(),
-                'per_page' => $articles->perPage(),
-                'total' => $articles->total(),
-            ],
+            'data' => $items,
+            'meta' => $meta,
         ]);
     }
 
-    public function show(int $id): JsonResponse
+    public function show(Request $request, int $id): JsonResponse
     {
+        $controllerStart = microtime(true);
+        $queryStart = microtime(true);
         $article = Article::with(['coverImage', 'images'])->findOrFail($id);
+        $queryMs = (microtime(true) - $queryStart) * 1000;
 
-        return response()->json([
-            'data' => [
-                'id' => $article->id,
-                'title' => $article->title,
-                'slug' => $article->slug,
-                'content' => $article->content,
-                'meta_title' => $article->meta_title,
-                'meta_description' => $article->meta_description,
-                'active' => $article->active,
-                'cover_image_url' => $article->coverImage?->absolute_url ?? $article->cover_image_url,
-                'images' => $article->images->map(fn ($img) => [
-                    'id' => $img->id,
-                    'url' => $img->absolute_url,
-                    'path' => $img->file_path,
-                ]),
-                'published_at' => $article->published_at?->toIso8601String(),
-                'created_at' => $article->created_at?->toIso8601String(),
-                'updated_at' => $article->updated_at?->toIso8601String(),
-            ],
-        ]);
+        $transformStart = microtime(true);
+        $payload = [
+            'id' => $article->id,
+            'title' => $article->title,
+            'slug' => $article->slug,
+            'content' => $article->content,
+            'meta_title' => $article->meta_title,
+            'meta_description' => $article->meta_description,
+            'active' => $article->active,
+            'cover_image_url' => $article->coverImage?->absolute_url ?? $article->cover_image_url,
+            'images' => $article->images->map(fn ($img) => [
+                'id' => $img->id,
+                'url' => $img->absolute_url,
+                'path' => $img->file_path,
+            ]),
+            'published_at' => $article->published_at?->toIso8601String(),
+            'created_at' => $article->created_at?->toIso8601String(),
+            'updated_at' => $article->updated_at?->toIso8601String(),
+        ];
+        $transformMs = (microtime(true) - $transformStart) * 1000;
+
+        $audit = $this->buildAudit($request, $controllerStart, $queryMs, $transformMs);
+        $response = ['data' => $payload];
+        if ($audit) {
+            $response['meta'] = ['audit' => $audit];
+        }
+
+        return response()->json($response);
     }
 
     public function store(Request $request): JsonResponse
@@ -214,5 +239,19 @@ class AdminArticleController extends Controller
             'message' => "Đã xóa {$count} bài viết",
             'count' => $count,
         ]);
+    }
+
+    private function buildAudit(Request $request, float $controllerStart, float $queryMs, float $transformMs): ?array
+    {
+        if (! $request->boolean('audit')) {
+            return null;
+        }
+
+        $audit = $request->attributes->get('audit', []);
+        $audit['query_ms'] = (int) round($queryMs);
+        $audit['transform_ms'] = (int) round($transformMs);
+        $audit['controller_ms'] = (int) round((microtime(true) - $controllerStart) * 1000);
+
+        return $audit;
     }
 }
