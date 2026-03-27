@@ -19,7 +19,7 @@ return [
     |
     */
     'base_urls' => [
-        'local' => env('APP_URL', 'http://127.0.0.1:8000'),
+        'local' => env('APP_URL', 'https://thienkimwine.vitrasau.info.vn'),
         's3' => env('AWS_CLOUDFRONT_URL', env('AWS_URL')),
         'cdn' => env('MEDIA_CDN_URL'),
     ],
