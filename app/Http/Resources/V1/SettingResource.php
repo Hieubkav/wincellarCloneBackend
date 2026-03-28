@@ -31,6 +31,28 @@ class SettingResource extends JsonResource
                 return $card;
             }, $contactConfig['cards']);
         }
+        if (is_array($contactConfig) && isset($contactConfig['social_links']) && is_array($contactConfig['social_links'])) {
+            $contactConfig['social_links'] = array_values(array_filter(array_map(function ($link) {
+                if (! is_array($link)) {
+                    return null;
+                }
+
+                $platform = isset($link['platform']) && is_string($link['platform']) ? trim($link['platform']) : null;
+                $url = isset($link['url']) && is_string($link['url']) ? trim($link['url']) : null;
+                if (! $platform || ! $url) {
+                    return null;
+                }
+
+                return [
+                    'id' => isset($link['id']) && is_string($link['id']) ? $link['id'] : null,
+                    'platform' => $platform,
+                    'url' => $url,
+                    'icon_url' => isset($link['icon_url']) && is_string($link['icon_url']) ? $link['icon_url'] : null,
+                    'order' => isset($link['order']) && is_numeric($link['order']) ? (int) $link['order'] : 0,
+                    'active' => array_key_exists('active', $link) ? (bool) $link['active'] : true,
+                ];
+            }, $contactConfig['social_links'])));
+        }
 
         return [
             'id' => $this->id,

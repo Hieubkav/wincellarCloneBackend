@@ -135,6 +135,13 @@ class AdminSettingController extends Controller
             'google_map_embed' => ['nullable', 'string'],
             'footer_config' => ['nullable', 'array'],
             'contact_config' => ['nullable', 'array'],
+            'contact_config.social_links' => ['nullable', 'array'],
+            'contact_config.social_links.*.id' => ['nullable', 'string', 'max:100'],
+            'contact_config.social_links.*.platform' => ['nullable', 'string', 'max:100'],
+            'contact_config.social_links.*.url' => ['nullable', 'string', 'max:500'],
+            'contact_config.social_links.*.icon_url' => ['nullable', 'string', 'max:500'],
+            'contact_config.social_links.*.order' => ['nullable', 'integer', 'min:0'],
+            'contact_config.social_links.*.active' => ['nullable', 'boolean'],
             'product_contact_cta_config' => ['nullable', 'array'],
             'product_contact_cta_config.mode' => ['nullable', 'string', 'in:contact_page,social_4_buttons'],
             'product_contact_cta_config.items' => ['nullable', 'array'],
@@ -272,26 +279,69 @@ class AdminSettingController extends Controller
             return $contactConfig;
         }
 
-        if (! isset($contactConfig['cards']) || ! is_array($contactConfig['cards'])) {
-            return $contactConfig;
+        if (isset($contactConfig['cards']) && is_array($contactConfig['cards'])) {
+            $contactConfig['cards'] = array_map(function ($card) {
+                if (! is_array($card)) {
+                    return $card;
+                }
+
+                $icon = $card['icon'] ?? null;
+                if (is_string($icon) && $icon !== '') {
+                    if (! str_starts_with($icon, 'http://') && ! str_starts_with($icon, 'https://') && ! str_starts_with($icon, '/')) {
+                        $card['icon'] = AttributeIconResolver::normalizeIconName($icon);
+                    }
+                }
+
+                return $card;
+            }, $contactConfig['cards']);
         }
 
-        $contactConfig['cards'] = array_map(function ($card) {
-            if (! is_array($card)) {
-                return $card;
-            }
-
-            $icon = $card['icon'] ?? null;
-            if (is_string($icon) && $icon !== '') {
-                if (! str_starts_with($icon, 'http://') && ! str_starts_with($icon, 'https://') && ! str_starts_with($icon, '/')) {
-                    $card['icon'] = AttributeIconResolver::normalizeIconName($icon);
-                }
-            }
-
-            return $card;
-        }, $contactConfig['cards']);
+        if (array_key_exists('social_links', $contactConfig)) {
+            $contactConfig['social_links'] = $this->normalizeContactSocialLinks($contactConfig['social_links']);
+        }
 
         return $contactConfig;
+    }
+
+    private function normalizeContactSocialLinks(mixed $links): array
+    {
+        if (! is_array($links)) {
+            return [];
+        }
+
+        $normalized = [];
+        $index = 0;
+        foreach ($links as $link) {
+            if (! is_array($link)) {
+                continue;
+            }
+
+            $platform = $this->normalizeStringValue($link['platform'] ?? null);
+            $url = $this->normalizeStringValue($link['url'] ?? null);
+            if (! $platform || ! $url) {
+                continue;
+            }
+
+            $id = $this->normalizeStringValue($link['id'] ?? null) ?? 'social-'.$index;
+            $order = is_numeric($link['order'] ?? null) ? (int) $link['order'] : $index;
+            $active = array_key_exists('active', $link) ? (bool) $link['active'] : true;
+            $iconUrl = $this->normalizeStringValue($link['icon_url'] ?? null);
+
+            $normalized[] = [
+                'id' => $id,
+                'platform' => $platform,
+                'url' => $url,
+                'icon_url' => $iconUrl,
+                'order' => $order,
+                'active' => $active,
+            ];
+
+            $index++;
+        }
+
+        usort($normalized, fn ($a, $b) => ($a['order'] ?? 0) <=> ($b['order'] ?? 0));
+
+        return array_values($normalized);
     }
 
     private function normalizeProductContactCtaConfig(?array $config): ?array
