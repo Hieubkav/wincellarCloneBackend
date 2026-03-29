@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class MediaCanonicalService
 {
-    private const BRAND_SUFFIX = 'thien-kim-wine';
+    private const BRAND_PREFIX = 'thien-kim-wine';
 
     public function resolveSemanticType(Image $image, ?string $fallback = null): string
     {
@@ -33,23 +33,13 @@ class MediaCanonicalService
         return $this->generateRandomKey();
     }
 
-    public function resolveCanonicalSlug(Image $image, ?string $fallbackBase = null): string
+    public function resolveCanonicalSlug(Image $image, ?string $fallbackBase = null, ?int $index = null): string
     {
-        if (! empty($image->canonical_slug)) {
-            return $this->normalizeSlug($image->canonical_slug);
+        if (! empty($image->canonical_slug) && $this->isCanonicalSlug($image->canonical_slug)) {
+            return $image->canonical_slug;
         }
 
-        $base = $image->alt
-            ?? $this->basename($image->file_path)
-            ?? $fallbackBase
-            ?? $this->resolveSemanticType($image);
-
-        return $this->buildSlug((string) $base);
-    }
-
-    public function normalizeSlug(string $value): string
-    {
-        return $this->buildSlug($value);
+        return $this->buildCanonicalSlug($image, $fallbackBase, $index);
     }
 
     public function getCanonicalUrl(Image $image): string
@@ -85,15 +75,9 @@ class MediaCanonicalService
             $dirty = true;
         }
 
-        if (empty($image->canonical_slug)) {
+        if (empty($image->canonical_slug) || ! $this->isCanonicalSlug($image->canonical_slug)) {
             $image->canonical_slug = $this->resolveCanonicalSlug($image, $slugBase);
             $dirty = true;
-        } else {
-            $normalized = $this->normalizeSlug($image->canonical_slug);
-            if ($normalized !== $image->canonical_slug) {
-                $image->canonical_slug = $normalized;
-                $dirty = true;
-            }
         }
 
         if ($persist && $dirty) {
@@ -150,19 +134,102 @@ class MediaCanonicalService
         return $base !== '' ? $base : null;
     }
 
-    private function buildSlug(string $base): string
+    public function buildCanonicalSlug(Image $image, ?string $fallbackBase = null, ?int $index = null): string
     {
-        $slug = Str::of($base)->slug('-')->toString();
+        $semantic = $this->resolveSemanticType($image);
+        $typeLabel = $this->resolveTypeLabel($semantic);
+        $entityBase = $this->resolveEntityBase($image, $fallbackBase);
+        $entitySlug = Str::of($entityBase)->slug('-')->toString();
 
-        if ($slug === '') {
-            $slug = 'media';
+        if ($entitySlug === '') {
+            $entitySlug = $typeLabel;
         }
 
-        if (! Str::endsWith($slug, self::BRAND_SUFFIX)) {
-            $slug = "{$slug}-".self::BRAND_SUFFIX;
+        $position = $index ?? ($image->order ?? 0) + 1;
+        if ($position < 1) {
+            $position = 1;
         }
 
-        return $slug;
+        return sprintf(
+            '%s-%s-%s-anh-%d',
+            self::BRAND_PREFIX,
+            $typeLabel,
+            $entitySlug,
+            $position
+        );
+    }
+
+    public function makeCanonicalSlug(string $semantic, string $entityBase, int $index): string
+    {
+        $typeLabel = $this->resolveTypeLabel($semantic);
+        $entitySlug = Str::of($entityBase)->slug('-')->toString();
+
+        if ($entitySlug === '') {
+            $entitySlug = $typeLabel;
+        }
+
+        $position = $index < 1 ? 1 : $index;
+
+        return sprintf(
+            '%s-%s-%s-anh-%d',
+            self::BRAND_PREFIX,
+            $typeLabel,
+            $entitySlug,
+            $position
+        );
+    }
+
+    private function resolveTypeLabel(string $semantic): string
+    {
+        return match ($semantic) {
+            MediaSemanticRegistry::PRODUCT => 'san-pham',
+            MediaSemanticRegistry::ARTICLE => 'bai-viet',
+            MediaSemanticRegistry::SETTINGS_LOGO => 'logo',
+            MediaSemanticRegistry::SETTINGS_FAVICON => 'favicon',
+            MediaSemanticRegistry::SETTINGS_OG => 'og-image',
+            MediaSemanticRegistry::SETTINGS_WATERMARK => 'watermark',
+            MediaSemanticRegistry::SOCIAL => 'social',
+            MediaSemanticRegistry::HOME => 'home',
+            MediaSemanticRegistry::TERM => 'danh-muc',
+            MediaSemanticRegistry::CONTENT => 'noi-dung',
+            default => 'shared',
+        };
+    }
+
+    private function resolveEntityBase(Image $image, ?string $fallbackBase = null): string
+    {
+        if ($image->model_type && $image->model_id) {
+            $resolved = $this->resolveEntityFromModel($image);
+            if ($resolved) {
+                return $resolved;
+            }
+        }
+
+        return $fallbackBase
+            ?? $image->alt
+            ?? $this->basename($image->file_path)
+            ?? $this->resolveSemanticType($image);
+    }
+
+    private function resolveEntityFromModel(Image $image): ?string
+    {
+        return match ($image->model_type) {
+            'App\\Models\\Product' => \App\Models\Product::query()
+                ->whereKey($image->model_id)
+                ->value('slug') ?? \App\Models\Product::query()->whereKey($image->model_id)->value('name'),
+            'App\\Models\\Article' => \App\Models\Article::query()
+                ->whereKey($image->model_id)
+                ->value('slug') ?? \App\Models\Article::query()->whereKey($image->model_id)->value('title'),
+            'App\\Models\\CatalogTerm' => \App\Models\CatalogTerm::query()
+                ->whereKey($image->model_id)
+                ->value('slug') ?? \App\Models\CatalogTerm::query()->whereKey($image->model_id)->value('name'),
+            default => null,
+        };
+    }
+
+    private function isCanonicalSlug(string $value): bool
+    {
+        return (bool) preg_match('/^'.self::BRAND_PREFIX.'-[a-z0-9\\-]+-[a-z0-9\\-]+-anh-\\d+$/', $value);
     }
 
     private function encodeId(int $id): string

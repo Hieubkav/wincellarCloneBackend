@@ -6,7 +6,7 @@ use Tests\TestCase;
 
 uses(TestCase::class);
 
-test('canonical slug appends brand suffix', function () {
+test('canonical slug uses brand prefix format', function () {
     $service = app(MediaCanonicalService::class);
 
     $image = new Image([
@@ -16,7 +16,7 @@ test('canonical slug appends brand suffix', function () {
 
     $slug = $service->resolveCanonicalSlug($image);
 
-    expect($slug)->toEndWith('thien-kim-wine');
+    expect($slug)->toBe('thien-kim-wine-shared-logo-thuong-hieu-anh-1');
 });
 
 test('canonical url uses semantic type and key', function () {
@@ -32,7 +32,7 @@ test('canonical url uses semantic type and key', function () {
 
     $url = $service->getCanonicalUrl($image);
 
-    expect($url)->toBe('https://example.test/media/product/f/san-pham-moi-thien-kim-wine');
+    expect($url)->toBe('https://example.test/media/product/f/thien-kim-wine-san-pham-san-pham-moi-anh-1');
 });
 
 test('metadataFor returns canonical metadata and storage key', function () {
@@ -50,9 +50,9 @@ test('metadataFor returns canonical metadata and storage key', function () {
 
     $metadata = $service->metadataFor($image);
 
-    expect($metadata['canonical_url'])->toBe('https://example.test/media/product/k/anh-dep-thien-kim-wine');
+    expect($metadata['canonical_url'])->toBe('https://example.test/media/product/k/thien-kim-wine-san-pham-anh-dep-anh-1');
     expect($metadata['canonical_key'])->toBe('k');
-    expect($metadata['canonical_slug'])->toBe('anh-dep-thien-kim-wine');
+    expect($metadata['canonical_slug'])->toBe('thien-kim-wine-san-pham-anh-dep-anh-1');
     expect($metadata['semantic_type'])->toBe('product');
     expect($metadata['storage_key'])->toBe('uploads/foo.jpg');
     expect($metadata['storage_disk'])->toBe('public');

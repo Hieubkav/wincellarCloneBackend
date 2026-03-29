@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Media;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\V1\ImageProxyController;
 use App\Models\Product;
 use App\Services\ImageUrlService;
 use App\Services\Media\MediaCanonicalService;
@@ -35,8 +36,12 @@ class CanonicalMediaController extends Controller
         }
 
         $url = $image->model_type === Product::class
-            ? $image->proxy_url
+            ? null
             : $this->urlService->getAbsoluteUrl($image);
+
+        if ($image->model_type === Product::class) {
+            return app(ImageProxyController::class)->show($image->id);
+        }
 
         if (! $url) {
             abort(404, 'Media not available');

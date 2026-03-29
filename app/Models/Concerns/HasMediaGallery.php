@@ -35,8 +35,7 @@ trait HasMediaGallery
         if ($this->relationLoaded('images')) {
             $firstImage = $this->getRelation('images')->first();
             if ($firstImage instanceof Image) {
-                // Use proxy URL for product images (watermark protection)
-                return $this->shouldUseProxyUrl() ? $firstImage->proxy_url : $firstImage->absolute_url;
+                return $this->shouldUseProxyUrl() ? $firstImage->canonical_url : $firstImage->absolute_url;
             }
         }
 
@@ -46,8 +45,7 @@ trait HasMediaGallery
             : $this->coverImage;
 
         if ($cover instanceof Image) {
-            // Use proxy URL for product images (watermark protection)
-            return $this->shouldUseProxyUrl() ? $cover->proxy_url : $cover->absolute_url;
+            return $this->shouldUseProxyUrl() ? $cover->canonical_url : $cover->absolute_url;
         }
 
         // Fallback to placeholder using service
