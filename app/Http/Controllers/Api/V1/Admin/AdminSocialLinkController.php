@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Image;
 use App\Models\SocialLink;
+use App\Services\Media\MediaCanonicalService;
+use App\Support\Media\MediaSemanticRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -51,6 +54,7 @@ class AdminSocialLinkController extends Controller
                 'url' => $link->url,
                 'icon_image_id' => $link->icon_image_id,
                 'icon_url' => $link->icon_url,
+                'icon_canonical_url' => $link->icon_canonical_url,
                 'order' => $link->order,
                 'active' => $link->active,
                 'created_at' => $link->created_at?->toIso8601String(),
@@ -75,6 +79,7 @@ class AdminSocialLinkController extends Controller
                 'url' => $link->url,
                 'icon_image_id' => $link->icon_image_id,
                 'icon_url' => $link->icon_url,
+                'icon_canonical_url' => $link->icon_canonical_url,
                 'order' => $link->order,
                 'active' => $link->active,
                 'created_at' => $link->created_at?->toIso8601String(),
@@ -97,6 +102,7 @@ class AdminSocialLinkController extends Controller
         $validated['active'] = $validated['active'] ?? true;
 
         $link = SocialLink::create($validated);
+        $this->syncSocialIconSemantic($link);
 
         return response()->json([
             'success' => true,
@@ -118,6 +124,7 @@ class AdminSocialLinkController extends Controller
         ]);
 
         $link->update($validated);
+        $this->syncSocialIconSemantic($link);
 
         return response()->json([
             'success' => true,
@@ -168,5 +175,25 @@ class AdminSocialLinkController extends Controller
             'success' => true,
             'message' => 'Cập nhật thứ tự thành công',
         ]);
+    }
+
+    private function syncSocialIconSemantic(SocialLink $link): void
+    {
+        if (! $link->icon_image_id) {
+            return;
+        }
+
+        $image = Image::find($link->icon_image_id);
+        if (! $image) {
+            return;
+        }
+
+        app(MediaCanonicalService::class)->ensureMetadata(
+            $image,
+            MediaSemanticRegistry::SOCIAL,
+            $link->platform ?: MediaSemanticRegistry::SOCIAL
+        );
+
+        $image->saveQuietly();
     }
 }

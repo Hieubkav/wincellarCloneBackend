@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Image;
+use App\Services\Media\MediaCanonicalService;
+use App\Support\Media\MediaSemanticRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -33,6 +35,9 @@ class AdminImageController extends Controller
             'data' => collect($images->items())->map(fn (Image $image) => [
                 'id' => $image->id,
                 'url' => $image->url ?? '/images/placeholder.png',
+                'canonical_url' => $image->canonical_url,
+                'canonical_key' => $image->canonical_key,
+                'semantic_type' => $image->semantic_type,
                 'alt' => $image->alt ?? basename($image->file_path ?? ''),
                 'name' => basename($image->file_path ?? ''),
                 'mime' => $image->mime,
@@ -66,6 +71,9 @@ class AdminImageController extends Controller
                 'model_id',
                 'order',
                 'active',
+                'semantic_type',
+                'canonical_key',
+                'canonical_slug',
                 'created_at',
             ])
             ->orderBy($sortBy, $sortDir)
@@ -97,6 +105,9 @@ class AdminImageController extends Controller
                     'id' => $img->id,
                     'file_path' => $img->file_path,
                     'url' => $img->url,
+                    'canonical_url' => $img->canonical_url,
+                    'canonical_key' => $img->canonical_key,
+                    'semantic_type' => $img->semantic_type,
                     'alt' => $img->alt,
                     'width' => $img->width,
                     'height' => $img->height,
@@ -135,6 +146,9 @@ class AdminImageController extends Controller
                 'id' => $image->id,
                 'file_path' => $image->file_path,
                 'url' => $image->url,
+                'canonical_url' => $image->canonical_url,
+                'canonical_key' => $image->canonical_key,
+                'semantic_type' => $image->semantic_type,
                 'alt' => $image->alt,
                 'width' => $image->width,
                 'height' => $image->height,
@@ -200,6 +214,9 @@ class AdminImageController extends Controller
                 'id' => $image->id,
                 'file_path' => $image->file_path,
                 'url' => $image->url,
+                'canonical_url' => $image->canonical_url,
+                'canonical_key' => $image->canonical_key,
+                'semantic_type' => $image->semantic_type,
                 'disk' => $image->disk,
                 'alt' => $image->alt,
                 'width' => $image->width,
@@ -231,16 +248,24 @@ class AdminImageController extends Controller
             'order' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
             'extra_attributes' => ['nullable', 'array'],
+            'semantic_type' => ['nullable', 'string', 'max:50'],
         ]);
 
         $validated['disk'] = $validated['disk'] ?? config('filesystems.default');
         $validated['active'] = $validated['active'] ?? true;
+        $validated['semantic_type'] = MediaSemanticRegistry::normalize($validated['semantic_type'] ?? null);
 
         $image = Image::create($validated);
 
         return response()->json([
             'success' => true,
-            'data' => ['id' => $image->id, 'url' => $image->url],
+            'data' => [
+                'id' => $image->id,
+                'url' => $image->url,
+                'canonical_url' => $image->canonical_url,
+                'canonical_key' => $image->canonical_key,
+                'semantic_type' => $image->semantic_type,
+            ],
             'message' => 'Tạo hình ảnh thành công',
         ], 201);
     }
@@ -254,9 +279,16 @@ class AdminImageController extends Controller
             'order' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
             'extra_attributes' => ['nullable', 'array'],
+            'semantic_type' => ['nullable', 'string', 'max:50'],
         ]);
 
+        if (array_key_exists('semantic_type', $validated)) {
+            $validated['semantic_type'] = MediaSemanticRegistry::normalize($validated['semantic_type']);
+        }
+
         $image->update($validated);
+        app(MediaCanonicalService::class)->ensureMetadata($image);
+        $image->saveQuietly();
 
         return response()->json([
             'success' => true,

@@ -179,6 +179,7 @@ class AdminProductController extends Controller
             'type_name' => $p->type?->name,
             'category_name' => $p->category_name,
             'cover_image_url' => $p->coverImage?->proxy_url ?? $p->coverImage?->url,
+            'cover_image_canonical_url' => $p->coverImage?->canonical_url,
             'created_at' => $p->created_at?->toIso8601String(),
         ]);
         $transformMs = (microtime(true) - $transformStart) * 1000;
@@ -336,9 +337,13 @@ class AdminProductController extends Controller
             'type_id' => $product->type_id,
             'category_ids' => $product->categories->pluck('id'),
             'cover_image_url' => $product->coverImage?->absolute_url ?? $product->cover_image_url,
+            'cover_image_canonical_url' => $product->coverImage?->canonical_url,
             'images' => $product->images->map(fn ($img) => [
                 'id' => $img->id,
                 'url' => $img->absolute_url,
+                'canonical_url' => $img->canonical_url,
+                'canonical_key' => $img->canonical_key,
+                'semantic_type' => $img->semantic_type,
                 'path' => $img->file_path,
             ]),
             'created_at' => $product->created_at?->toIso8601String(),

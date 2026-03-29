@@ -34,6 +34,15 @@ Route::get('/api-docs', function () {
     return view('api-documentation');
 })->name('api-docs');
 
+// Canonical media URL (semantic + slug with brand suffix)
+Route::get('/media/{semantic}/{key}/{slug}', [\App\Http\Controllers\Media\CanonicalMediaController::class, 'show'])
+    ->where([
+        'semantic' => '[a-z0-9\-]+',
+        'key' => '[a-z0-9\-]+',
+        'slug' => '[a-z0-9\-]+',
+    ])
+    ->name('media.canonical');
+
 // Serve storage files with aggressive caching
 Route::get('/storage/{path}', function ($path) {
     $filePath = storage_path('app/public/'.$path);

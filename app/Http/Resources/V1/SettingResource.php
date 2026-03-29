@@ -71,9 +71,13 @@ class SettingResource extends JsonResource
 
             // Logo and favicon URLs
             'logo_url' => $this->logoImage?->url ?? '/placeholder/logo.svg',
+            'logo_canonical_url' => $this->logoImage?->canonical_url,
             'favicon_url' => $this->faviconImage?->url ?? '/placeholder/favicon.ico',
+            'favicon_canonical_url' => $this->faviconImage?->canonical_url,
             'og_image_url' => $this->ogImage?->url,
+            'og_image_canonical_url' => $this->ogImage?->canonical_url,
             'product_watermark_url' => $this->productWatermarkImage?->url,
+            'product_watermark_canonical_url' => $this->productWatermarkImage?->canonical_url,
             'product_watermark_position' => $this->product_watermark_position,
             'product_watermark_size' => $this->product_watermark_size,
             'product_watermark_type' => $this->product_watermark_type ?? 'image',

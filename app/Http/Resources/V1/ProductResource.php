@@ -20,6 +20,8 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $coverImage = $this->relationLoaded('coverImage') ? $this->coverImage : null;
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -33,7 +35,9 @@ class ProductResource extends JsonResource
 
             // Images
             'main_image_url' => $this->cover_image_url ?: '/placeholder/wine-bottle.svg',
+            'main_image_canonical_url' => $coverImage?->canonical_url,
             'cover_image_url' => $this->when($request->routeIs('api.v1.products.show'), $this->cover_image_url ?: '/placeholder/wine-bottle.svg'),
+            'cover_image_canonical_url' => $this->when($request->routeIs('api.v1.products.show'), $coverImage?->canonical_url),
             'gallery' => $this->gallery_for_output,
 
             // Terms/Taxonomy
@@ -284,6 +288,7 @@ class ProductResource extends JsonResource
             'discount_percent' => $product->discount_percent,
             'show_contact_cta' => $product->should_show_contact_cta,
             'main_image_url' => $product->cover_image_url ?: '/placeholder/wine-bottle.svg',
+            'main_image_canonical_url' => $product->relationLoaded('coverImage') ? $product->coverImage?->canonical_url : null,
             'gallery' => $product->gallery_for_output,
             'brand_term' => ($brand = $product->primaryTerm('brand')) ? [
                 'id' => $brand->id,

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Image;
+use App\Support\Media\MediaSemanticRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -25,6 +26,7 @@ class AdminUploadController extends Controller
         $request->validate([
             'image' => 'required|file|mimes:jpeg,png,gif,webp|max:5120',
             'folder' => 'nullable|string|max:50',
+            'semantic_type' => 'nullable|string|max:50',
         ]);
 
         $file = $request->file('image');
@@ -52,6 +54,7 @@ class AdminUploadController extends Controller
 
         $folder = $request->input('folder', 'products');
         $folder = preg_replace('/[^a-z0-9\-_]/i', '', $folder);
+        $semanticType = MediaSemanticRegistry::normalize($request->input('semantic_type')) ?? MediaSemanticRegistry::SHARED;
 
         $dateDir = now()->format('Y/m/d');
         $directory = "uploads/{$folder}/content/{$dateDir}";
@@ -76,6 +79,7 @@ class AdminUploadController extends Controller
                 'height' => $image->height(),
                 'order' => 0,
                 'active' => true,
+                'semantic_type' => $semanticType,
             ]);
         } catch (\Throwable $e) {
             \Log::warning('Image upload failed', [
@@ -97,6 +101,9 @@ class AdminUploadController extends Controller
             'data' => [
                 'id' => $imageModel->id,
                 'url' => $url,
+                'canonical_url' => $imageModel->canonical_url,
+                'canonical_key' => $imageModel->canonical_key,
+                'semantic_type' => $imageModel->semantic_type,
                 'path' => $path,
                 'filename' => $filename,
             ],
@@ -108,6 +115,7 @@ class AdminUploadController extends Controller
         $validated = $request->validate([
             'url' => ['required', 'url', 'max:2048'],
             'folder' => ['nullable', 'string', 'max:50'],
+            'semantic_type' => ['nullable', 'string', 'max:50'],
         ]);
 
         $response = Http::timeout(10)->get($validated['url']);
@@ -136,6 +144,7 @@ class AdminUploadController extends Controller
 
         $folder = $request->input('folder', 'products');
         $folder = preg_replace('/[^a-z0-9\-_]/i', '', $folder);
+        $semanticType = MediaSemanticRegistry::normalize($validated['semantic_type'] ?? null) ?? MediaSemanticRegistry::SHARED;
 
         $dateDir = now()->format('Y/m/d');
         $directory = "uploads/{$folder}/content/{$dateDir}";
@@ -161,6 +170,7 @@ class AdminUploadController extends Controller
                 'height' => $image->height(),
                 'order' => 0,
                 'active' => true,
+                'semantic_type' => $semanticType,
             ]);
         } catch (\Throwable $e) {
             \Log::warning('Image URL upload failed', [
@@ -182,6 +192,9 @@ class AdminUploadController extends Controller
             'data' => [
                 'id' => $imageModel->id,
                 'url' => $url,
+                'canonical_url' => $imageModel->canonical_url,
+                'canonical_key' => $imageModel->canonical_key,
+                'semantic_type' => $imageModel->semantic_type,
                 'path' => $path,
                 'filename' => $filename,
             ],

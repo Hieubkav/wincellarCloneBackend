@@ -57,4 +57,17 @@ class SocialLink extends Model
 
         return \App\Support\Media\MediaConfig::placeholder('term');
     }
+
+    public function getIconCanonicalUrlAttribute(): ?string
+    {
+        if ($this->relationLoaded('iconImage') && $this->iconImage) {
+            return $this->iconImage->canonical_url;
+        }
+
+        if ($this->icon_image_id && $this->iconImage) {
+            return $this->iconImage->canonical_url;
+        }
+
+        return null;
+    }
 }

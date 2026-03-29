@@ -35,6 +35,7 @@ class SocialLinkController extends Controller
                     'platform' => $link->platform,
                     'url' => $link->url,
                     'icon_url' => $link->icon_url,
+                    'icon_canonical_url' => $link->icon_canonical_url,
                     'order' => $link->order,
                 ])
         );

@@ -38,6 +38,7 @@ class AdminArticleController extends Controller
                 'cover_image' => $a->coverImage ? [
                     'id' => $a->coverImage->id,
                     'url' => $a->coverImage->url,
+                    'canonical_url' => $a->coverImage->canonical_url,
                     'alt' => $a->coverImage->alt,
                 ] : null,
                 'published_at' => $a->published_at?->toIso8601String(),
@@ -89,6 +90,7 @@ class AdminArticleController extends Controller
             'slug' => $a->slug,
             'active' => $a->active,
             'cover_image_url' => $a->cover_image_url,
+            'cover_image_canonical_url' => $a->coverImage?->canonical_url,
             'published_at' => $a->published_at?->toIso8601String(),
             'created_at' => $a->created_at?->toIso8601String(),
         ]);
@@ -129,9 +131,13 @@ class AdminArticleController extends Controller
             'meta_description' => $article->meta_description,
             'active' => $article->active,
             'cover_image_url' => $article->coverImage?->absolute_url ?? $article->cover_image_url,
+            'cover_image_canonical_url' => $article->coverImage?->canonical_url,
             'images' => $article->images->map(fn ($img) => [
                 'id' => $img->id,
                 'url' => $img->absolute_url,
+                'canonical_url' => $img->canonical_url,
+                'canonical_key' => $img->canonical_key,
+                'semantic_type' => $img->semantic_type,
                 'path' => $img->file_path,
             ]),
             'published_at' => $article->published_at?->toIso8601String(),

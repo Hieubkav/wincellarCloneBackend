@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Responses\SuccessResponse;
+use App\Models\Image;
 use App\Models\Setting;
+use App\Services\Media\MediaCanonicalService;
 use App\Support\Cache\ApiCacheVersionManager;
 use App\Support\Catalog\AttributeIconResolver;
+use App\Support\Media\MediaSemanticRegistry;
 use App\Support\Settings\FontRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -85,12 +88,16 @@ class AdminSettingController extends Controller
             'indexing_enabled' => $setting->indexing_enabled,
             'logo_image_id' => $setting->logo_image_id,
             'logo_image_url' => $setting->logoImage?->url,
+            'logo_image_canonical_url' => $setting->logoImage?->canonical_url,
             'favicon_image_id' => $setting->favicon_image_id,
             'favicon_image_url' => $setting->faviconImage?->url,
+            'favicon_image_canonical_url' => $setting->faviconImage?->canonical_url,
             'og_image_id' => $setting->og_image_id,
             'og_image_url' => $setting->ogImage?->url,
+            'og_image_canonical_url' => $setting->ogImage?->canonical_url,
             'product_watermark_image_id' => $setting->product_watermark_image_id,
             'product_watermark_image_url' => $setting->productWatermarkImage?->url,
+            'product_watermark_image_canonical_url' => $setting->productWatermarkImage?->canonical_url,
             'product_watermark_type' => $setting->product_watermark_type ?? 'image',
             'product_watermark_position' => $setting->product_watermark_position,
             'product_watermark_size' => $setting->product_watermark_size,
@@ -250,6 +257,7 @@ class AdminSettingController extends Controller
         }
 
         $setting->update($validated);
+        $this->syncSettingImageSemantics($setting, $validated);
 
         if ($watermarkChanged) {
             $this->clearImageProxyCache();
@@ -417,5 +425,39 @@ class AdminSettingController extends Controller
         $audit['controller_ms'] = (int) round((microtime(true) - $controllerStart) * 1000);
 
         return ['audit' => $audit];
+    }
+
+    private function syncSettingImageSemantics(Setting $setting, array $validated): void
+    {
+        $fields = [
+            'logo_image_id',
+            'favicon_image_id',
+            'og_image_id',
+            'product_watermark_image_id',
+        ];
+
+        foreach ($fields as $field) {
+            if (! array_key_exists($field, $validated)) {
+                continue;
+            }
+
+            $imageId = $validated[$field] ?? null;
+            if (! $imageId) {
+                continue;
+            }
+
+            $semantic = MediaSemanticRegistry::fromSettingField($field);
+            if (! $semantic) {
+                continue;
+            }
+
+            $image = Image::find($imageId);
+            if (! $image) {
+                continue;
+            }
+
+            app(MediaCanonicalService::class)->ensureMetadata($image, $semantic, $setting->site_name ?? $semantic);
+            $image->saveQuietly();
+        }
     }
 }

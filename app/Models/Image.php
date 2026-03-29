@@ -29,6 +29,9 @@ class Image extends Model
         'order',
         'active',
         'extra_attributes',
+        'semantic_type',
+        'canonical_key',
+        'canonical_slug',
     ];
 
     /**
@@ -57,6 +60,9 @@ class Image extends Model
             if ($image->order === 0) {
                 $image->reassignExistingCover();
             }
+
+            app(\App\Services\Media\MediaCanonicalService::class)
+                ->ensureMetadata($image);
         });
 
         static::forceDeleted(function (Image $image): void {
@@ -101,6 +107,15 @@ class Image extends Model
         // Delegate to service layer (Facade pattern)
         return app(\App\Services\ImageFallbackService::class)
             ->getUrlWithFallback($this, $this->getImageType());
+    }
+
+    /**
+     * Canonical URL for SEO/public sharing (semantic + slug)
+     */
+    public function getCanonicalUrlAttribute(): string
+    {
+        return app(\App\Services\Media\MediaCanonicalService::class)
+            ->getCanonicalUrl($this);
     }
 
     /**

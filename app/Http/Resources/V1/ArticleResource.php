@@ -14,6 +14,8 @@ class ArticleResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $coverImage = $this->relationLoaded('coverImage') ? $this->coverImage : null;
+
         return [
             'id' => $this->id,
             'title' => $this->title,
@@ -25,6 +27,7 @@ class ArticleResource extends JsonResource
 
             // Images
             'cover_image_url' => $this->cover_image_url ?: '/placeholder/article.svg',
+            'cover_image_canonical_url' => $coverImage?->canonical_url,
 
             'gallery' => $this->when(
                 $request->routeIs('api.v1.articles.show') && $this->relationLoaded('images'),
@@ -63,6 +66,7 @@ class ArticleResource extends JsonResource
                             'slug' => $article->slug,
                             'excerpt' => $article->excerpt,
                             'cover_image_url' => $article->cover_image_url ?: '/placeholder/article.svg',
+                            'cover_image_canonical_url' => $article->relationLoaded('coverImage') ? $article->coverImage?->canonical_url : null,
                             'published_at' => $article->created_at?->toIso8601String(),
                         ];
                     });

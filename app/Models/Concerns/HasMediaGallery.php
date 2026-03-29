@@ -69,6 +69,9 @@ trait HasMediaGallery
         return $images->map(fn (Image $image) => [
             'id' => $image->id,
             'url' => $useProxy ? $image->proxy_url : $image->absolute_url, // Proxy URL for products
+            'canonical_url' => $image->canonical_url,
+            'canonical_key' => $image->canonical_key,
+            'semantic_type' => $image->semantic_type,
             'alt' => $image->alt,
             'order' => $image->order,
             'width' => $image->width,
