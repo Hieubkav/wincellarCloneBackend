@@ -557,34 +557,40 @@ class AdminProductController extends Controller
             }
 
             $imagesByPath = [];
+            $imagesByKey = [];
+            $imagesById = [];
             foreach ($existingImages as $image) {
                 $imagesByPath[$image->file_path][] = $image;
+                if (! empty($image->canonical_key)) {
+                    $imagesByKey[$image->canonical_key][] = $image;
+                }
+                $imagesById[$image->id] = $image;
             }
 
             $usedIds = [];
             $ordered = [];
 
             foreach ($paths as $index => $path) {
-                $image = null;
+                $image = $this->resolveExistingProductImage($imagesByPath, $imagesByKey, $imagesById, $path, $usedIds);
+                $normalizedPath = $this->normalizeImagePathInput($path);
 
-                if (! empty($imagesByPath[$path])) {
-                    $image = array_shift($imagesByPath[$path]);
-                }
-
-                if ($image instanceof Image) {
-                    $usedIds[] = $image->id;
-                } else {
+                if (! $image && $normalizedPath) {
                     $image = Image::create([
-                        'file_path' => $path,
+                        'file_path' => $normalizedPath,
                         'disk' => 'public',
                         'model_type' => Product::class,
                         'model_id' => $product->id,
                         'order' => $index,
                     ]);
+                }
+
+                if ($image instanceof Image) {
                     $usedIds[] = $image->id;
                 }
 
-                $ordered[] = [$image, $index];
+                if ($image instanceof Image) {
+                    $ordered[] = [$image, $index];
+                }
             }
 
             foreach ($existingImages as $image) {
@@ -600,6 +606,89 @@ class AdminProductController extends Controller
                 }
             }
         });
+    }
+
+    /**
+     * @param array<string, array<int, Image>> $imagesByPath
+     * @param array<string, array<int, Image>> $imagesByKey
+     * @param array<int, Image> $imagesById
+     */
+    private function resolveExistingProductImage(
+        array &$imagesByPath,
+        array &$imagesByKey,
+        array &$imagesById,
+        string $rawPath,
+        array $usedIds
+    ): ?Image {
+        $rawPath = trim($rawPath);
+        if ($rawPath === '') {
+            return null;
+        }
+
+        if (ctype_digit($rawPath)) {
+            $id = (int) $rawPath;
+            if (isset($imagesById[$id]) && ! in_array($id, $usedIds, true)) {
+                return $imagesById[$id];
+            }
+        }
+
+        $canonicalKey = $this->extractCanonicalKey($rawPath);
+        if ($canonicalKey && ! empty($imagesByKey[$canonicalKey])) {
+            $candidate = array_shift($imagesByKey[$canonicalKey]);
+            if ($candidate instanceof Image && ! in_array($candidate->id, $usedIds, true)) {
+                return $candidate;
+            }
+        }
+
+        $normalizedPath = $this->normalizeImagePathInput($rawPath);
+        if ($normalizedPath && ! empty($imagesByPath[$normalizedPath])) {
+            $candidate = array_shift($imagesByPath[$normalizedPath]);
+            if ($candidate instanceof Image && ! in_array($candidate->id, $usedIds, true)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function extractCanonicalKey(string $value): ?string
+    {
+        $path = $value;
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            $path = parse_url($value, PHP_URL_PATH) ?: '';
+        }
+
+        $path = ltrim($path, '/');
+
+        if (preg_match('#^media/[^/]+/([^/]+)/#', $path, $matches)) {
+            return $matches[1] ?? null;
+        }
+
+        return null;
+    }
+
+    private function normalizeImagePathInput(string $value): ?string
+    {
+        $normalized = trim($value);
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (filter_var($normalized, FILTER_VALIDATE_URL)) {
+            $normalized = parse_url($normalized, PHP_URL_PATH) ?: $normalized;
+        }
+
+        $normalized = ltrim($normalized, '/');
+
+        if (str_starts_with($normalized, 'storage/')) {
+            $normalized = substr($normalized, strlen('storage/'));
+        }
+
+        if ($normalized === '' || str_starts_with($normalized, 'media/')) {
+            return null;
+        }
+
+        return $normalized;
     }
 
     private function syncTerms(Product $product, array $termIds): void
