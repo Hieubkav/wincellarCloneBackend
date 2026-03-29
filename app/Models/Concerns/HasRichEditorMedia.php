@@ -2,7 +2,10 @@
 
 namespace App\Models\Concerns;
 
+use App\Models\Image;
 use App\Models\RichEditorMedia;
+use App\Services\Media\MediaCanonicalService;
+use App\Support\Media\MediaSemanticRegistry;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -159,6 +162,7 @@ trait HasRichEditorMedia
             }
 
             $content = $this->convertBase64ToStorage($content);
+            $content = $this->rewriteRichEditorUrlsToCanonical($content);
             $this->setAttribute($fieldName, $content);
         }
     }
@@ -201,6 +205,56 @@ trait HasRichEditorMedia
                 continue;
             }
         }
+
+        return $content;
+    }
+
+    /**
+     * Rewrite legacy storage URLs trong rich editor sang canonical URL.
+     */
+    protected function rewriteRichEditorUrlsToCanonical(string $content): string
+    {
+        $rewriteValue = function (string $value): string {
+            if ($value === '' || str_starts_with($value, 'data:image')) {
+                return $value;
+            }
+
+            if ($this->isCanonicalMediaUrl($value)) {
+                return $value;
+            }
+
+            $relative = $this->normalizeStoragePath($value);
+            if (! $relative) {
+                return $value;
+            }
+
+            $canonicalUrl = $this->resolveCanonicalUrlForStoragePath($relative);
+
+            return $canonicalUrl ?? $value;
+        };
+
+        $replaceAttributeValue = function (string $source, string $attribute) use ($rewriteValue): string {
+            return preg_replace_callback(
+                '/('.$attribute.'=["\'])([^"\']+)(["\'])/i',
+                function ($matches) use ($rewriteValue) {
+                    $value = $rewriteValue($matches[2]);
+                    return $matches[1].$value.$matches[3];
+                },
+                $source
+            );
+        };
+
+        $content = $replaceAttributeValue($content, 'src');
+        $content = $replaceAttributeValue($content, 'data-url');
+
+        $content = preg_replace_callback(
+            '/"url":"([^"]+)"/',
+            function ($matches) use ($rewriteValue) {
+                $value = $rewriteValue($matches[1]);
+                return '"url":"'.$value.'"';
+            },
+            $content
+        );
 
         return $content;
     }
@@ -251,6 +305,15 @@ trait HasRichEditorMedia
         }
 
         $relativePath = ltrim($relativePath, '/');
+
+        if ($this->isRichEditorImageInUseElsewhere($relativePath)) {
+            return;
+        }
+
+        if ($this->isReferencedByGalleryImage($relativePath)) {
+            return;
+        }
+
         $disk = Storage::disk($this->richEditorDisk());
 
         try {
@@ -258,6 +321,8 @@ trait HasRichEditorMedia
                 $disk->delete($relativePath);
                 Log::info(sprintf('Deleted rich-editor image: %s', $relativePath));
             }
+
+            $this->deleteRichEditorImageRecord($relativePath);
         } catch (\Exception $e) {
             Log::error(sprintf('Error deleting image %s: %s', $relativePath, $e->getMessage()));
         }
@@ -289,11 +354,24 @@ trait HasRichEditorMedia
     protected function normalizeStoragePath(string $url): ?string
     {
         // remove domain
-        $url = str_replace(config('app.url'), '', $url);
-        $url = str_replace(url('/'), '', $url);
+        $url = $this->stripBaseUrl($url);
+
+        // strip query/hash
+        $url = preg_replace('/[#?].*$/', '', $url) ?? $url;
 
         // strip leading slashes
         $url = ltrim($url, '/');
+
+        // canonical media route -> resolve to storage key
+        if (str_starts_with($url, 'media/')) {
+            $canonicalKey = $this->extractCanonicalKey($url);
+            if ($canonicalKey) {
+                $image = app(MediaCanonicalService::class)->resolveByKey($canonicalKey);
+                if ($image instanceof Image && $image->file_path) {
+                    return ltrim($image->file_path, '/');
+                }
+            }
+        }
 
         // remove "storage/" prefix
         if (str_starts_with($url, 'storage/')) {
@@ -306,6 +384,108 @@ trait HasRichEditorMedia
         }
 
         return null;
+    }
+
+    protected function stripBaseUrl(string $url): string
+    {
+        $url = str_replace(config('app.url'), '', $url);
+        $url = str_replace(url('/'), '', $url);
+
+        return $url;
+    }
+
+    protected function extractCanonicalKey(string $url): ?string
+    {
+        $segments = explode('/', $url);
+
+        if (count($segments) < 3 || $segments[0] !== 'media') {
+            return null;
+        }
+
+        return $segments[2] ?: null;
+    }
+
+    protected function isCanonicalMediaUrl(string $url): bool
+    {
+        $normalized = ltrim($this->stripBaseUrl($url), '/');
+
+        return str_starts_with($normalized, 'media/');
+    }
+
+    protected function resolveCanonicalUrlForStoragePath(string $relativePath): ?string
+    {
+        $relativePath = ltrim($relativePath, '/');
+        $image = $this->findPreferredImageForPath($relativePath);
+
+        if (! $image) {
+            $disk = Storage::disk($this->richEditorDisk());
+            if (! $disk->exists($relativePath)) {
+                return null;
+            }
+
+            $mime = $disk->mimeType($relativePath) ?: null;
+
+            $image = Image::create([
+                'file_path' => $relativePath,
+                'disk' => $this->richEditorDisk(),
+                'mime' => $mime,
+                'order' => 0,
+                'active' => true,
+                'semantic_type' => MediaSemanticRegistry::CONTENT,
+            ]);
+        }
+
+        return $image->canonical_url;
+    }
+
+    protected function findPreferredImageForPath(string $relativePath): ?Image
+    {
+        $relativePath = ltrim($relativePath, '/');
+
+        $withModel = Image::query()
+            ->where('file_path', $relativePath)
+            ->whereNotNull('model_type')
+            ->first();
+
+        if ($withModel) {
+            return $withModel;
+        }
+
+        $contentImage = Image::query()
+            ->where('file_path', $relativePath)
+            ->where('semantic_type', MediaSemanticRegistry::CONTENT)
+            ->first();
+
+        return $contentImage;
+    }
+
+    protected function isRichEditorImageInUseElsewhere(string $relativePath): bool
+    {
+        return RichEditorMedia::query()
+            ->where('file_path', $relativePath)
+            ->where(function ($query) {
+                $query
+                    ->where('model_type', '!=', get_class($this))
+                    ->orWhere('model_id', '!=', $this->getKey());
+            })
+            ->exists();
+    }
+
+    protected function isReferencedByGalleryImage(string $relativePath): bool
+    {
+        return Image::query()
+            ->where('file_path', $relativePath)
+            ->whereNotNull('model_type')
+            ->exists();
+    }
+
+    protected function deleteRichEditorImageRecord(string $relativePath): void
+    {
+        Image::query()
+            ->where('file_path', $relativePath)
+            ->whereNull('model_type')
+            ->where('semantic_type', MediaSemanticRegistry::CONTENT)
+            ->delete();
     }
 
     /**

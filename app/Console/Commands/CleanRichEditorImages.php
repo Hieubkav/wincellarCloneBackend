@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Article;
 use App\Models\Product;
+use App\Services\Media\MediaCanonicalService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -155,7 +156,21 @@ class CleanRichEditorImages extends Command
     {
         $url = str_replace(config('app.url'), '', $url);
         $url = str_replace(url('/'), '', $url);
+        $url = preg_replace('/[#?].*$/', '', $url) ?? $url;
         $url = ltrim($url, '/');
+
+        if (str_starts_with($url, 'media/')) {
+            $segments = explode('/', $url);
+            if (count($segments) >= 3) {
+                $canonicalKey = $segments[2] ?: null;
+                if ($canonicalKey) {
+                    $image = app(MediaCanonicalService::class)->resolveByKey($canonicalKey);
+                    if ($image && $image->file_path) {
+                        return ltrim($image->file_path, '/');
+                    }
+                }
+            }
+        }
 
         if (str_starts_with($url, 'storage/')) {
             $url = substr($url, strlen('storage/'));
