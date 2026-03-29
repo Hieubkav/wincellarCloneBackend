@@ -73,6 +73,9 @@ class HomeComponentResources
     public function mapProductSummary(Product $product): array
     {
         $coverImage = $product->relationLoaded('coverImage') ? $product->coverImage : null;
+        if (! $coverImage && $product->relationLoaded('images')) {
+            $coverImage = $product->images->first();
+        }
         $coverCanonicalUrl = $coverImage?->canonical_url;
 
         return [
@@ -91,6 +94,9 @@ class HomeComponentResources
     public function mapArticleSummary(Article $article): array
     {
         $coverImage = $article->relationLoaded('coverImage') ? $article->coverImage : null;
+        if (! $coverImage && $article->relationLoaded('images')) {
+            $coverImage = $article->images->first();
+        }
         $coverCanonicalUrl = $coverImage?->canonical_url;
 
         return [

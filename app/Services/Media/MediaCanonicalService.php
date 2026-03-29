@@ -36,7 +36,7 @@ class MediaCanonicalService
     public function resolveCanonicalSlug(Image $image, ?string $fallbackBase = null): string
     {
         if (! empty($image->canonical_slug)) {
-            return $image->canonical_slug;
+            return $this->normalizeSlug($image->canonical_slug);
         }
 
         $base = $image->alt
@@ -45,6 +45,11 @@ class MediaCanonicalService
             ?? $this->resolveSemanticType($image);
 
         return $this->buildSlug((string) $base);
+    }
+
+    public function normalizeSlug(string $value): string
+    {
+        return $this->buildSlug($value);
     }
 
     public function getCanonicalUrl(Image $image): string
@@ -83,6 +88,12 @@ class MediaCanonicalService
         if (empty($image->canonical_slug)) {
             $image->canonical_slug = $this->resolveCanonicalSlug($image, $slugBase);
             $dirty = true;
+        } else {
+            $normalized = $this->normalizeSlug($image->canonical_slug);
+            if ($normalized !== $image->canonical_slug) {
+                $image->canonical_slug = $normalized;
+                $dirty = true;
+            }
         }
 
         if ($persist && $dirty) {

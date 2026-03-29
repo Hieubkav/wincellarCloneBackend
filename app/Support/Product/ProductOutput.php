@@ -13,7 +13,7 @@ class ProductOutput
      */
     public static function listItem(Product $product): array
     {
-        $coverImageUrl = $product->cover_image_url;
+        $coverImageUrl = self::resolveCoverImageUrl($product);
         if ($coverImageUrl && ! self::fileExists($coverImageUrl)) {
             $coverImageUrl = '/placeholder/wine-bottle.svg';
         }
@@ -59,7 +59,7 @@ class ProductOutput
      */
     public static function suggestion(Product $product): array
     {
-        $coverImageUrl = $product->cover_image_url;
+        $coverImageUrl = self::resolveCoverImageUrl($product);
         if ($coverImageUrl && ! self::fileExists($coverImageUrl)) {
             $coverImageUrl = '/placeholder/wine-bottle.svg';
         }
@@ -96,7 +96,7 @@ class ProductOutput
         $grapeTerms = self::transformTerms($product->termsByGroup('grape'));
         $originTerms = self::transformTerms($product->termsByGroup('origin'));
 
-        $coverImageUrl = $product->cover_image_url;
+        $coverImageUrl = self::resolveCoverImageUrl($product);
         if ($coverImageUrl && ! self::fileExists($coverImageUrl)) {
             $coverImageUrl = '/placeholder/wine-bottle.svg';
         }
@@ -204,6 +204,10 @@ class ProductOutput
 
     private static function fileExists(string $url): bool
     {
+        if (str_contains($url, '/media/')) {
+            return true;
+        }
+
         // Remove domain if present, assume localhost:8000
         $path = parse_url($url, PHP_URL_PATH);
         if (! $path) {
@@ -214,5 +218,25 @@ class ProductOutput
         $fullPath = public_path($path);
 
         return file_exists($fullPath);
+    }
+
+    private static function resolveCoverImageUrl(Product $product): ?string
+    {
+        $coverImage = self::resolveCoverImage($product);
+
+        return $coverImage?->canonical_url ?: $product->cover_image_url;
+    }
+
+    private static function resolveCoverImage(Product $product): ?\App\Models\Image
+    {
+        if ($product->relationLoaded('coverImage') && $product->coverImage) {
+            return $product->coverImage;
+        }
+
+        if ($product->relationLoaded('images')) {
+            return $product->images->first();
+        }
+
+        return $product->coverImage;
     }
 }

@@ -21,6 +21,11 @@ class ProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         $coverImage = $this->relationLoaded('coverImage') ? $this->coverImage : null;
+        if (! $coverImage && $this->relationLoaded('images')) {
+            $coverImage = $this->images->first();
+        }
+        $coverCanonicalUrl = $coverImage?->canonical_url;
+        $mainImageUrl = $coverCanonicalUrl ?: $this->cover_image_url ?: '/placeholder/wine-bottle.svg';
 
         return [
             'id' => $this->id,
@@ -34,10 +39,10 @@ class ProductResource extends JsonResource
             'show_contact_cta' => $this->should_show_contact_cta,
 
             // Images
-            'main_image_url' => $this->cover_image_url ?: '/placeholder/wine-bottle.svg',
-            'main_image_canonical_url' => $coverImage?->canonical_url,
-            'cover_image_url' => $this->when($request->routeIs('api.v1.products.show'), $this->cover_image_url ?: '/placeholder/wine-bottle.svg'),
-            'cover_image_canonical_url' => $this->when($request->routeIs('api.v1.products.show'), $coverImage?->canonical_url),
+            'main_image_url' => $mainImageUrl,
+            'main_image_canonical_url' => $coverCanonicalUrl,
+            'cover_image_url' => $this->when($request->routeIs('api.v1.products.show'), $mainImageUrl),
+            'cover_image_canonical_url' => $this->when($request->routeIs('api.v1.products.show'), $coverCanonicalUrl),
             'gallery' => $this->gallery_for_output,
 
             // Terms/Taxonomy
@@ -287,8 +292,8 @@ class ProductResource extends JsonResource
             'original_price' => $product->original_price,
             'discount_percent' => $product->discount_percent,
             'show_contact_cta' => $product->should_show_contact_cta,
-            'main_image_url' => $product->cover_image_url ?: '/placeholder/wine-bottle.svg',
-            'main_image_canonical_url' => $product->relationLoaded('coverImage') ? $product->coverImage?->canonical_url : null,
+            'main_image_url' => $this->resolveProductMainImageUrl($product),
+            'main_image_canonical_url' => $this->resolveProductCoverImage($product)?->canonical_url,
             'gallery' => $product->gallery_for_output,
             'brand_term' => ($brand = $product->primaryTerm('brand')) ? [
                 'id' => $brand->id,
@@ -335,6 +340,26 @@ class ProductResource extends JsonResource
                     ->toArray()
                 : [],
         ];
+    }
+
+    protected function resolveProductCoverImage($product): ?\App\Models\Image
+    {
+        if ($product->relationLoaded('coverImage') && $product->coverImage) {
+            return $product->coverImage;
+        }
+
+        if ($product->relationLoaded('images')) {
+            return $product->images->first();
+        }
+
+        return $product->coverImage;
+    }
+
+    protected function resolveProductMainImageUrl($product): string
+    {
+        $coverImage = $this->resolveProductCoverImage($product);
+
+        return $coverImage?->canonical_url ?: $product->cover_image_url ?: '/placeholder/wine-bottle.svg';
     }
 
     /**

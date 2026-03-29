@@ -15,6 +15,8 @@ class ArticleResource extends JsonResource
     public function toArray(Request $request): array
     {
         $coverImage = $this->relationLoaded('coverImage') ? $this->coverImage : null;
+        $coverCanonicalUrl = $coverImage?->canonical_url;
+        $coverUrl = $coverCanonicalUrl ?: $this->cover_image_url ?: '/placeholder/article.svg';
 
         return [
             'id' => $this->id,
@@ -26,8 +28,8 @@ class ArticleResource extends JsonResource
             'content' => $this->when($request->routeIs('api.v1.articles.show'), $this->content),
 
             // Images
-            'cover_image_url' => $this->cover_image_url ?: '/placeholder/article.svg',
-            'cover_image_canonical_url' => $coverImage?->canonical_url,
+            'cover_image_url' => $coverUrl,
+            'cover_image_canonical_url' => $coverCanonicalUrl,
 
             'gallery' => $this->when(
                 $request->routeIs('api.v1.articles.show') && $this->relationLoaded('images'),
@@ -65,7 +67,9 @@ class ArticleResource extends JsonResource
                             'title' => $article->title,
                             'slug' => $article->slug,
                             'excerpt' => $article->excerpt,
-                            'cover_image_url' => $article->cover_image_url ?: '/placeholder/article.svg',
+                            'cover_image_url' => $article->relationLoaded('coverImage')
+                                ? ($article->coverImage?->canonical_url ?: $article->cover_image_url ?: '/placeholder/article.svg')
+                                : ($article->cover_image_url ?: '/placeholder/article.svg'),
                             'cover_image_canonical_url' => $article->relationLoaded('coverImage') ? $article->coverImage?->canonical_url : null,
                             'published_at' => $article->created_at?->toIso8601String(),
                         ];

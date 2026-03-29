@@ -64,16 +64,14 @@ trait HasMediaGallery
             ? $this->getRelation('images')
             : $this->images;
 
-        $useProxy = $this->shouldUseProxyUrl();
-
         $canonicalService = app(\App\Services\Media\MediaCanonicalService::class);
 
-        return $images->map(function (Image $image) use ($useProxy, $canonicalService) {
+        return $images->map(function (Image $image) use ($canonicalService) {
             $metadata = $canonicalService->metadataFor($image);
 
             return [
                 'id' => $image->id,
-                'url' => $useProxy ? $image->proxy_url : $image->absolute_url, // Proxy URL for products
+                'url' => $metadata['canonical_url'],
                 'canonical_url' => $metadata['canonical_url'],
                 'canonical_key' => $metadata['canonical_key'],
                 'semantic_type' => $metadata['semantic_type'],
