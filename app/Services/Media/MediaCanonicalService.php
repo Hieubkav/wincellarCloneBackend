@@ -57,8 +57,14 @@ class MediaCanonicalService
         return "{$baseUrl}/media/{$semantic}/{$key}/{$slug}";
     }
 
-    public function ensureMetadata(Image $image, ?string $semanticType = null, ?string $slugBase = null): void
+    public function ensureMetadata(
+        Image $image,
+        ?string $semanticType = null,
+        ?string $slugBase = null,
+        bool $persist = false
+    ): void
     {
+        $dirty = false;
         $semanticType = MediaSemanticRegistry::normalize($semanticType)
             ?? MediaSemanticRegistry::normalize($image->semantic_type)
             ?? MediaSemanticRegistry::fromModelType($image->model_type)
@@ -66,15 +72,43 @@ class MediaCanonicalService
 
         if ($image->semantic_type !== $semanticType) {
             $image->semantic_type = $semanticType;
+            $dirty = true;
         }
 
         if (empty($image->canonical_key)) {
             $image->canonical_key = $this->resolveCanonicalKey($image);
+            $dirty = true;
         }
 
         if (empty($image->canonical_slug)) {
             $image->canonical_slug = $this->resolveCanonicalSlug($image, $slugBase);
+            $dirty = true;
         }
+
+        if ($persist && $dirty) {
+            $image->saveQuietly();
+        }
+    }
+
+    /**
+     * @return array<string, string|null>
+     */
+    public function metadataFor(
+        Image $image,
+        ?string $semanticType = null,
+        ?string $slugBase = null,
+        bool $persist = false
+    ): array {
+        $this->ensureMetadata($image, $semanticType, $slugBase, $persist);
+
+        return [
+            'canonical_url' => $this->getCanonicalUrl($image),
+            'canonical_key' => $image->canonical_key ?: $this->resolveCanonicalKey($image),
+            'canonical_slug' => $image->canonical_slug ?: $this->resolveCanonicalSlug($image, $slugBase),
+            'semantic_type' => $image->semantic_type ?: $this->resolveSemanticType($image, $semanticType),
+            'storage_disk' => $image->disk,
+            'storage_key' => $image->file_path,
+        ];
     }
 
     public function resolveByKey(string $key): ?Image

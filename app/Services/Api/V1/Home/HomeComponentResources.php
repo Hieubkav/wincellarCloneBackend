@@ -125,14 +125,14 @@ class HomeComponentResources
     public function mapImage(Image $image, ?string $overrideAlt = null): array
     {
         $canonicalService = app(\App\Services\Media\MediaCanonicalService::class);
-        $semanticType = $image->semantic_type ?: $canonicalService->resolveSemanticType($image);
+        $metadata = $canonicalService->metadataFor($image);
 
         return [
             'id' => $image->id,
             'url' => $image->url,
-            'canonical_url' => $image->canonical_url,
-            'canonical_key' => $canonicalService->resolveCanonicalKey($image),
-            'semantic_type' => $semanticType,
+            'canonical_url' => $metadata['canonical_url'],
+            'canonical_key' => $metadata['canonical_key'],
+            'semantic_type' => $metadata['semantic_type'],
             'alt' => $overrideAlt ?: $image->alt,
             'width' => $image->width,
             'height' => $image->height,

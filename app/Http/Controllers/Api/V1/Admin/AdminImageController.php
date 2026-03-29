@@ -15,6 +15,7 @@ class AdminImageController extends Controller
     {
         $perPage = min(max($request->integer('per_page', 12), 1), 100);
         $search = trim((string) $request->query('search', ''));
+        $canonicalService = app(MediaCanonicalService::class);
 
         $query = Image::query()
             ->where('active', true)
@@ -32,16 +33,20 @@ class AdminImageController extends Controller
         $images = $query->paginate($perPage);
 
         return response()->json([
-            'data' => collect($images->items())->map(fn (Image $image) => [
-                'id' => $image->id,
-                'url' => $image->url ?? '/images/placeholder.png',
-                'canonical_url' => $image->canonical_url,
-                'canonical_key' => $image->canonical_key,
-                'semantic_type' => $image->semantic_type,
-                'alt' => $image->alt ?? basename($image->file_path ?? ''),
-                'name' => basename($image->file_path ?? ''),
-                'mime' => $image->mime,
-            ])->values(),
+            'data' => collect($images->items())->map(function (Image $image) use ($canonicalService) {
+                $metadata = $canonicalService->metadataFor($image);
+
+                return [
+                    'id' => $image->id,
+                    'url' => $image->url ?? '/images/placeholder.png',
+                    'canonical_url' => $metadata['canonical_url'],
+                    'canonical_key' => $metadata['canonical_key'],
+                    'semantic_type' => $metadata['semantic_type'],
+                    'alt' => $image->alt ?? basename($image->file_path ?? ''),
+                    'name' => basename($image->file_path ?? ''),
+                    'mime' => $image->mime,
+                ];
+            })->values(),
             'current_page' => $images->currentPage(),
             'last_page' => $images->lastPage(),
             'total' => $images->total(),
@@ -54,6 +59,7 @@ class AdminImageController extends Controller
         $sortable = ['id', 'created_at', 'alt', 'file_path', 'active'];
         $sortBy = $request->input('sort_by', 'id');
         $sortDir = strtolower((string) $request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
+        $canonicalService = app(MediaCanonicalService::class);
 
         if (! in_array($sortBy, $sortable, true)) {
             $sortBy = 'id';
@@ -98,16 +104,17 @@ class AdminImageController extends Controller
         $images = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $images->map(function ($img) {
+            'data' => $images->map(function ($img) use ($canonicalService) {
                 $usedBy = $this->getUsedByInfo($img);
+                $metadata = $canonicalService->metadataFor($img);
 
                 return [
                     'id' => $img->id,
                     'file_path' => $img->file_path,
                     'url' => $img->url,
-                    'canonical_url' => $img->canonical_url,
-                    'canonical_key' => $img->canonical_key,
-                    'semantic_type' => $img->semantic_type,
+                    'canonical_url' => $metadata['canonical_url'],
+                    'canonical_key' => $metadata['canonical_key'],
+                    'semantic_type' => $metadata['semantic_type'],
                     'alt' => $img->alt,
                     'width' => $img->width,
                     'height' => $img->height,
@@ -132,6 +139,7 @@ class AdminImageController extends Controller
     public function batch(Request $request): JsonResponse
     {
         $ids = array_filter(array_map('intval', explode(',', (string) $request->query('ids', ''))));
+        $canonicalService = app(MediaCanonicalService::class);
 
         if (empty($ids)) {
             return response()->json(['data' => []]);
@@ -142,18 +150,22 @@ class AdminImageController extends Controller
         $data = collect($ids)
             ->map(fn ($id) => $images->get($id))
             ->filter()
-            ->map(fn (Image $image) => [
-                'id' => $image->id,
-                'file_path' => $image->file_path,
-                'url' => $image->url,
-                'canonical_url' => $image->canonical_url,
-                'canonical_key' => $image->canonical_key,
-                'semantic_type' => $image->semantic_type,
-                'alt' => $image->alt,
-                'width' => $image->width,
-                'height' => $image->height,
-                'mime' => $image->mime,
-            ])
+            ->map(function (Image $image) use ($canonicalService) {
+                $metadata = $canonicalService->metadataFor($image);
+
+                return [
+                    'id' => $image->id,
+                    'file_path' => $image->file_path,
+                    'url' => $image->url,
+                    'canonical_url' => $metadata['canonical_url'],
+                    'canonical_key' => $metadata['canonical_key'],
+                    'semantic_type' => $metadata['semantic_type'],
+                    'alt' => $image->alt,
+                    'width' => $image->width,
+                    'height' => $image->height,
+                    'mime' => $image->mime,
+                ];
+            })
             ->values();
 
         return response()->json(['data' => $data]);
@@ -208,15 +220,16 @@ class AdminImageController extends Controller
     {
         $image = Image::findOrFail($id);
         $usedBy = $this->getUsedByInfo($image);
+        $metadata = app(MediaCanonicalService::class)->metadataFor($image);
 
         return response()->json([
             'data' => [
                 'id' => $image->id,
                 'file_path' => $image->file_path,
                 'url' => $image->url,
-                'canonical_url' => $image->canonical_url,
-                'canonical_key' => $image->canonical_key,
-                'semantic_type' => $image->semantic_type,
+                'canonical_url' => $metadata['canonical_url'],
+                'canonical_key' => $metadata['canonical_key'],
+                'semantic_type' => $metadata['semantic_type'],
                 'disk' => $image->disk,
                 'alt' => $image->alt,
                 'width' => $image->width,
@@ -256,15 +269,16 @@ class AdminImageController extends Controller
         $validated['semantic_type'] = MediaSemanticRegistry::normalize($validated['semantic_type'] ?? null);
 
         $image = Image::create($validated);
+        $metadata = app(MediaCanonicalService::class)->metadataFor($image, persist: true);
 
         return response()->json([
             'success' => true,
             'data' => [
                 'id' => $image->id,
                 'url' => $image->url,
-                'canonical_url' => $image->canonical_url,
-                'canonical_key' => $image->canonical_key,
-                'semantic_type' => $image->semantic_type,
+                'canonical_url' => $metadata['canonical_url'],
+                'canonical_key' => $metadata['canonical_key'],
+                'semantic_type' => $metadata['semantic_type'],
             ],
             'message' => 'Tạo hình ảnh thành công',
         ], 201);

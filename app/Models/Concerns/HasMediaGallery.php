@@ -66,17 +66,23 @@ trait HasMediaGallery
 
         $useProxy = $this->shouldUseProxyUrl();
 
-        return $images->map(fn (Image $image) => [
-            'id' => $image->id,
-            'url' => $useProxy ? $image->proxy_url : $image->absolute_url, // Proxy URL for products
-            'canonical_url' => $image->canonical_url,
-            'canonical_key' => $image->canonical_key,
-            'semantic_type' => $image->semantic_type,
-            'alt' => $image->alt,
-            'order' => $image->order,
-            'width' => $image->width,
-            'height' => $image->height,
-        ]);
+        $canonicalService = app(\App\Services\Media\MediaCanonicalService::class);
+
+        return $images->map(function (Image $image) use ($useProxy, $canonicalService) {
+            $metadata = $canonicalService->metadataFor($image);
+
+            return [
+                'id' => $image->id,
+                'url' => $useProxy ? $image->proxy_url : $image->absolute_url, // Proxy URL for products
+                'canonical_url' => $metadata['canonical_url'],
+                'canonical_key' => $metadata['canonical_key'],
+                'semantic_type' => $metadata['semantic_type'],
+                'alt' => $image->alt,
+                'order' => $image->order,
+                'width' => $image->width,
+                'height' => $image->height,
+            ];
+        });
     }
 
     /**
