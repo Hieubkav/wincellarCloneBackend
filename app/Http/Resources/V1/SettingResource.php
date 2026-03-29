@@ -54,6 +54,11 @@ class SettingResource extends JsonResource
             }, $contactConfig['social_links'])));
         }
 
+        $logoUrl = $this->logoImage?->canonical_url ?? $this->logoImage?->url ?? '/placeholder/logo.svg';
+        $faviconUrl = $this->faviconImage?->canonical_url ?? $this->faviconImage?->url ?? '/placeholder/favicon.ico';
+        $ogImageUrl = $this->ogImage?->canonical_url ?? $this->ogImage?->url;
+        $productWatermarkUrl = $this->productWatermarkImage?->canonical_url ?? $this->productWatermarkImage?->url;
+
         return [
             'id' => $this->id,
             'site_name' => $this->site_name,
@@ -70,13 +75,13 @@ class SettingResource extends JsonResource
             'product_detail_rules' => $this->product_detail_rules,
 
             // Logo and favicon URLs
-            'logo_url' => $this->logoImage?->url ?? '/placeholder/logo.svg',
+            'logo_url' => $logoUrl,
             'logo_canonical_url' => $this->logoImage?->canonical_url,
-            'favicon_url' => $this->faviconImage?->url ?? '/placeholder/favicon.ico',
+            'favicon_url' => $faviconUrl,
             'favicon_canonical_url' => $this->faviconImage?->canonical_url,
-            'og_image_url' => $this->ogImage?->url,
+            'og_image_url' => $ogImageUrl,
             'og_image_canonical_url' => $this->ogImage?->canonical_url,
-            'product_watermark_url' => $this->productWatermarkImage?->url,
+            'product_watermark_url' => $productWatermarkUrl,
             'product_watermark_canonical_url' => $this->productWatermarkImage?->canonical_url,
             'product_watermark_position' => $this->product_watermark_position,
             'product_watermark_size' => $this->product_watermark_size,

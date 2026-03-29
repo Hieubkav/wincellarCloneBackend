@@ -73,6 +73,7 @@ class HomeComponentResources
     public function mapProductSummary(Product $product): array
     {
         $coverImage = $product->relationLoaded('coverImage') ? $product->coverImage : null;
+        $coverCanonicalUrl = $coverImage?->canonical_url;
 
         return [
             'id' => $product->id,
@@ -82,22 +83,23 @@ class HomeComponentResources
             'original_price' => $product->original_price,
             'discount_percent' => $product->discount_percent,
             'show_contact_cta' => $product->should_show_contact_cta,
-            'cover_image_url' => $product->cover_image_url,
-            'cover_image_canonical_url' => $coverImage?->canonical_url,
+            'cover_image_url' => $coverCanonicalUrl ?? $product->cover_image_url,
+            'cover_image_canonical_url' => $coverCanonicalUrl,
         ];
     }
 
     public function mapArticleSummary(Article $article): array
     {
         $coverImage = $article->relationLoaded('coverImage') ? $article->coverImage : null;
+        $coverCanonicalUrl = $coverImage?->canonical_url;
 
         return [
             'id' => $article->id,
             'title' => $article->title,
             'slug' => $article->slug,
             'excerpt' => $article->excerpt,
-            'cover_image_url' => $article->cover_image_url,
-            'cover_image_canonical_url' => $coverImage?->canonical_url,
+            'cover_image_url' => $coverCanonicalUrl ?? $article->cover_image_url,
+            'cover_image_canonical_url' => $coverCanonicalUrl,
             'published_at' => optional($article->created_at)->toIso8601String(),
         ];
     }
@@ -129,7 +131,8 @@ class HomeComponentResources
 
         return [
             'id' => $image->id,
-            'url' => $image->url,
+            'url' => $metadata['canonical_url'],
+            'legacy_url' => $image->url,
             'canonical_url' => $metadata['canonical_url'],
             'canonical_key' => $metadata['canonical_key'],
             'semantic_type' => $metadata['semantic_type'],
