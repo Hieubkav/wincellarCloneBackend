@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class AdminOwnerBootstrapper
 {
@@ -22,6 +23,10 @@ class AdminOwnerBootstrapper
         $password = trim($password);
 
         if ($email === '' || $name === '' || $password === '') {
+            return;
+        }
+
+        if (app()->environment('testing') && ! Schema::hasTable('users')) {
             return;
         }
 

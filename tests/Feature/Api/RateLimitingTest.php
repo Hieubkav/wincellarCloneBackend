@@ -2,17 +2,30 @@
 
 namespace Tests\Feature\Api;
 
+use App\Support\Security\IpHasher;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 class RateLimitingTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         // Clear rate limiter before each test
-        RateLimiter::clear('api:'.request()->ip());
+        $this->clearRateLimiter();
+    }
+
+    private function clearRateLimiter(): void
+    {
+        $ipHash = app(IpHasher::class)->hash(request()->ip() ?? '');
+        $limitKey = $ipHash ? 'ip:'.$ipHash : 'guest';
+        $key = md5('api'.$limitKey);
+
+        RateLimiter::clear($key);
     }
 
     /**
@@ -84,7 +97,7 @@ class RateLimitingTest extends TestCase
         ];
 
         foreach ($endpoints as $endpoint) {
-            RateLimiter::clear('api:'.request()->ip());
+            $this->clearRateLimiter();
 
             // Make 60 requests to this endpoint
             for ($i = 0; $i < 60; $i++) {

@@ -6,6 +6,7 @@ use App\Models\Product;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class ProductSearchBuilder
 {
@@ -83,7 +84,9 @@ class ProductSearchBuilder
         $query->where(function (Builder $searchQuery) use ($keyword, $pattern): void {
             // MySQL fulltext has minimum word length = 4 (default for InnoDB)
             // Skip MATCH AGAINST for short keywords as they won't match
-            if (mb_strlen($keyword) >= 4) {
+            $driver = DB::getDriverName();
+
+            if (mb_strlen($keyword) >= 4 && in_array($driver, ['mysql', 'mariadb'], true)) {
                 // Try full-text search first (better relevance ranking)
                 $searchQuery->whereRaw('MATCH(products.name, products.description) AGAINST(? IN NATURAL LANGUAGE MODE)', [$keyword])
                     ->orWhere(function (Builder $likeQuery) use ($pattern): void {

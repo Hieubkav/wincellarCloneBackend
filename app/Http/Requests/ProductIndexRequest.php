@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Validator;
 
 class ProductIndexRequest extends FormRequest
 {
@@ -27,6 +26,8 @@ class ProductIndexRequest extends FormRequest
             'category.*' => ['integer', 'min:1'],
             'price_min' => ['nullable', 'integer', 'min:0'],
             'price_max' => ['nullable', 'integer', 'min:0'],
+            'alcohol_min' => ['nullable', 'numeric', 'min:0'],
+            'alcohol_max' => ['nullable', 'numeric', 'min:0'],
             'page' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'sort' => ['nullable', 'string', 'max:25'],
@@ -47,6 +48,8 @@ class ProductIndexRequest extends FormRequest
         $this->merge([
             'price_min' => $this->normalizeNumber($this->input('price_min')),
             'price_max' => $this->normalizeNumber($this->input('price_max')),
+            'alcohol_min' => $this->normalizeFloat($this->input('alcohol_min')),
+            'alcohol_max' => $this->normalizeFloat($this->input('alcohol_max')),
             'q' => $this->normalizeSearch($this->input('q')),
         ]);
     }
@@ -78,27 +81,14 @@ class ProductIndexRequest extends FormRequest
         }
     }
 
-    public function after(): array
-    {
-        return [
-            function (Validator $validator): void {
-                if ($validator->errors()->isNotEmpty()) {
-                    return;
-                }
-
-                $priceMin = $this->input('price_min');
-                $priceMax = $this->input('price_max');
-                if ($priceMin !== null && $priceMax !== null && $priceMin > $priceMax) {
-                    $validator->errors()->add('price_min', 'price_min must be less than or equal to price_max');
-                }
-            },
-        ];
-    }
-
-    private function normalizeNumber(mixed $value): ?int
+    private function normalizeNumber(mixed $value): mixed
     {
         if ($value === null || $value === '') {
             return null;
+        }
+
+        if (! is_numeric($value)) {
+            return $value;
         }
 
         return (int) $value;

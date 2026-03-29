@@ -62,6 +62,15 @@ return new class extends Migration
         }
 
         Schema::table('products', function (Blueprint $table) use ($hasVolume, $hasAlcohol): void {
+            if (DB::getDriverName() === 'sqlite') {
+                if ($hasVolume) {
+                    $table->dropIndex('products_volume_ml_index');
+                }
+                if ($hasAlcohol) {
+                    $table->dropIndex('products_alcohol_percent_index');
+                }
+            }
+
             if ($hasVolume) {
                 $table->dropColumn('volume_ml');
             }

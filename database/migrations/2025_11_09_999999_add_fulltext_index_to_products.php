@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         $indexExists = DB::select(
             "SELECT COUNT(*) as count FROM information_schema.statistics 
              WHERE table_schema = DATABASE() 

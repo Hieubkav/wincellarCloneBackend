@@ -9,6 +9,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('product_category_product', function (Blueprint $table) {
             if (! $this->indexExists('product_category_product', 'pcp_product_category_index')) {
                 $table->index(['product_id', 'product_category_id'], 'pcp_product_category_index');
@@ -18,6 +22,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('product_category_product', function (Blueprint $table) {
             if ($this->indexExists('product_category_product', 'pcp_product_category_index')) {
                 $table->dropIndex('pcp_product_category_index');
@@ -27,6 +35,10 @@ return new class extends Migration
 
     private function indexExists(string $table, string $indexName): bool
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return false;
+        }
+
         $indexes = DB::select(
             'SELECT INDEX_NAME FROM information_schema.statistics 
              WHERE table_schema = DATABASE() 

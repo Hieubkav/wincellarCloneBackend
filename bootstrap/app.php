@@ -2,6 +2,7 @@
 
 use App\Exceptions\ApiException;
 use App\Http\Responses\ErrorResponse;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -68,9 +69,16 @@ return Application::configure(basePath: dirname(__DIR__))
         // Rate limit exceptions for API routes
         $exceptions->render(function (TooManyRequestsHttpException $e, $request) {
             if ($request->is('api/*')) {
-                $retryAfter = $e->getHeaders()['Retry-After'] ?? 60;
+                $retryAfter = max(60, (int) ($e->getHeaders()['Retry-After'] ?? 60));
 
-                return ErrorResponse::rateLimitExceeded((int) $retryAfter);
+                return ErrorResponse::rateLimitExceeded($retryAfter);
+            }
+        });
+
+        // HttpResponseException (e.g., ThrottleRequests) for API routes
+        $exceptions->render(function (HttpResponseException $e, $request) {
+            if ($request->is('api/*')) {
+                return $e->getResponse();
             }
         });
 

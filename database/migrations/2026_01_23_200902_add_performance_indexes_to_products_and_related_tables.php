@@ -23,6 +23,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Check and add indexes to product_term_assignments
         Schema::table('product_term_assignments', function (Blueprint $table) {
             // Reverse index for filter counting (term_id first)
@@ -67,6 +71,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('product_term_assignments', function (Blueprint $table) {
             if ($this->indexExists('product_term_assignments', 'pta_term_product_index')) {
                 $table->dropIndex('pta_term_product_index');
@@ -100,6 +108,10 @@ return new class extends Migration
      */
     private function indexExists(string $table, string $indexName): bool
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return false;
+        }
+
         $indexes = DB::select(
             'SELECT INDEX_NAME FROM information_schema.statistics 
              WHERE table_schema = DATABASE() 
