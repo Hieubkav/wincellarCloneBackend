@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ImageUrlService;
 use App\Services\Media\MediaCanonicalService;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 class CanonicalMediaController extends Controller
 {
