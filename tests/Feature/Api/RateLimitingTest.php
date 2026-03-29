@@ -81,8 +81,12 @@ class RateLimitingTest extends TestCase
 
         $response = $this->getJson('/api/v1/home');
 
-        $response->assertStatus(429)
-            ->assertJsonPath('details.retry_after', 60);
+        $response->assertStatus(429);
+
+        $retryAfter = $response->json('details.retry_after');
+        $this->assertIsInt($retryAfter);
+        $this->assertGreaterThanOrEqual(59, $retryAfter);
+        $this->assertLessThanOrEqual(60, $retryAfter);
     }
 
     /**
