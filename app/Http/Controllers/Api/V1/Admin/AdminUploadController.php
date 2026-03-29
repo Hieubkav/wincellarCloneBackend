@@ -7,6 +7,7 @@ use App\Models\Image;
 use App\Support\Media\MediaSemanticRegistry;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -118,7 +119,29 @@ class AdminUploadController extends Controller
             'semantic_type' => ['nullable', 'string', 'max:50'],
         ]);
 
-        $response = Http::timeout(10)->get($validated['url']);
+        try {
+            $response = Http::timeout(10)->get($validated['url']);
+        } catch (ConnectionException $e) {
+            \Log::warning('Image URL fetch timeout/connection failed', [
+                'url' => $validated['url'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể kết nối tới URL ảnh',
+            ], 422);
+        } catch (\Throwable $e) {
+            \Log::warning('Image URL fetch failed', [
+                'url' => $validated['url'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể tải ảnh từ URL',
+            ], 422);
+        }
         if (! $response->successful()) {
             return response()->json([
                 'success' => false,
