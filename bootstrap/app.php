@@ -69,7 +69,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Rate limit exceptions for API routes
         $exceptions->render(function (TooManyRequestsHttpException $e, $request) {
             if ($request->is('api/*')) {
-                $retryAfter = max(60, (int) ($e->getHeaders()['Retry-After'] ?? 60));
+                $retryAfter = (int) ($e->getHeaders()['Retry-After'] ?? 60);
 
                 return ErrorResponse::rateLimitExceeded($retryAfter);
             }

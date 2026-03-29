@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductIndexRequest;
 use App\Http\Resources\V1\ProductCollection;
 use App\Http\Resources\V1\ProductResource;
-use App\Http\Responses\ErrorResponse;
 use App\Models\Product;
 use App\Support\Product\ProductCacheManager;
 use App\Support\Product\ProductPaginator;
@@ -23,32 +22,7 @@ class ProductController extends Controller
         try {
             $filters = $request->validated();
 
-            // Check for invalid range parameters
-            $priceMin = $filters['price_min'] ?? null;
-            $priceMax = $filters['price_max'] ?? null;
-            if ($priceMin !== null && $priceMax !== null && $priceMin > $priceMax) {
-                return ErrorResponse::badRequest(
-                    'Invalid price range',
-                    [
-                        'price_min' => $priceMin,
-                        'price_max' => $priceMax,
-                        'constraint' => 'price_min must be less than or equal to price_max',
-                    ]
-                );
-            }
-
-            $alcoholMin = $filters['alcohol_min'] ?? null;
-            $alcoholMax = $filters['alcohol_max'] ?? null;
-            if ($alcoholMin !== null && $alcoholMax !== null && $alcoholMin > $alcoholMax) {
-                return ErrorResponse::badRequest(
-                    'Invalid alcohol range',
-                    [
-                        'alcohol_min' => $alcoholMin,
-                        'alcohol_max' => $alcoholMax,
-                        'constraint' => 'alcohol_min must be less than or equal to alcohol_max',
-                    ]
-                );
-            }
+            $request->assertValidRanges();
 
             $cursorInput = $request->input('cursor');
             $usingCursor = $cursorInput !== null;

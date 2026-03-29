@@ -18,6 +18,7 @@ class ProductSearchController extends Controller
     public function search(ProductSearchRequest $request): JsonResponse
     {
         $filters = $request->validated();
+        $request->assertValidRanges();
 
         $cursorInput = $request->input('cursor');
         $usingCursor = $cursorInput !== null;
@@ -89,6 +90,7 @@ class ProductSearchController extends Controller
     public function suggest(ProductSuggestRequest $request): JsonResponse
     {
         $filters = $request->validated();
+        $request->assertValidRanges();
 
         $query = ProductSearchBuilder::build(
             $filters,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Exceptions\ApiException;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ProductIndexRequest extends FormRequest
@@ -78,6 +79,29 @@ class ProductIndexRequest extends FormRequest
             ]);
 
             $this->attributes->set('using_cursor', false);
+        }
+    }
+
+    public function assertValidRanges(): void
+    {
+        $priceMin = $this->input('price_min');
+        $priceMax = $this->input('price_max');
+        if ($priceMin !== null && $priceMax !== null && $priceMin > $priceMax) {
+            throw ApiException::badRequest('Invalid price range', [
+                'price_min' => $priceMin,
+                'price_max' => $priceMax,
+                'constraint' => 'price_min must be less than or equal to price_max',
+            ]);
+        }
+
+        $alcoholMin = $this->input('alcohol_min');
+        $alcoholMax = $this->input('alcohol_max');
+        if ($alcoholMin !== null && $alcoholMax !== null && $alcoholMin > $alcoholMax) {
+            throw ApiException::badRequest('Invalid alcohol range', [
+                'alcohol_min' => $alcoholMin,
+                'alcohol_max' => $alcoholMax,
+                'constraint' => 'alcohol_min must be less than or equal to alcohol_max',
+            ]);
         }
     }
 

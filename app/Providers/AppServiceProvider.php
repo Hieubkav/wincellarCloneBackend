@@ -84,7 +84,7 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinutes($decay, $limit)
                 ->by($key)
                 ->response(function (HttpRequest $request, array $headers) {
-                    $retryAfter = max(60, (int) ($headers['Retry-After'] ?? 60));
+                    $retryAfter = (int) ($headers['Retry-After'] ?? 60);
 
                     return ErrorResponse::rateLimitExceeded($retryAfter)
                         ->withHeaders($headers);
