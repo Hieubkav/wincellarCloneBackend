@@ -488,32 +488,118 @@ class AdminProductController extends Controller
 
     private function attachCoverImage(Product $product, string $filePath): void
     {
-        $product->images()->where('order', 0)->delete();
+        $filePath = trim($filePath);
+        if ($filePath === '') {
+            return;
+        }
 
-        Image::create([
-            'file_path' => $filePath,
-            'disk' => 'public',
-            'model_type' => Product::class,
-            'model_id' => $product->id,
-            'order' => 0,
-        ]);
+        DB::transaction(function () use ($product, $filePath) {
+            $images = $product->images()->orderBy('order')->get();
+
+            if ($images->isEmpty()) {
+                Image::create([
+                    'file_path' => $filePath,
+                    'disk' => 'public',
+                    'model_type' => Product::class,
+                    'model_id' => $product->id,
+                    'order' => 0,
+                ]);
+
+                return;
+            }
+
+            $existing = $images->firstWhere('file_path', $filePath);
+            $ordered = collect();
+
+            if ($existing instanceof Image) {
+                $ordered->push($existing);
+                foreach ($images as $image) {
+                    if ($image->id !== $existing->id) {
+                        $ordered->push($image);
+                    }
+                }
+            } else {
+                $newImage = Image::create([
+                    'file_path' => $filePath,
+                    'disk' => 'public',
+                    'model_type' => Product::class,
+                    'model_id' => $product->id,
+                    'order' => 0,
+                ]);
+                $ordered->push($newImage);
+                foreach ($images as $image) {
+                    $ordered->push($image);
+                }
+            }
+
+            $ordered->values()->each(function (Image $image, int $index) {
+                if ($image->order !== $index) {
+                    $image->order = $index;
+                    $image->saveQuietly();
+                }
+            });
+        });
     }
 
     private function syncProductImages(Product $product, array $paths): void
     {
         $paths = array_values(array_filter($paths));
 
-        $product->images()->delete();
+        DB::transaction(function () use ($product, $paths) {
+            $existingImages = $product->images()->orderBy('order')->get();
 
-        foreach ($paths as $index => $path) {
-            Image::create([
-                'file_path' => $path,
-                'disk' => 'public',
-                'model_type' => Product::class,
-                'model_id' => $product->id,
-                'order' => $index,
-            ]);
-        }
+            if (empty($paths)) {
+                foreach ($existingImages as $image) {
+                    $image->delete();
+                }
+
+                return;
+            }
+
+            $imagesByPath = [];
+            foreach ($existingImages as $image) {
+                $imagesByPath[$image->file_path][] = $image;
+            }
+
+            $usedIds = [];
+            $ordered = [];
+
+            foreach ($paths as $index => $path) {
+                $image = null;
+
+                if (! empty($imagesByPath[$path])) {
+                    $image = array_shift($imagesByPath[$path]);
+                }
+
+                if ($image instanceof Image) {
+                    $usedIds[] = $image->id;
+                } else {
+                    $image = Image::create([
+                        'file_path' => $path,
+                        'disk' => 'public',
+                        'model_type' => Product::class,
+                        'model_id' => $product->id,
+                        'order' => $index,
+                    ]);
+                    $usedIds[] = $image->id;
+                }
+
+                $ordered[] = [$image, $index];
+            }
+
+            foreach ($existingImages as $image) {
+                if (! in_array($image->id, $usedIds, true)) {
+                    $image->delete();
+                }
+            }
+
+            foreach ($ordered as [$image, $index]) {
+                if ($image->order !== $index) {
+                    $image->order = $index;
+                    $image->saveQuietly();
+                }
+            }
+        });
     }
 
     private function syncTerms(Product $product, array $termIds): void
