@@ -1,0 +1,49 @@
+{
+  "featureId": "backend-media-canonical-foundation",
+  "reviewedAt": "2026-03-29T12:15:00Z",
+  "commitId": "20a1a691429d1d7fb7960471837af3f1693bd54c",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "Commit được review chỉ mở rộng payload home components với canonical metadata và thêm unit test tương ứng. Phạm vi này không bao phủ phần cốt lõi mà feature mô tả/expectedBehavior yêu cầu cho backend foundation như source-of-truth metadata dùng chung, canonical serving route/controller, schema/guardrails identity-storage key ở backend core.",
+    "issues": [
+      {
+        "file": "app/Services/Api/V1/Home/HomeComponentResources.php",
+        "line": 73,
+        "severity": "blocking",
+        "description": "Toàn bộ diff của feature chỉ chạm helper payload cho home components (mapProductSummary/mapArticleSummary/mapImage), nên implementation thực tế không cung cấp nền tảng backend canonical URL ở scope feature đã cam kết. Không có thay đổi nào trong commit cho route/controller canonical serving, schema metadata, hay guardrails identity/storage-key; vì vậy expectedBehavior về 'source-of-truth metadata, semantic registry, canonical serving route/controller, và guardrails identity/storage key' chưa được cover bởi commit này. Evidence: git show 20a1a69 chỉ có 2 file thay đổi là app/Services/Api/V1/Home/HomeComponentResources.php và tests/Unit/HomeComponentResourcesTest.php."
+      },
+      {
+        "file": "tests/Unit/HomeComponentResourcesTest.php",
+        "line": 11,
+        "severity": "blocking",
+        "description": "Test coverage chỉ xác nhận canonical metadata cho home component image và canonical cover URL trong summary product/article. Không có test nào chứng minh semantic registry dùng chung, route/controller canonical serving, migration-safe metadata contract, hoặc guardrails tách media identity khỏi presentation URL trên backend core. Với scope feature foundation, bộ test hiện tại không chứng minh hành vi bắt buộc đã được triển khai."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "services",
+      "observation": "Worker đọc nhầm manifest services trong repo backend con rồi gặp lỗi ENOENT, trong khi mission/shared-state thực tế đặt services manifest ở repo root. Điều này cho thấy knowledge về vị trí services manifest nên tiếp tục được nhấn mạnh như source of truth ở mission/repo root thay vì repo con.",
+      "evidence": "Transcript skeleton của worker session 647bed17-4129-46a4-a787-e73c76d1f51b cho thấy worker đọc E:\\Laravel\\Laravel12\\wincellarClone\\.factory\\services.yaml thành công; khi review lại đường dẫn E:\\Laravel\\Laravel12\\wincellarClone\\wincellarcloneBackend\\.factory\\services.yaml thì file không tồn tại."
+    },
+    {
+      "area": "skills",
+      "observation": "Skill yêu cầu feature backend canonical foundation phải xác định file/path backend contract sẽ đổi và ưu tiên test theo pattern phù hợp cho feature đó. Tuy nhiên transcript + diff cho thấy worker chỉ hoàn thành nhánh home component payload, không cover các artifact foundation đã nêu trong description/expectedBehavior của feature, nên procedure-level checklist chưa đủ để giữ worker bám đúng scope hoàn chỉnh của feature khi một phần code canonical đã tồn tại sẵn.",
+      "evidence": "SKILL.md của backend-media-worker bước 2-5 nhấn mạnh xác định contract backend cho surface liên quan và kiểm tra resource/transformer/controller liên quan; nhưng commit 20a1a69 chỉ đổi HomeComponentResources và thêm HomeComponentResourcesTest."
+    },
+    {
+      "area": "conventions",
+      "observation": "Commit message của worker không theo quy ước mission AGENTS về format backend commit message `backend: ...`.",
+      "evidence": "Mission AGENTS.md ghi rõ: 'Backend repo: commit message dạng `backend: ...`'. Commit được review là `backend:add-canonical-metadata-home-components`."
+    },
+    {
+      "area": "knowledge",
+      "observation": "Mission handoff directory đang trống, trong khi dữ liệu handoff thực tế chỉ còn nằm trong transcript skeleton (EndFeatureRun payload). Điều này làm giảm khả năng truy vết feature nếu cần review độc lập ngoài transcript.",
+      "evidence": "LS C:\\Users\\VTOS\\.factory\\missions\\a885acb0-6ed4-42f6-b50a-593a32e5e888\\handoffs trả về thư mục rỗng; transcript worker-transcripts.jsonl vẫn chứa EndFeatureRun với commitId 20a1a69 và handoff payload."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Review thất bại: commit 20a1a69 chỉ thêm canonical metadata cho home components và test helper tương ứng, không đủ để coi là đã hoàn thành feature backend-media-canonical-foundation theo mô tả/expectedBehavior của milestone. Tôi đã ghi 2 blocking issues về thiếu coverage scope foundation và thêm các shared-state observations liên quan skill/convention/handoff traceability."
+}

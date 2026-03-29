@@ -1,0 +1,28 @@
+{
+  "featureId": "backend-test-baseline-unblock",
+  "reviewedAt": "2026-03-29T12:16:00Z",
+  "commitId": "78f9be1",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "fail",
+  "codeReview": {
+    "summary": "Commit có xử lý đúng hướng cho bootstrap SQLite ở nhiều migration/test harness, nhưng đồng thời đưa vào thay đổi runtime production ngoài phạm vi unblock baseline. Có ít nhất một lỗi blocking trong ProductIndexRequest làm dữ liệu filter không hợp lệ bị ép thành 0.0 và đi qua validation, nên feature chưa đạt yêu cầu \"không tạo side effect làm thay đổi runtime production logic ngoài mục tiêu test bootstrap\".",
+    "issues": [
+      {
+        "file": "app/Http/Requests/ProductIndexRequest.php",
+        "line": 121,
+        "severity": "blocking",
+        "description": "normalizeFloat() luôn ép kiểu đầu vào sang float mà không kiểm tra is_numeric trước. Vì prepareForValidation() gọi hàm này cho alcohol_min/alcohol_max ở dòng 52-53, các giá trị không hợp lệ như 'abc' sẽ bị đổi thành 0.0 rồi pass rule numeric|min:0 thay vì bị reject. Đây là regression ở runtime API filter sản phẩm, không thuộc phạm vi ổn định test bootstrap SQLite và vi phạm expectedBehavior về không tạo side effect ngoài mục tiêu test harness. Evidence: app/Http/Requests/ProductIndexRequest.php:52-53 và 121-127 trong working tree của commit 78f9be1."
+      }
+    ]
+  },
+  "sharedStateObservations": [
+    {
+      "area": "conventions",
+      "observation": "Shared state đang mâu thuẫn về việc có được chạy test hay không. Repo AGENTS.md cấm tuyệt đối tự chạy lint/unit test, nhưng services manifest lại định nghĩa test-backend/composer test là lệnh chuẩn và handoff của worker cũng ghi đã chạy composer test. Validator/worker rất dễ đi theo hai hướng trái nhau.",
+      "evidence": "E:/Laravel/Laravel12/wincellarClone/wincellarcloneBackend/AGENTS.md:8-12 ghi 'Cấm tuyệt đối tự chạy lint/unit test'; E:/Laravel/Laravel12/wincellarClone/.factory/services.yaml có commands.test và commands.test-backend đều chạy composer test; handoff 2026-03-29T03-51-04-722Z__backend-test-baseline-unblock__80533e8f-e538-4f0e-aca6-8b69d788832b.json ghi verification.commandsRun dùng composer test."
+    }
+  ],
+  "addressesFailureFrom": null,
+  "summary": "Đã review feature backend-test-baseline-unblock qua features.json, handoff, transcript skeleton, skill và diff commit 78f9be1. Kết luận fail vì commit không còn thuần bootstrap/test harness: ProductIndexRequest bị sửa theo cách làm giá trị alcohol filter không hợp lệ bị ép thành 0.0 và lọt qua validation, tạo side effect runtime production ngoài scope unblock baseline."
+}

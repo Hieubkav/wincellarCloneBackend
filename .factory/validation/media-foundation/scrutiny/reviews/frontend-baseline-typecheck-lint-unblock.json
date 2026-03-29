@@ -1,0 +1,15 @@
+{
+  "featureId": "frontend-baseline-typecheck-lint-unblock",
+  "reviewedAt": "2026-03-29T05:17:30.706816+00:00",
+  "commitId": "51e247a",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Commit 51e247a bám đúng scope baseline unblock: thêm re-export để giải quyết import path cũ của AdminStickyActionBar, guard src icon tùy chọn trước khi truyền vào next/image ở ContactSocial/Footer, và xóa import không dùng trong lib/api/admin.ts. Các thay đổi đều nhỏ, cục bộ, phù hợp expectedBehavior là làm npx tsc --noEmit và npm run lint pass mà không đổi business logic.",
+    "issues": []
+  },
+  "sharedStateObservations": [],
+  "addressesFailureFrom": null,
+  "summary": "Đã review transcript skeleton, handoff và diff commit 51e247a của feature frontend-baseline-typecheck-lint-unblock. Không phát hiện blocking/non-blocking issue trong phần code được commit; feature đạt mục tiêu khử blocker baseline typecheck/lint mà không mở rộng scope nghiệp vụ."
+}

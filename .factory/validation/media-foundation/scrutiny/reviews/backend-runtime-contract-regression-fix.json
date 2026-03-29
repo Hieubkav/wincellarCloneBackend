@@ -1,0 +1,15 @@
+{
+  "featureId": "backend-runtime-contract-regression-fix",
+  "reviewedAt": "2026-03-29T05:18:19.648998+00:00",
+  "commitId": "96d2d17",
+  "transcriptSkeletonReviewed": true,
+  "diffReviewed": true,
+  "status": "pass",
+  "codeReview": {
+    "summary": "Fix commit 96d2d17 đã giải quyết đầy đủ failure trước đó từ backend-test-baseline-unblock: guard range cho price/alcohol được khôi phục tại request layer và áp dụng lại cho index/search/suggest; đồng thời retry_after không còn bị ép tối thiểu 60 giây nên semantics rate-limit quay về đúng Retry-After runtime. Không thấy regression hoặc scope creep mới trong diff fix này.",
+    "issues": []
+  },
+  "sharedStateObservations": [],
+  "addressesFailureFrom": "E:\\Laravel\\Laravel12\\wincellarClone\\.factory\\validation\\media-foundation\\scrutiny\\reviews\\backend-test-baseline-unblock.json",
+  "summary": "Pass. Tôi đã review transcript skeleton của session f86d661e-4568-4250-9127-209be9203e9b, đọc handoff commit 96d2d17, đối chiếu prior review fail của backend-test-baseline-unblock và xem toàn bộ diff commit. Evidence chính: ProductIndexRequest::assertValidRanges() khôi phục check price_min <= price_max và alcohol_min <= alcohol_max; ProductController cùng ProductSearchController gọi lại guard này cho index/search/suggest; AppServiceProvider và bootstrap/app.php đều bỏ max(60, ...) để trả retry_after theo header gốc."
+}
