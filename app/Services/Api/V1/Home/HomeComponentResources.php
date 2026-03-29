@@ -72,6 +72,8 @@ class HomeComponentResources
 
     public function mapProductSummary(Product $product): array
     {
+        $coverImage = $product->relationLoaded('coverImage') ? $product->coverImage : null;
+
         return [
             'id' => $product->id,
             'name' => $product->name,
@@ -81,17 +83,21 @@ class HomeComponentResources
             'discount_percent' => $product->discount_percent,
             'show_contact_cta' => $product->should_show_contact_cta,
             'cover_image_url' => $product->cover_image_url,
+            'cover_image_canonical_url' => $coverImage?->canonical_url,
         ];
     }
 
     public function mapArticleSummary(Article $article): array
     {
+        $coverImage = $article->relationLoaded('coverImage') ? $article->coverImage : null;
+
         return [
             'id' => $article->id,
             'title' => $article->title,
             'slug' => $article->slug,
             'excerpt' => $article->excerpt,
             'cover_image_url' => $article->cover_image_url,
+            'cover_image_canonical_url' => $coverImage?->canonical_url,
             'published_at' => optional($article->created_at)->toIso8601String(),
         ];
     }
@@ -118,9 +124,15 @@ class HomeComponentResources
 
     public function mapImage(Image $image, ?string $overrideAlt = null): array
     {
+        $canonicalService = app(\App\Services\Media\MediaCanonicalService::class);
+        $semanticType = $image->semantic_type ?: $canonicalService->resolveSemanticType($image);
+
         return [
             'id' => $image->id,
             'url' => $image->url,
+            'canonical_url' => $image->canonical_url,
+            'canonical_key' => $canonicalService->resolveCanonicalKey($image),
+            'semantic_type' => $semanticType,
             'alt' => $overrideAlt ?: $image->alt,
             'width' => $image->width,
             'height' => $image->height,
