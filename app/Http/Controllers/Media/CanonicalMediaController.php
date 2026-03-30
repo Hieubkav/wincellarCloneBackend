@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Media;
 
-use App\Http\Controllers\Controller;
 use App\Http\Controllers\Api\V1\ImageProxyController;
+use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Services\ImageUrlService;
 use App\Services\Media\MediaCanonicalService;

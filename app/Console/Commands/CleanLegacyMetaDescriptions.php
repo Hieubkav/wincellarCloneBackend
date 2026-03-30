@@ -69,8 +69,8 @@ class CleanLegacyMetaDescriptions extends Command
     }
 
     /**
-     * @param class-string<\Illuminate\Database\Eloquent\Model> $modelClass
-     * @param array<int, array{model:string,id:int|string,before:string,after:string}> $samples
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
+     * @param  array<int, array{model:string,id:int|string,before:string,after:string}>  $samples
      * @return array{scanned:int,affected:int}
      */
     protected function scanModel(string $modelClass, bool $apply, array &$samples): array
@@ -115,7 +115,7 @@ class CleanLegacyMetaDescriptions extends Command
     }
 
     /**
-     * @param class-string<\Illuminate\Database\Eloquent\Model> $modelClass
+     * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
      */
     protected function baseQuery(string $modelClass): Builder
     {

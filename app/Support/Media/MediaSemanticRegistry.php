@@ -7,15 +7,25 @@ use Illuminate\Support\Str;
 final class MediaSemanticRegistry
 {
     public const PRODUCT = 'product';
+
     public const ARTICLE = 'article';
+
     public const SETTINGS_LOGO = 'settings-logo';
+
     public const SETTINGS_FAVICON = 'settings-favicon';
+
     public const SETTINGS_OG = 'settings-og';
+
     public const SETTINGS_WATERMARK = 'settings-watermark';
+
     public const HOME = 'home';
+
     public const SOCIAL = 'social';
+
     public const CONTENT = 'content';
+
     public const SHARED = 'shared';
+
     public const TERM = 'term';
 
     /**

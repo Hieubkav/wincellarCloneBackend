@@ -57,8 +57,7 @@ class MediaCanonicalService
         ?string $semanticType = null,
         ?string $slugBase = null,
         bool $persist = false
-    ): void
-    {
+    ): void {
         $dirty = false;
         $semanticType = MediaSemanticRegistry::normalize($semanticType)
             ?? MediaSemanticRegistry::normalize($image->semantic_type)

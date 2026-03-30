@@ -238,6 +238,7 @@ trait HasRichEditorMedia
                 '/('.$attribute.'=["\'])([^"\']+)(["\'])/i',
                 function ($matches) use ($rewriteValue) {
                     $value = $rewriteValue($matches[2]);
+
                     return $matches[1].$value.$matches[3];
                 },
                 $source
@@ -251,6 +252,7 @@ trait HasRichEditorMedia
             '/"url":"([^"]+)"/',
             function ($matches) use ($rewriteValue) {
                 $value = $rewriteValue($matches[1]);
+
                 return '"url":"'.$value.'"';
             },
             $content

@@ -609,9 +609,9 @@ class AdminProductController extends Controller
     }
 
     /**
-     * @param array<string, array<int, Image>> $imagesByPath
-     * @param array<string, array<int, Image>> $imagesByKey
-     * @param array<int, Image> $imagesById
+     * @param  array<string, array<int, Image>>  $imagesByPath
+     * @param  array<string, array<int, Image>>  $imagesByKey
+     * @param  array<int, Image>  $imagesById
      */
     private function resolveExistingProductImage(
         array &$imagesByPath,

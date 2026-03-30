@@ -36,6 +36,7 @@ class RebuildCanonicalSlugs extends Command
 
                 if ($only && ! in_array($context['semantic'], $only, true)) {
                     $skipped++;
+
                     continue;
                 }
 
