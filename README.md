@@ -1,4 +1,4 @@
-hãy chạy
+hãy chạy nha
 
 ```
 php artisan icons:cache
