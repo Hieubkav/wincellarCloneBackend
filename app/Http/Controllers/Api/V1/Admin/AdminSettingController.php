@@ -72,6 +72,11 @@ class AdminSettingController extends Controller
             'product_shopee_link_enabled' => (bool) ($setting->product_shopee_link_enabled ?? false),
             'product_mobile_main_image_height' => $setting->product_mobile_main_image_height,
             'product_detail_rules' => $setting->product_detail_rules,
+            'product_detail_faq_enabled' => (bool) ($setting->product_detail_faq_enabled ?? true),
+            'product_detail_faq_title' => $setting->product_detail_faq_title,
+            'product_detail_faq_eyebrow' => $setting->product_detail_faq_eyebrow,
+            'product_detail_faq_items' => $setting->product_detail_faq_items,
+            'product_detail_faq_position' => $setting->product_detail_faq_position,
             'meta_default_title' => $setting->meta_default_title,
             'meta_default_description' => $setting->meta_default_description,
             'meta_default_keywords' => $setting->meta_default_keywords,
@@ -160,6 +165,13 @@ class AdminSettingController extends Controller
             'product_mobile_main_image_height' => ['nullable', 'integer', 'min:240', 'max:520'],
             'product_detail_rules' => ['nullable', 'array'],
             'product_detail_rules.*' => ['nullable', 'string', 'max:255'],
+            'product_detail_faq_enabled' => ['nullable', 'boolean'],
+            'product_detail_faq_title' => ['nullable', 'string', 'max:255'],
+            'product_detail_faq_eyebrow' => ['nullable', 'string', 'max:255'],
+            'product_detail_faq_position' => ['nullable', 'string', 'in:after_description,after_same_type,after_related_products'],
+            'product_detail_faq_items' => ['nullable', 'array'],
+            'product_detail_faq_items.*.question' => ['nullable', 'string', 'max:500'],
+            'product_detail_faq_items.*.answer' => ['nullable', 'string'],
             'meta_default_title' => ['nullable', 'string', 'max:255'],
             'meta_default_description' => ['nullable', 'string', 'max:500'],
             'meta_default_keywords' => ['nullable', 'string', 'max:500'],
@@ -224,6 +236,20 @@ class AdminSettingController extends Controller
         if (array_key_exists('product_detail_rules', $validated)) {
             $validated['product_detail_rules'] = $this->normalizeStringArray(
                 $validated['product_detail_rules']
+            );
+        }
+
+        if (array_key_exists('product_detail_faq_title', $validated)) {
+            $validated['product_detail_faq_title'] = $this->normalizeStringValue($validated['product_detail_faq_title']);
+        }
+
+        if (array_key_exists('product_detail_faq_eyebrow', $validated)) {
+            $validated['product_detail_faq_eyebrow'] = $this->normalizeStringValue($validated['product_detail_faq_eyebrow']);
+        }
+
+        if (array_key_exists('product_detail_faq_items', $validated)) {
+            $validated['product_detail_faq_items'] = $this->normalizeFaqItems(
+                $validated['product_detail_faq_items']
             );
         }
 
@@ -408,6 +434,34 @@ class AdminSettingController extends Controller
             }
 
             $normalized[] = $trimmed;
+        }
+
+        return $normalized === [] ? null : array_values($normalized);
+    }
+
+    private function normalizeFaqItems(mixed $items): ?array
+    {
+        if (! is_array($items)) {
+            return null;
+        }
+
+        $normalized = [];
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $question = $this->normalizeStringValue($item['question'] ?? null);
+            $answer = $this->normalizeStringValue($item['answer'] ?? null);
+
+            if (! $question || ! $answer) {
+                continue;
+            }
+
+            $normalized[] = [
+                'question' => $question,
+                'answer' => $answer,
+            ];
         }
 
         return $normalized === [] ? null : array_values($normalized);

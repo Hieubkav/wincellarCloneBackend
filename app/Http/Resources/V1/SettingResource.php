@@ -73,6 +73,11 @@ class SettingResource extends JsonResource
             'product_shopee_link_enabled' => (bool) ($this->product_shopee_link_enabled ?? false),
             'product_mobile_main_image_height' => $this->product_mobile_main_image_height,
             'product_detail_rules' => $this->product_detail_rules,
+            'product_detail_faq_enabled' => (bool) ($this->product_detail_faq_enabled ?? true),
+            'product_detail_faq_title' => $this->product_detail_faq_title,
+            'product_detail_faq_eyebrow' => $this->product_detail_faq_eyebrow,
+            'product_detail_faq_items' => $this->product_detail_faq_items,
+            'product_detail_faq_position' => $this->product_detail_faq_position,
 
             // Logo and favicon URLs
             'logo_url' => $logoUrl,

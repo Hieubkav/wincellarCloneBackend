@@ -43,6 +43,11 @@ class Setting extends Model
         'product_shopee_link_enabled',
         'product_mobile_main_image_height',
         'product_detail_rules',
+        'product_detail_faq_enabled',
+        'product_detail_faq_title',
+        'product_detail_faq_eyebrow',
+        'product_detail_faq_items',
+        'product_detail_faq_position',
         'meta_default_title',
         'meta_default_description',
         'meta_default_keywords',
@@ -82,6 +87,8 @@ class Setting extends Model
             'product_shopee_link_enabled' => 'boolean',
             'product_mobile_main_image_height' => 'integer',
             'product_detail_rules' => 'array',
+            'product_detail_faq_enabled' => 'boolean',
+            'product_detail_faq_items' => 'array',
         ];
     }
 
