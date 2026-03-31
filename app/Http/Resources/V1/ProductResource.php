@@ -53,6 +53,7 @@ class ProductResource extends JsonResource
                     'id' => $brand->id,
                     'name' => $brand->name,
                     'slug' => $brand->slug,
+                    'description' => $brand->description,
                 ] : null;
             }),
 
@@ -299,6 +300,7 @@ class ProductResource extends JsonResource
                 'id' => $brand->id,
                 'name' => $brand->name,
                 'slug' => $brand->slug,
+                'description' => $brand->description,
             ] : null,
             'country_term' => ($country = $product->primaryTerm('origin')) ? [
                 'id' => $country->id,

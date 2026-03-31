@@ -121,6 +121,7 @@ class AdminCatalogAttributeGroupController extends Controller
                     'id' => $term->id,
                     'name' => $term->name,
                     'slug' => $term->slug,
+                    'description' => $term->description,
                     'position' => $term->position,
                 ])->toArray(),
                 'product_types' => $group->productTypes->map(fn ($type) => [
