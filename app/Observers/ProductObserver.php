@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\Product;
+use App\Services\RevalidationService;
 use App\Support\Product\ProductCacheManager;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -96,25 +97,48 @@ class ProductObserver
     public function created(Product $product): void
     {
         $this->incrementCacheVersion();
+        $this->triggerFrontendRevalidation($product);
     }
 
     public function updated(Product $product): void
     {
         $this->incrementCacheVersion();
+        $this->triggerFrontendRevalidation($product, true);
     }
 
     public function deleted(Product $product): void
     {
         $this->incrementCacheVersion();
+        $this->triggerFrontendRevalidation($product, true);
     }
 
     public function restored(Product $product): void
     {
         $this->incrementCacheVersion();
+        $this->triggerFrontendRevalidation($product);
     }
 
     public function forceDeleted(Product $product): void
     {
         $this->incrementCacheVersion();
+        $this->triggerFrontendRevalidation($product, true);
+    }
+
+    private function triggerFrontendRevalidation(Product $product, bool $includeOriginalSlug = false): void
+    {
+        $slugs = [];
+
+        if (! empty($product->slug)) {
+            $slugs[] = $product->slug;
+        }
+
+        if ($includeOriginalSlug) {
+            $originalSlug = $product->getOriginal('slug');
+            if (is_string($originalSlug) && $originalSlug !== '' && $originalSlug !== $product->slug) {
+                $slugs[] = $originalSlug;
+            }
+        }
+
+        app(RevalidationService::class)->revalidateProducts(array_values(array_unique($slugs)));
     }
 }

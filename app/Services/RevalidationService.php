@@ -107,6 +107,32 @@ class RevalidationService
     }
 
     /**
+     * Revalidate product pages and related listing surfaces
+     *
+     * @param  array<string>  $slugs
+     */
+    public function revalidateProducts(array $slugs = []): bool
+    {
+        $paths = ['/filter'];
+
+        foreach ($slugs as $slug) {
+            $trimmed = trim($slug);
+            if ($trimmed === '') {
+                continue;
+            }
+
+            $paths[] = '/san-pham/'.$trimmed;
+        }
+
+        $paths = array_values(array_unique($paths));
+
+        return $this->triggerRevalidation(
+            paths: $paths,
+            tags: ['products', 'filters', 'home']
+        );
+    }
+
+    /**
      * Revalidate settings only
      */
     public function revalidateSettings(): bool
