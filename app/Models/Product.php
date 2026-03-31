@@ -143,9 +143,10 @@ class Product extends Model
     public function primaryTerm(string $groupCode): ?CatalogTerm
     {
         $terms = $this->ensureTermsLoaded();
+        $resolvedCodes = $this->resolveGroupCodeAliases($groupCode);
 
-        return $terms->first(function (CatalogTerm $term) use ($groupCode) {
-            return optional($term->group)->code === $groupCode;
+        return $terms->first(function (CatalogTerm $term) use ($resolvedCodes) {
+            return in_array(optional($term->group)->code, $resolvedCodes, true);
         });
     }
 
@@ -155,10 +156,23 @@ class Product extends Model
     public function termsByGroup(string $groupCode): Collection
     {
         $terms = $this->ensureTermsLoaded();
+        $resolvedCodes = $this->resolveGroupCodeAliases($groupCode);
 
         return $terms
-            ->filter(fn (CatalogTerm $term) => optional($term->group)->code === $groupCode)
+            ->filter(fn (CatalogTerm $term) => in_array(optional($term->group)->code, $resolvedCodes, true))
             ->values();
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function resolveGroupCodeAliases(string $groupCode): array
+    {
+        return match ($groupCode) {
+            'brand' => ['brand', 'thuong_hieu'],
+            'origin' => ['origin', 'xuat_xu'],
+            default => [$groupCode],
+        };
     }
 
     /**
