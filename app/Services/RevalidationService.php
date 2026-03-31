@@ -81,6 +81,32 @@ class RevalidationService
     }
 
     /**
+     * Revalidate article pages and related article listing surfaces
+     *
+     * @param  array<string>  $slugs
+     */
+    public function revalidateArticles(array $slugs = []): bool
+    {
+        $paths = ['/bai-viet'];
+
+        foreach ($slugs as $slug) {
+            $trimmed = trim($slug);
+            if ($trimmed === '') {
+                continue;
+            }
+
+            $paths[] = '/bai-viet/'.$trimmed;
+        }
+
+        $paths = array_values(array_unique($paths));
+
+        return $this->triggerRevalidation(
+            paths: $paths,
+            tags: ['articles', 'home']
+        );
+    }
+
+    /**
      * Revalidate settings only
      */
     public function revalidateSettings(): bool
