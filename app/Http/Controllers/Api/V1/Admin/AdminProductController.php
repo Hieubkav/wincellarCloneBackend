@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AdminProductController extends Controller
@@ -483,6 +484,60 @@ class AdminProductController extends Controller
             'success' => true,
             'message' => "Đã xóa {$count} sản phẩm",
             'count' => $count,
+        ]);
+    }
+
+    public function bulkUpdate(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:products,id'],
+            'fields' => ['required', 'array', 'min:1'],
+            'fields.*' => ['string', Rule::in(['active', 'type_id', 'category_ids'])],
+            'changes' => ['required', 'array'],
+            'changes.active' => ['boolean'],
+            'changes.type_id' => ['nullable', 'exists:product_types,id'],
+            'changes.category_ids' => ['array'],
+            'changes.category_ids.*' => ['integer', 'exists:product_categories,id'],
+        ]);
+
+        $fields = collect($validated['fields'])->unique()->values();
+        $changes = $validated['changes'];
+
+        $missingFields = $fields->filter(fn (string $field) => ! array_key_exists($field, $changes));
+        if ($missingFields->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'changes' => ['Thiếu dữ liệu cho trường: '.$missingFields->implode(', ')],
+            ]);
+        }
+
+        $updates = [];
+        if ($fields->contains('active')) {
+            $updates['active'] = (bool) $changes['active'];
+        }
+        if ($fields->contains('type_id')) {
+            $updates['type_id'] = $changes['type_id'];
+        }
+
+        $ids = $validated['ids'];
+
+        DB::transaction(function () use ($ids, $fields, $updates, $changes): void {
+            if (! empty($updates)) {
+                Product::whereIn('id', $ids)->update($updates);
+            }
+
+            if ($fields->contains('category_ids')) {
+                $products = Product::whereIn('id', $ids)->get(['id']);
+                foreach ($products as $product) {
+                    $product->categories()->sync($changes['category_ids']);
+                }
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật hàng loạt thành công',
+            'count' => count($ids),
         ]);
     }
 

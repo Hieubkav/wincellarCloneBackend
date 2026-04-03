@@ -55,6 +55,7 @@ Route::prefix('admin')
             Route::put('products/{id}', [AdminProductController::class, 'update'])->name('products.update');
             Route::delete('products/{id}', [AdminProductController::class, 'destroy'])->name('products.destroy');
             Route::post('products/bulk-delete', [AdminProductController::class, 'bulkDestroy'])->name('products.bulk-destroy');
+            Route::post('products/bulk-update', [AdminProductController::class, 'bulkUpdate'])->name('products.bulk-update');
 
             // Articles CRUD
             Route::get('articles/list-for-select', [AdminArticleController::class, 'listForSelect'])->name('articles.list-for-select');
