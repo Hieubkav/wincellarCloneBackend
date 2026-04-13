@@ -38,13 +38,10 @@ class AdminProductController extends Controller
                 ->orderBy('id');
 
             if ($typeId) {
-                $categoriesQuery->where(function ($query) use ($typeId) {
-                    $query->where('type_id', $typeId)
-                        ->orWhereNull('type_id');
-                });
+                $categoriesQuery->where('type_id', $typeId);
             }
 
-            $categories = $categoriesQuery->get(['id', 'name', 'slug']);
+            $categories = $categoriesQuery->get(['id', 'name', 'slug', 'type_id']);
 
             return [
                 'types' => $types->map(fn (ProductType $type) => [
@@ -56,6 +53,7 @@ class AdminProductController extends Controller
                     'id' => $category->id,
                     'name' => $category->name,
                     'slug' => $category->slug,
+                    'type_id' => $category->type_id,
                 ])->values(),
             ];
         });
@@ -129,19 +127,13 @@ class AdminProductController extends Controller
                 'products.type_id',
                 'products.created_at',
             ])
-            ->selectSub(
-                DB::table('product_category_product')
-                    ->join('product_categories', 'product_categories.id', '=', 'product_category_product.product_category_id')
-                    ->whereColumn('product_category_product.product_id', 'products.id')
-                    ->orderBy('product_categories.order')
-                    ->orderBy('product_categories.id')
-                    ->limit(1)
-                    ->select('product_categories.name'),
-                'category_name'
-            )
             ->with([
                 'coverImage:id,file_path,alt,disk,model_id,model_type,order',
                 'type:id,name',
+                'categories' => fn ($query) => $query
+                    ->select('product_categories.id', 'product_categories.name')
+                    ->orderBy('product_categories.order')
+                    ->orderBy('product_categories.id'),
             ])
             ->orderBy($sortBy, $sortDir)
             ->orderBy('products.id', 'desc');
@@ -169,20 +161,31 @@ class AdminProductController extends Controller
         $queryMs = (microtime(true) - $queryStart) * 1000;
 
         $transformStart = microtime(true);
-        $items = $products->map(fn ($p) => [
-            'id' => $p->id,
-            'name' => $p->name,
-            'slug' => $p->slug,
-            'price' => $p->price,
-            'original_price' => $p->original_price,
-            'active' => $p->active,
-            'type_id' => $p->type_id,
-            'type_name' => $p->type?->name,
-            'category_name' => $p->category_name,
-            'cover_image_url' => $p->coverImage?->proxy_url ?? $p->coverImage?->url,
-            'cover_image_canonical_url' => $p->coverImage?->canonical_url,
-            'created_at' => $p->created_at?->toIso8601String(),
-        ]);
+        $items = $products->map(function (Product $product) {
+            $categoryNames = $product->categories->pluck('name')->values();
+            $categoryIds = $product->categories->pluck('id')->values();
+
+            return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'slug' => $product->slug,
+            'price' => $product->price,
+            'original_price' => $product->original_price,
+            'active' => $product->active,
+            'type_id' => $product->type_id,
+            'type_name' => $product->type?->name,
+            'category_name' => $categoryNames->first(),
+            'category_names' => $categoryNames,
+            'category_ids' => $categoryIds,
+            'categories' => $product->categories->map(fn (ProductCategory $category) => [
+                'id' => $category->id,
+                'name' => $category->name,
+            ])->values(),
+            'cover_image_url' => $product->coverImage?->proxy_url ?? $product->coverImage?->url,
+            'cover_image_canonical_url' => $product->coverImage?->canonical_url,
+            'created_at' => $product->created_at?->toIso8601String(),
+        ];
+        });
         $transformMs = (microtime(true) - $transformStart) * 1000;
 
         $meta = [
@@ -387,6 +390,11 @@ class AdminProductController extends Controller
         $validated['slug'] = $validated['slug'] ?? Str::slug($validated['name']);
         $validated['active'] = $validated['active'] ?? true;
 
+        $typeId = $validated['type_id'] ?? null;
+        if (! empty($validated['category_ids'])) {
+            $this->assertCategoriesMatchType($typeId, $validated['category_ids']);
+        }
+
         $product = Product::create($validated);
 
         if (! empty($validated['category_ids'])) {
@@ -434,6 +442,13 @@ class AdminProductController extends Controller
             'term_ids' => ['nullable', 'array'],
             'term_ids.*' => ['integer', 'exists:catalog_terms,id'],
         ]);
+
+        $typeId = array_key_exists('type_id', $validated) ? $validated['type_id'] : $product->type_id;
+        if (array_key_exists('category_ids', $validated)) {
+            $this->assertCategoriesMatchType($typeId, $validated['category_ids']);
+        } elseif (array_key_exists('type_id', $validated)) {
+            $this->assertCategoriesMatchType($typeId, $product->categories->pluck('id')->all());
+        }
 
         $product->update($validated);
 
@@ -520,6 +535,47 @@ class AdminProductController extends Controller
         }
 
         $ids = $validated['ids'];
+        if ($fields->contains('type_id') && ! $fields->contains('category_ids')) {
+            $products = Product::with(['categories:id,type_id'])->whereIn('id', $ids)->get(['id']);
+            foreach ($products as $product) {
+                $invalid = $product->categories->filter(function (ProductCategory $category) use ($changes) {
+                    if ($changes['type_id'] === null) {
+                        return $category->type_id !== null;
+                    }
+
+                    return $category->type_id !== $changes['type_id'];
+                });
+
+                if ($invalid->isNotEmpty()) {
+                    throw ValidationException::withMessages([
+                        'changes.type_id' => ['Danh mục phải cùng phân loại với sản phẩm.'],
+                    ]);
+                }
+            }
+        }
+
+        if ($fields->contains('category_ids') && ! empty($changes['category_ids'])) {
+            $categoryTypeMap = ProductCategory::whereIn('id', $changes['category_ids'])
+                ->pluck('type_id', 'id');
+            $products = Product::whereIn('id', $ids)->get(['id', 'type_id']);
+
+            foreach ($products as $product) {
+                $effectiveTypeId = $fields->contains('type_id') ? $changes['type_id'] : $product->type_id;
+                $invalid = $categoryTypeMap->filter(function ($categoryTypeId) use ($effectiveTypeId) {
+                    if ($effectiveTypeId === null) {
+                        return $categoryTypeId !== null;
+                    }
+
+                    return $categoryTypeId !== $effectiveTypeId;
+                });
+
+                if ($invalid->isNotEmpty()) {
+                    throw ValidationException::withMessages([
+                        'changes.category_ids' => ['Danh mục phải cùng phân loại với sản phẩm.'],
+                    ]);
+                }
+            }
+        }
 
         DB::transaction(function () use ($ids, $fields, $updates, $changes): void {
             if (! empty($updates)) {
@@ -539,6 +595,28 @@ class AdminProductController extends Controller
             'message' => 'Cập nhật hàng loạt thành công',
             'count' => count($ids),
         ]);
+    }
+
+    private function assertCategoriesMatchType(?int $typeId, array $categoryIds): void
+    {
+        if (empty($categoryIds)) {
+            return;
+        }
+
+        $categories = ProductCategory::whereIn('id', $categoryIds)->get(['id', 'type_id']);
+        $invalid = $categories->filter(function (ProductCategory $category) use ($typeId) {
+            if ($typeId === null) {
+                return $category->type_id !== null;
+            }
+
+            return $category->type_id !== $typeId;
+        });
+
+        if ($invalid->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'category_ids' => ['Danh mục phải cùng phân loại với sản phẩm.'],
+            ]);
+        }
     }
 
     private function attachCoverImage(Product $product, string $filePath): void
