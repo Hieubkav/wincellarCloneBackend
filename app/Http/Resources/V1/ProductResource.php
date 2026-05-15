@@ -155,7 +155,7 @@ class ProductResource extends JsonResource
 
                     return [
                         'products' => $products->map(fn ($product) => $this->mapProductSummary($product))->values(),
-                        'view_all_url' => $this->type ? '/filter?type='.$this->type->id : null,
+                        'view_all_url' => $this->type ? '/san-pham?type='.$this->type->id : null,
                     ];
                 }
             ),
@@ -419,7 +419,7 @@ class ProductResource extends JsonResource
     protected function buildFilterUrl($term): string
     {
         if (! $term || ! $term->group) {
-            return '/filter';
+            return '/san-pham';
         }
 
         $groupCode = $term->group->code;
@@ -433,7 +433,7 @@ class ProductResource extends JsonResource
 
         $param = $paramMap[$groupCode] ?? $groupCode;
 
-        return '/filter?'.$param.'='.$term->id;
+        return '/san-pham?'.$param.'='.$term->id;
     }
 
     /**

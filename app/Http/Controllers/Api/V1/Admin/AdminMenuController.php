@@ -527,34 +527,24 @@ class AdminMenuController extends Controller
                 'items' => [
                     $this->routeItem('Trang chủ', '/', 'core'),
                     $this->routeItem('Sản phẩm', '/san-pham', 'core'),
-                    $this->routeItem('Bộ lọc sản phẩm', '/filter', 'core'),
                     $this->routeItem('Bài viết', '/bai-viet', 'core'),
                     $this->routeItem('Liên hệ', '/lien-he', 'core'),
-                    $this->routeItem('Liên hệ (legacy)', '/contact', 'core'),
                 ],
             ],
             [
                 'key' => 'site-hubs',
-                'label' => 'Trang hub website',
+                'label' => 'Trang hệ thống',
                 'items' => [
                     $this->routeItem('Thương hiệu', '/thuong-hieu', 'site_hub'),
                     $this->routeItem('Bộ sưu tập', '/bo-suu-tap', 'site_hub'),
-                    $this->routeItem('Quà tặng', '/qua-tang', 'site_hub'),
-                    $this->routeItem('Kiến thức', '/kien-thuc', 'site_hub'),
-                    $this->routeItem('Dịch vụ', '/dich-vu', 'site_hub'),
                     $this->routeItem('Cửa hàng', '/cua-hang', 'site_hub'),
-                    $this->routeItem('Hỗ trợ', '/ho-tro', 'site_hub'),
-                    $this->routeItem('Giới thiệu', '/gioi-thieu', 'site_hub'),
-                    $this->routeItem('Tin tức', '/tin-tuc', 'site_hub'),
-                    $this->routeItem('Sự kiện', '/su-kien', 'site_hub'),
-                    $this->routeItem('Demo chốt khách', '/demo-chot-khach', 'site_hub'),
                 ],
             ],
             [
                 'key' => 'content-hubs',
-                'label' => 'Hub nội dung',
+                'label' => 'Hub bài viết',
                 'items' => collect(ArticleContentCatalog::categories())
-                    ->map(fn (array $category) => $this->routeItem($category['label'], '/'.$category['key'], 'content_hub', ['category' => $category['key']]))
+                    ->map(fn (array $category) => $this->routeItem($category['label'], $this->articleCategoryHubPath($category['key']), 'content_hub', ['category' => $category['key']]))
                     ->values()
                     ->all(),
             ],
@@ -670,7 +660,21 @@ class AdminMenuController extends Controller
 
     private function articleHref(Article $article): string
     {
-        $hub = [
+        $hub = $this->articleCategoryHub($article->category_key);
+
+        return $hub ? "/{$hub}/{$article->slug}" : "/bai-viet/{$article->slug}";
+    }
+
+    private function articleCategoryHubPath(?string $categoryKey): string
+    {
+        $hub = $this->articleCategoryHub($categoryKey);
+
+        return $hub ? "/{$hub}" : '/bai-viet';
+    }
+
+    private function articleCategoryHub(?string $categoryKey): ?string
+    {
+        return [
             'kien-thuc' => 'kien-thuc',
             'chinh-sach' => 'ho-tro',
             'gioi-thieu' => 'gioi-thieu',
@@ -678,8 +682,6 @@ class AdminMenuController extends Controller
             'qua-tang' => 'qua-tang',
             'tin-tuc' => 'tin-tuc',
             'su-kien' => 'su-kien',
-        ][$article->category_key] ?? null;
-
-        return $hub ? "/{$hub}/{$article->slug}" : "/bai-viet/{$article->slug}";
+        ][$categoryKey] ?? null;
     }
 }

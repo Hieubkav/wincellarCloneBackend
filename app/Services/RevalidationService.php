@@ -75,7 +75,7 @@ class RevalidationService
     public function revalidateAll(): bool
     {
         return $this->triggerRevalidation(
-            paths: ['/', '/products', '/filter'],
+            paths: ['/', '/products', '/san-pham'],
             tags: ['home', 'menu', 'products', 'settings']
         );
     }
@@ -113,7 +113,7 @@ class RevalidationService
      */
     public function revalidateProducts(array $slugs = []): bool
     {
-        $paths = ['/filter'];
+        $paths = ['/san-pham'];
 
         foreach ($slugs as $slug) {
             $trimmed = trim($slug);
@@ -138,7 +138,7 @@ class RevalidationService
     public function revalidateSettings(): bool
     {
         return $this->triggerRevalidation(
-            paths: ['/', '/filter'],
+            paths: ['/', '/san-pham'],
             tags: ['settings']
         );
     }
