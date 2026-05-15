@@ -261,7 +261,7 @@ class AdminMenuController extends Controller
     {
         $menu = Menu::findOrFail($menuId);
         $validated = $request->validate([
-            'items' => ['required', 'array'],
+            'items' => ['present', 'array'],
             'items.*.id' => ['nullable', 'integer'],
             'items.*.client_id' => ['nullable', 'string', 'max:80'],
             'items.*.parent_id' => ['nullable'],
