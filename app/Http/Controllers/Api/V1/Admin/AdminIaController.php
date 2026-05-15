@@ -12,7 +12,7 @@ class AdminIaController extends Controller
     {
         return response()->json([
             'data' => [
-                'template_name' => 'IA chị Ngân',
+                'template_name' => 'Sơ đồ trang đề xuất',
                 'groups' => NganIaTemplate::groups(),
                 'compliance' => NganIaTemplate::compliance(),
             ],

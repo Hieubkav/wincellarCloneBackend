@@ -169,7 +169,7 @@ class NganIaTemplate
             $path = $item['path'];
             $menuCovered = $menuHrefs->contains($path);
             $resolvable = true;
-            $message = 'Đã có route shell hoặc route tĩnh.';
+            $message = 'Đã có trang tương ứng.';
 
             if ($source === 'product_type' || str_starts_with($source, 'product_') || $source === 'price_preset') {
                 $typeSlug = $item['type_slug'] ?? null;
@@ -189,8 +189,8 @@ class NganIaTemplate
 
                 $resolvable = $typeResolved && $childResolved;
                 $message = $resolvable
-                    ? 'Resolve được bằng taxonomy hoặc preset.'
-                    : 'Thiếu hoặc lệch slug taxonomy so với IA chị Ngân.';
+                    ? 'Đường dẫn khớp với dữ liệu hiện có.'
+                    : 'Thiếu dữ liệu hoặc đường dẫn chưa khớp với sơ đồ đề xuất.';
             }
 
             $severity = $resolvable ? ($menuCovered ? 'pass' : 'warning') : 'missing';
