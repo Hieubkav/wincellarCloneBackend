@@ -22,6 +22,8 @@ class MenuBlockItem extends Model
         'menu_block_id',
         'label',
         'href',
+        'semantic_type',
+        'route_payload',
         'badge',
         'order',
         'active',
@@ -35,6 +37,7 @@ class MenuBlockItem extends Model
         return [
             'order' => 'int',
             'active' => 'bool',
+            'route_payload' => 'array',
         ];
     }
 

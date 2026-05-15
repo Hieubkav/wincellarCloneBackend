@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminCatalogTermController;
 use App\Http\Controllers\Api\V1\Admin\AdminCategoryController;
 use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\AdminHomeComponentController;
+use App\Http\Controllers\Api\V1\Admin\AdminIaController;
 use App\Http\Controllers\Api\V1\Admin\AdminImageController;
 use App\Http\Controllers\Api\V1\Admin\AdminMenuController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductController;
@@ -142,6 +143,7 @@ Route::prefix('admin')
             Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
 
             // Menus CRUD
+            Route::get('ia', AdminIaController::class)->name('ia.index');
             Route::get('menus', [AdminMenuController::class, 'index'])->name('menus.index');
             Route::get('menus/{id}', [AdminMenuController::class, 'show'])->name('menus.show');
             Route::post('menus', [AdminMenuController::class, 'store'])->name('menus.store');

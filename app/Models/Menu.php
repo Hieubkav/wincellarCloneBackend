@@ -20,6 +20,8 @@ class Menu extends Model
         'title',
         'type',
         'href',
+        'semantic_type',
+        'route_payload',
         'order',
         'active',
     ];
@@ -32,6 +34,7 @@ class Menu extends Model
         return [
             'order' => 'int',
             'active' => 'bool',
+            'route_payload' => 'array',
         ];
     }
 

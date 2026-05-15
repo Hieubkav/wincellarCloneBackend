@@ -28,6 +28,8 @@ class AdminMenuController extends Controller
                 'title',
                 'type',
                 'href',
+                'semantic_type',
+                'route_payload',
                 'order',
                 'active',
                 'created_at',
@@ -48,7 +50,7 @@ class AdminMenuController extends Controller
         if ($includeItems) {
             $query->with([
                 'blocks' => fn ($q) => $q->select(['id', 'menu_id', 'title', 'order', 'active']),
-                'blocks.items' => fn ($q) => $q->select(['id', 'menu_block_id', 'label', 'href', 'badge', 'order', 'active']),
+                'blocks.items' => fn ($q) => $q->select(['id', 'menu_block_id', 'label', 'href', 'semantic_type', 'route_payload', 'badge', 'order', 'active']),
             ]);
         }
 
@@ -61,6 +63,8 @@ class AdminMenuController extends Controller
                 'title' => $m->title,
                 'type' => $m->type,
                 'href' => $m->href,
+                'semantic_type' => $m->semantic_type,
+                'route_payload' => $m->route_payload,
                 'order' => $m->order,
                 'active' => $m->active,
                 'blocks' => $m->blocks->map(fn ($b) => [
@@ -72,6 +76,8 @@ class AdminMenuController extends Controller
                         'id' => $i->id,
                         'label' => $i->label,
                         'href' => $i->href,
+                        'semantic_type' => $i->semantic_type,
+                        'route_payload' => $i->route_payload,
                         'badge' => $i->badge,
                         'order' => $i->order,
                         'active' => $i->active,
@@ -85,6 +91,8 @@ class AdminMenuController extends Controller
                 'title' => $m->title,
                 'type' => $m->type,
                 'href' => $m->href,
+                'semantic_type' => $m->semantic_type,
+                'route_payload' => $m->route_payload,
                 'order' => $m->order,
                 'active' => $m->active,
                 'blocks_count' => $m->blocks_count,
@@ -112,6 +120,8 @@ class AdminMenuController extends Controller
                 'title' => $menu->title,
                 'type' => $menu->type,
                 'href' => $menu->href,
+                'semantic_type' => $menu->semantic_type,
+                'route_payload' => $menu->route_payload,
                 'order' => $menu->order,
                 'active' => $menu->active,
                 'blocks' => $menu->blocks->map(fn ($b) => [
@@ -123,6 +133,8 @@ class AdminMenuController extends Controller
                         'id' => $i->id,
                         'label' => $i->label,
                         'href' => $i->href,
+                        'semantic_type' => $i->semantic_type,
+                        'route_payload' => $i->route_payload,
                         'badge' => $i->badge,
                         'order' => $i->order,
                         'active' => $i->active,
@@ -140,6 +152,8 @@ class AdminMenuController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'type' => ['nullable', 'string', 'max:50'],
             'href' => ['nullable', 'string', 'max:255'],
+            'semantic_type' => ['nullable', 'string', 'max:50'],
+            'route_payload' => ['nullable', 'array'],
             'order' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
         ]);
@@ -164,6 +178,8 @@ class AdminMenuController extends Controller
             'title' => ['sometimes', 'string', 'max:255'],
             'type' => ['nullable', 'string', 'max:50'],
             'href' => ['nullable', 'string', 'max:255'],
+            'semantic_type' => ['nullable', 'string', 'max:50'],
+            'route_payload' => ['nullable', 'array'],
             'order' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
         ]);
@@ -282,6 +298,8 @@ class AdminMenuController extends Controller
         $validated = $request->validate([
             'label' => ['required', 'string', 'max:255'],
             'href' => ['nullable', 'string', 'max:255'],
+            'semantic_type' => ['nullable', 'string', 'max:50'],
+            'route_payload' => ['nullable', 'array'],
             'badge' => ['nullable', 'string', 'max:50'],
             'order' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
@@ -307,6 +325,8 @@ class AdminMenuController extends Controller
         $validated = $request->validate([
             'label' => ['sometimes', 'string', 'max:255'],
             'href' => ['nullable', 'string', 'max:255'],
+            'semantic_type' => ['nullable', 'string', 'max:50'],
+            'route_payload' => ['nullable', 'array'],
             'badge' => ['nullable', 'string', 'max:50'],
             'order' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
