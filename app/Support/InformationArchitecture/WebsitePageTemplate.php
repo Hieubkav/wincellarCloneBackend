@@ -10,7 +10,7 @@ use App\Models\ProductType;
 use App\Support\Content\ArticleContentCatalog;
 use Illuminate\Support\Collection;
 
-class NganIaTemplate
+class WebsitePageTemplate
 {
     /**
      * @return array<int, array<string, mixed>>
