@@ -70,6 +70,7 @@ class ArticleController extends Controller
             ->with(['coverImage'])
             ->active()
             ->where('id', '!=', $article->id)
+            ->when($article->category_key, fn ($query) => $query->where('category_key', $article->category_key))
             ->latest('created_at')
             ->limit(3)
             ->get();

@@ -297,6 +297,7 @@ class AdminDashboardController extends Controller
             'id' => $item->article_id,
             'title' => $articles[$item->article_id]?->title ?? 'Bài viết đã xóa',
             'slug' => $articles[$item->article_id]?->slug,
+            'category_key' => $articles[$item->article_id]?->category_key,
             'image_url' => $articles[$item->article_id]?->coverImage?->absolute_url
                 ?? $articles[$item->article_id]?->cover_image_url,
             'views' => (int) $item->views,
@@ -495,6 +496,7 @@ class AdminDashboardController extends Controller
             'id' => $item->article_id,
             'title' => $articles[$item->article_id]?->title ?? 'Bài viết đã xóa',
             'slug' => $articles[$item->article_id]?->slug,
+            'category_key' => $articles[$item->article_id]?->category_key,
             'image_url' => $articles[$item->article_id]?->coverImage?->absolute_url
                 ?? $articles[$item->article_id]?->cover_image_url,
             'views' => (int) $item->views,

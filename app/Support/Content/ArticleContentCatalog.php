@@ -15,6 +15,8 @@ class ArticleContentCatalog
             ['key' => 'gioi-thieu', 'label' => 'Giới thiệu', 'description' => 'Nội dung về thương hiệu, câu chuyện và cam kết.'],
             ['key' => 'dich-vu', 'label' => 'Dịch vụ', 'description' => 'Dịch vụ quà tặng, doanh nghiệp và tư vấn.'],
             ['key' => 'qua-tang', 'label' => 'Quà tặng', 'description' => 'Nội dung tư vấn quà tặng theo nhu cầu.'],
+            ['key' => 'tin-tuc', 'label' => 'Tin tức', 'description' => 'Tin tức thị trường, xu hướng và hoạt động mới.'],
+            ['key' => 'su-kien', 'label' => 'Sự kiện', 'description' => 'Sự kiện tasting, hoạt động thương hiệu và trải nghiệm.'],
         ];
     }
 

@@ -23,6 +23,7 @@ class WebsitePageTemplate
                 'items' => [
                     ['label' => 'Trang chủ', 'path' => '/', 'source' => 'core'],
                     ['label' => 'Sản phẩm', 'path' => '/san-pham', 'source' => 'core'],
+                    ['label' => 'Bài viết', 'path' => '/bai-viet', 'source' => 'core'],
                     ['label' => 'Liên hệ', 'path' => '/lien-he', 'source' => 'core'],
                 ],
             ],

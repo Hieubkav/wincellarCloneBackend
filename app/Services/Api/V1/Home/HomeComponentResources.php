@@ -104,6 +104,7 @@ class HomeComponentResources
             'title' => $article->title,
             'slug' => $article->slug,
             'excerpt' => $article->excerpt,
+            'category_key' => $article->category_key,
             'cover_image_url' => $coverCanonicalUrl ?? $article->cover_image_url,
             'cover_image_canonical_url' => $coverCanonicalUrl,
             'published_at' => optional($article->created_at)->toIso8601String(),

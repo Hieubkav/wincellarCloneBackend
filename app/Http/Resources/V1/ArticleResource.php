@@ -69,6 +69,7 @@ class ArticleResource extends JsonResource
                             'title' => $article->title,
                             'slug' => $article->slug,
                             'excerpt' => $article->excerpt,
+                            'category_key' => $article->category_key,
                             'cover_image_url' => $article->relationLoaded('coverImage')
                                 ? ($article->coverImage?->canonical_url ?: $article->cover_image_url ?: '/placeholder/article.svg')
                                 : ($article->cover_image_url ?: '/placeholder/article.svg'),
