@@ -15,6 +15,22 @@ Route::get('/run-storage-link', function () {
     return response()->json(['message' => 'Storage linked successfully!'], 200);
 });
 
+// Run migrations - for production deployment
+Route::get('/run-migrate', function () {
+    $token = (string) env('DEPLOY_ARTISAN_TOKEN', '');
+
+    abort_if($token === '' || ! hash_equals($token, (string) request('token')), 403);
+
+    Artisan::call('migrate', [
+        '--force' => true,
+    ]);
+
+    return response()->json([
+        'message' => 'Migrations ran successfully!',
+        'output' => Artisan::output(),
+    ], 200);
+});
+
 // Tổng quan - System overview
 Route::get('/tong-quan', function () {
     return view('tong-quan');
