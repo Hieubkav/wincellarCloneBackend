@@ -527,8 +527,27 @@ class AdminMenuController extends Controller
                 'items' => [
                     $this->routeItem('Trang chủ', '/', 'core'),
                     $this->routeItem('Sản phẩm', '/san-pham', 'core'),
+                    $this->routeItem('Bộ lọc sản phẩm', '/filter', 'core'),
                     $this->routeItem('Bài viết', '/bai-viet', 'core'),
                     $this->routeItem('Liên hệ', '/lien-he', 'core'),
+                    $this->routeItem('Liên hệ (legacy)', '/contact', 'core'),
+                ],
+            ],
+            [
+                'key' => 'site-hubs',
+                'label' => 'Trang hub website',
+                'items' => [
+                    $this->routeItem('Thương hiệu', '/thuong-hieu', 'site_hub'),
+                    $this->routeItem('Bộ sưu tập', '/bo-suu-tap', 'site_hub'),
+                    $this->routeItem('Quà tặng', '/qua-tang', 'site_hub'),
+                    $this->routeItem('Kiến thức', '/kien-thuc', 'site_hub'),
+                    $this->routeItem('Dịch vụ', '/dich-vu', 'site_hub'),
+                    $this->routeItem('Cửa hàng', '/cua-hang', 'site_hub'),
+                    $this->routeItem('Hỗ trợ', '/ho-tro', 'site_hub'),
+                    $this->routeItem('Giới thiệu', '/gioi-thieu', 'site_hub'),
+                    $this->routeItem('Tin tức', '/tin-tuc', 'site_hub'),
+                    $this->routeItem('Sự kiện', '/su-kien', 'site_hub'),
+                    $this->routeItem('Demo chốt khách', '/demo-chot-khach', 'site_hub'),
                 ],
             ],
             [
@@ -619,12 +638,12 @@ class AdminMenuController extends Controller
 
         $articleItems = Article::query()
             ->where('active', true)
-            ->select(['title', 'slug'])
+            ->select(['title', 'slug', 'category_key'])
             ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->limit(100)
             ->get()
-            ->map(fn (Article $article) => $this->routeItem($article->title, "/bai-viet/{$article->slug}", 'article', ['slug' => $article->slug]))
+            ->map(fn (Article $article) => $this->routeItem($article->title, $this->articleHref($article), 'article', ['slug' => $article->slug, 'category' => $article->category_key]))
             ->values()
             ->all();
 
@@ -647,5 +666,20 @@ class AdminMenuController extends Controller
             'source' => $source,
             'route_payload' => $payload,
         ];
+    }
+
+    private function articleHref(Article $article): string
+    {
+        $hub = [
+            'kien-thuc' => 'kien-thuc',
+            'chinh-sach' => 'ho-tro',
+            'gioi-thieu' => 'gioi-thieu',
+            'dich-vu' => 'dich-vu',
+            'qua-tang' => 'qua-tang',
+            'tin-tuc' => 'tin-tuc',
+            'su-kien' => 'su-kien',
+        ][$article->category_key] ?? null;
+
+        return $hub ? "/{$hub}/{$article->slug}" : "/bai-viet/{$article->slug}";
     }
 }
