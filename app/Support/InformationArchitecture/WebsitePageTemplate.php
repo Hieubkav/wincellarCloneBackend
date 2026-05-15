@@ -3,8 +3,10 @@
 namespace App\Support\InformationArchitecture;
 
 use App\Models\Article;
+use App\Models\CatalogAttributeGroup;
+use App\Models\CatalogTerm;
 use App\Models\Menu;
-use App\Models\ProductCategory;
+use App\Models\ProductFilterGroup;
 use App\Models\ProductType;
 use App\Support\Content\ArticleContentCatalog;
 use Illuminate\Support\Collection;
@@ -27,65 +29,14 @@ class WebsitePageTemplate
                     ['label' => 'Liên hệ', 'path' => '/lien-he', 'source' => 'core'],
                 ],
             ],
-            [
-                'key' => 'products',
-                'label' => 'Sản phẩm',
-                'items' => self::productNodes(),
-            ],
-            self::staticHub('thuong-hieu', 'Thương hiệu', [
-                ['Thương hiệu nổi bật', 'noi-bat'],
-            ]),
-            self::staticHub('bo-suu-tap', 'Bộ sưu tập', [
-                ['Bán chạy', 'ban-chay'],
-                ['Hàng mới về', 'hang-moi-ve'],
-                ['Khuyến mãi', 'khuyen-mai'],
-                ['Cao cấp', 'cao-cap'],
-                ['Uống hằng ngày', 'uong-hang-ngay'],
-                ['Theo mùa', 'theo-mua'],
-            ]),
-            self::staticHub('qua-tang', 'Quà tặng', [
-                ['Quà tặng doanh nghiệp', 'doanh-nghiep'],
-                ['Quà tặng rượu vang', 'ruou-vang'],
-                ['Quà tặng rượu mạnh', 'ruou-manh'],
-                ['Quà Tết', 'tet'],
-                ['Hộp quà / túi quà', 'hop-tui-qua'],
-            ]),
-            self::staticHub('kien-thuc', 'Kiến thức', [
-                ['Cho người mới bắt đầu', 'cho-nguoi-moi-bat-dau'],
-                ['Kiến thức cơ bản', 'co-ban'],
-                ['Kiến thức chuyên sâu', 'chuyen-sau'],
-                ['Thưởng thức & phục vụ', 'thuong-thuc-phuc-vu'],
-                ['Bảo quản rượu', 'bao-quan'],
-                ['Kết hợp món ăn', 'ket-hop-mon-an'],
-                ['Kiến thức vang Pháp', 'vang-phap'],
-                ['Kiến thức vang Ý', 'vang-y'],
-                ['Kiến thức whisky', 'whisky'],
-            ]),
-            self::staticHub('dich-vu', 'Dịch vụ', [
-                ['Đặt hàng doanh nghiệp', 'dat-hang-doanh-nghiep'],
-                ['In logo / tên doanh nghiệp', 'in-logo-ten-doanh-nghiep'],
-                ['Tư vấn chọn quà', 'tu-van-chon-qua'],
-                ['Tặng quà từ xa', 'tang-qua-tu-xa'],
-            ]),
-            self::staticHub('cua-hang', 'Hệ thống cửa hàng', [
-                ['Danh sách cửa hàng', 'danh-sach'],
-                ['Giờ mở cửa', 'gio-mo-cua'],
-            ]),
-            self::staticHub('ho-tro', 'Hỗ trợ khách hàng', [
-                ['Câu hỏi thường gặp', 'faq'],
-                ['Giao hàng & vận chuyển', 'giao-hang-van-chuyen'],
-                ['Đổi trả & hoàn tiền', 'doi-tra-hoan-tien'],
-                ['Phương thức thanh toán', 'thanh-toan'],
-                ['Cam kết chính hãng', 'cam-ket-chinh-hang'],
-                ['Chính sách bảo mật', 'chinh-sach-bao-mat'],
-                ['Điều khoản & điều kiện', 'dieu-khoan-dieu-kien'],
-            ]),
-            self::staticHub('gioi-thieu', 'Giới thiệu', [
-                ['Về Thiên Kim Wine', 've-thien-kim-wine'],
-                ['Câu chuyện thương hiệu', 'cau-chuyen-thuong-hieu'],
-                ['Vì sao chọn chúng tôi', 'vi-sao-chon-chung-toi'],
-                ['Chứng nhận / giấy phép', 'chung-nhan-giay-phep'],
-            ]),
+            self::staticHub('thuong-hieu', 'Thương hiệu'),
+            self::staticHub('bo-suu-tap', 'Bộ sưu tập'),
+            self::staticHub('qua-tang', 'Quà tặng'),
+            self::staticHub('kien-thuc', 'Kiến thức'),
+            self::staticHub('dich-vu', 'Dịch vụ'),
+            self::staticHub('cua-hang', 'Hệ thống cửa hàng'),
+            self::staticHub('ho-tro', 'Hỗ trợ khách hàng'),
+            self::staticHub('gioi-thieu', 'Giới thiệu'),
             [
                 'key' => 'news-events',
                 'label' => 'Tin tức & sự kiện',
@@ -93,6 +44,11 @@ class WebsitePageTemplate
                     ['label' => 'Tin tức', 'path' => '/tin-tuc', 'source' => 'static_hub'],
                     ['label' => 'Sự kiện', 'path' => '/su-kien', 'source' => 'static_hub'],
                 ],
+            ],
+            [
+                'key' => 'dynamic-sources',
+                'label' => 'Nguồn động',
+                'items' => self::dynamicSourceNodes(),
             ],
         ];
     }
@@ -114,6 +70,11 @@ class WebsitePageTemplate
 
             if ($source === 'product_type' || $source === 'product_category') {
                 $message = 'Đường dẫn lấy từ nhóm sản phẩm và danh mục hiện có.';
+            }
+
+            if ($source === 'dynamic_source') {
+                $menuCovered = true;
+                $message = $item['message'] ?? 'Nguồn route được sinh từ dữ liệu thật.';
             }
 
             if ($source === 'static_child') {
@@ -222,46 +183,34 @@ class WebsitePageTemplate
     /**
      * @return array<int, array<string, mixed>>
      */
-    private static function productNodes(): array
-    {
-        return ProductType::query()
-            ->active()
-            ->with(['categories' => fn ($query) => $query->active()->orderBy('order')->orderBy('name')])
-            ->orderBy('order')
-            ->orderBy('name')
-            ->get()
-            ->map(fn (ProductType $type) => self::productNode($type))
-            ->values()
-            ->all();
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private static function productNode(ProductType $type): array
+    private static function dynamicSourceNodes(): array
     {
         return [
-            'label' => $type->name,
-            'path' => "/san-pham/{$type->slug}",
-            'source' => 'product_type',
-            'type_slug' => $type->slug,
-            'route_payload' => ['typeSlug' => $type->slug],
-            'children' => $type->categories->map(fn (ProductCategory $category) => [
-                'label' => $category->name,
-                'path' => "/san-pham/{$type->slug}/{$category->slug}",
-                'source' => 'product_category',
-                'type_slug' => $type->slug,
-                'child_slug' => $category->slug,
-                'route_payload' => ['typeSlug' => $type->slug, 'childSlug' => $category->slug],
-            ])->values()->all(),
+            [
+                'label' => 'Nhóm sản phẩm & danh mục',
+                'path' => '/admin/product-types',
+                'source' => 'dynamic_source',
+                'message' => ProductType::query()->active()->count().' nhóm sản phẩm active. Route public: /san-pham/{nhom} và /san-pham/{nhom}/{danh-muc}.',
+            ],
+            [
+                'label' => 'Thuộc tính & giá trị lọc',
+                'path' => '/admin/attribute-groups',
+                'source' => 'dynamic_source',
+                'message' => CatalogAttributeGroup::query()->where('is_filterable', true)->count().' nhóm filter, '.CatalogTerm::query()->where('active', true)->count().' giá trị active. Route public: /san-pham/{slug-nhom}/{slug-gia-tri}.',
+            ],
+            [
+                'label' => 'Bộ lọc SEO / bộ sưu tập',
+                'path' => '/admin/filter-presets',
+                'source' => 'dynamic_source',
+                'message' => ProductFilterGroup::query()->active()->count().' nhóm preset active. Route public theo route_prefix + slug nhóm + slug preset.',
+            ],
         ];
     }
 
     /**
-     * @param  array<int, array{0: string, 1: string}>  $children
      * @return array<string, mixed>
      */
-    private static function staticHub(string $slug, string $label, array $children): array
+    private static function staticHub(string $slug, string $label): array
     {
         return [
             'key' => $slug,
@@ -271,12 +220,6 @@ class WebsitePageTemplate
                 'path' => "/{$slug}",
                 'source' => 'static_hub',
                 'route_payload' => ['hub' => $slug],
-                'children' => array_map(fn ($child) => [
-                    'label' => $child[0],
-                    'path' => "/{$slug}/{$child[1]}",
-                    'source' => 'static_child',
-                    'route_payload' => ['hub' => $slug, 'slug' => $child[1]],
-                ], $children),
             ]],
         ];
     }

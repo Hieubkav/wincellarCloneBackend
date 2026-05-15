@@ -8,6 +8,7 @@ use App\Support\Catalog\AttributeIconResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class AdminCatalogAttributeGroupController extends Controller
@@ -26,6 +27,7 @@ class AdminCatalogAttributeGroupController extends Controller
             ->select([
                 'id',
                 'code',
+                'slug',
                 'name',
                 'filter_type',
                 'input_type',
@@ -77,6 +79,7 @@ class AdminCatalogAttributeGroupController extends Controller
                 return [
                     'id' => $group->id,
                     'code' => $group->code,
+                    'slug' => $group->slug,
                     'name' => $group->name,
                     'filter_type' => $group->filter_type,
                     'input_type' => $group->input_type,
@@ -110,6 +113,7 @@ class AdminCatalogAttributeGroupController extends Controller
             'data' => [
                 'id' => $group->id,
                 'code' => $group->code,
+                'slug' => $group->slug,
                 'name' => $group->name,
                 'filter_type' => $group->filter_type,
                 'input_type' => $group->input_type,
@@ -122,6 +126,7 @@ class AdminCatalogAttributeGroupController extends Controller
                     'name' => $term->name,
                     'slug' => $term->slug,
                     'description' => $term->description,
+                    'metadata' => $term->metadata,
                     'position' => $term->position,
                 ])->toArray(),
                 'product_types' => $group->productTypes->map(fn ($type) => [
@@ -140,6 +145,7 @@ class AdminCatalogAttributeGroupController extends Controller
         $iconRule = $this->iconPathRule();
         $validated = $request->validate([
             'code' => ['required', 'string', 'max:255', 'unique:catalog_attribute_groups,code'],
+            'slug' => ['nullable', 'string', 'max:255', 'unique:catalog_attribute_groups,slug'],
             'name' => ['required', 'string', 'max:255'],
             'filter_type' => ['required', 'string', 'in:checkbox,radio,range,color'],
             'input_type' => ['nullable', Rule::in(['select', 'text', 'number'])],
@@ -152,6 +158,8 @@ class AdminCatalogAttributeGroupController extends Controller
         if (array_key_exists('icon_path', $validated)) {
             $validated['icon_path'] = $this->normalizeIconPathInput($validated['icon_path']);
         }
+
+        $validated['slug'] = $this->normalizeSlug($validated['slug'] ?? null, $validated['name']);
 
         $validated['is_filterable'] = $validated['is_filterable'] ?? true;
 
@@ -189,6 +197,7 @@ class AdminCatalogAttributeGroupController extends Controller
 
         $validated = $request->validate([
             'code' => ['sometimes', 'string', 'max:255', Rule::unique('catalog_attribute_groups', 'code')->ignore($id)],
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('catalog_attribute_groups', 'slug')->ignore($id)],
             'name' => ['sometimes', 'string', 'max:255'],
             'filter_type' => ['sometimes', 'string', 'in:checkbox,radio,range,color'],
             'input_type' => ['nullable', Rule::in(['select', 'text', 'number'])],
@@ -200,6 +209,10 @@ class AdminCatalogAttributeGroupController extends Controller
 
         if (array_key_exists('icon_path', $validated)) {
             $validated['icon_path'] = $this->normalizeIconPathInput($validated['icon_path']);
+        }
+
+        if (array_key_exists('slug', $validated) || array_key_exists('name', $validated)) {
+            $validated['slug'] = $this->normalizeSlug($validated['slug'] ?? $group->slug, $validated['name'] ?? $group->name);
         }
 
         $group->update($validated);
@@ -282,5 +295,10 @@ class AdminCatalogAttributeGroupController extends Controller
         }
 
         return AttributeIconResolver::normalizeIconName($trimmed);
+    }
+
+    private function normalizeSlug(?string $slug, string $fallback): string
+    {
+        return Str::slug($slug ?: $fallback) ?: Str::slug($fallback);
     }
 }

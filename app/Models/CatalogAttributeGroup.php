@@ -16,6 +16,7 @@ class CatalogAttributeGroup extends Model
      */
     protected $fillable = [
         'code',
+        'slug',
         'name',
         'filter_type',
         'input_type',

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\Admin\AdminIaController;
 use App\Http\Controllers\Api\V1\Admin\AdminImageController;
 use App\Http\Controllers\Api\V1\Admin\AdminMenuController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductController;
+use App\Http\Controllers\Api\V1\Admin\AdminProductFilterPresetController;
 use App\Http\Controllers\Api\V1\Admin\AdminProductTypeController;
 use App\Http\Controllers\Api\V1\Admin\AdminSettingController;
 use App\Http\Controllers\Api\V1\Admin\AdminSocialLinkController;
@@ -101,6 +102,15 @@ Route::prefix('admin')
             Route::put('catalog-terms/{id}', [AdminCatalogTermController::class, 'update'])->name('catalog-terms.update');
             Route::delete('catalog-terms/{id}', [AdminCatalogTermController::class, 'destroy'])->name('catalog-terms.destroy');
             Route::post('catalog-terms/reorder', [AdminCatalogTermController::class, 'reorder'])->name('catalog-terms.reorder');
+
+            // Product Filter Presets CRUD
+            Route::get('product-filter-groups', [AdminProductFilterPresetController::class, 'index'])->name('product-filter-groups.index');
+            Route::post('product-filter-groups', [AdminProductFilterPresetController::class, 'storeGroup'])->name('product-filter-groups.store');
+            Route::put('product-filter-groups/{id}', [AdminProductFilterPresetController::class, 'updateGroup'])->name('product-filter-groups.update');
+            Route::delete('product-filter-groups/{id}', [AdminProductFilterPresetController::class, 'destroyGroup'])->name('product-filter-groups.destroy');
+            Route::post('product-filter-groups/{groupId}/presets', [AdminProductFilterPresetController::class, 'storePreset'])->name('product-filter-presets.store');
+            Route::put('product-filter-groups/{groupId}/presets/{presetId}', [AdminProductFilterPresetController::class, 'updatePreset'])->name('product-filter-presets.update');
+            Route::delete('product-filter-groups/{groupId}/presets/{presetId}', [AdminProductFilterPresetController::class, 'destroyPreset'])->name('product-filter-presets.destroy');
 
             // Catalog Baseline
             Route::post('catalog/baseline/seed', [AdminCatalogBaselineController::class, 'seed'])->name('catalog.baseline.seed');

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
 use App\Models\ProductCategory;
+use App\Models\ProductFilterGroup;
 use App\Models\ProductType;
 use App\Support\Catalog\AttributeIconResolver;
 use App\Support\Product\TermCountCache;
@@ -63,7 +64,7 @@ class ProductFilterController extends Controller
                     ->where('is_filterable', true)
                     ->with(['terms' => fn ($q) => $q->active()->orderBy('position')->orderBy('id')])
                     ->orderByPivot('position')
-                    ->get(['catalog_attribute_groups.id', 'code', 'name', 'filter_type', 'input_type', 'display_config', 'icon_path'])
+                    ->get(['catalog_attribute_groups.id', 'code', 'slug', 'name', 'filter_type', 'input_type', 'display_config', 'icon_path'])
                 : static::getCommonAttributeGroups($types);
 
             $dynamicFilters = static::buildDynamicFilters($attributeGroups, $type);
@@ -103,6 +104,7 @@ class ProductFilterController extends Controller
                     'max' => (int) ($ranges->price_max ?? 0),
                 ],
                 'attribute_filters' => $dynamicFilters,
+                'filter_groups' => static::filterGroups(),
             ];
         });
 
@@ -143,7 +145,7 @@ class ProductFilterController extends Controller
             ->where('is_filterable', true)
             ->with(['terms' => fn ($q) => $q->active()->orderBy('position')->orderBy('id')])
             ->orderBy('position')
-            ->get(['id', 'code', 'name', 'filter_type', 'input_type', 'display_config', 'icon_path']);
+            ->get(['id', 'code', 'slug', 'name', 'filter_type', 'input_type', 'display_config', 'icon_path']);
     }
 
     /**
@@ -191,6 +193,7 @@ class ProductFilterController extends Controller
 
                 $filters[] = [
                     'code' => $group->code,
+                    'slug' => $group->slug,
                     'name' => $group->name,
                     'filter_type' => $group->filter_type,
                     'input_type' => $group->input_type,
@@ -226,6 +229,7 @@ class ProductFilterController extends Controller
 
             $filters[] = [
                 'code' => $group->code,
+                'slug' => $group->slug,
                 'name' => $group->name,
                 'filter_type' => $group->filter_type,
                 'input_type' => $group->input_type,
@@ -237,6 +241,30 @@ class ProductFilterController extends Controller
         }
 
         return $filters;
+    }
+
+    protected static function filterGroups(): Collection
+    {
+        return ProductFilterGroup::query()
+            ->active()
+            ->with(['presets' => fn ($query) => $query->active()->orderBy('position')->orderBy('name')])
+            ->orderBy('position')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (ProductFilterGroup $group) => [
+                'id' => $group->id,
+                'name' => $group->name,
+                'slug' => $group->slug,
+                'route_prefix' => $group->route_prefix,
+                'presets' => $group->presets->map(fn ($preset) => [
+                    'id' => $preset->id,
+                    'name' => $preset->name,
+                    'slug' => $preset->slug,
+                    'filter_payload' => $preset->filter_payload ?? [],
+                    'seo_title' => $preset->seo_title,
+                    'seo_description' => $preset->seo_description,
+                ])->values(),
+            ])->values();
     }
 
     /**
