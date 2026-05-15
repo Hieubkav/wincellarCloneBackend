@@ -3,6 +3,7 @@
 namespace App\Services\Api\V1\Menu;
 
 use App\Models\Menu;
+use App\Models\MenuItem;
 use Illuminate\Support\Collection;
 
 class MenuAssembler
@@ -38,8 +39,13 @@ class MenuAssembler
             'type' => $menu->type,
         ];
 
-        // Add children for mega menu type (only active blocks)
-        if ($menu->type === 'mega') {
+        if ($menu->relationLoaded('items') && $menu->items->isNotEmpty()) {
+            $children = $this->transformTreeItems($menu->items);
+
+            if ($children !== []) {
+                $data['children'] = $children;
+            }
+        } elseif ($menu->type === 'mega') {
             $activeBlocks = $menu->blocks->filter(fn ($block) => $block->active);
             if ($activeBlocks->isNotEmpty()) {
                 $data['children'] = $this->transformBlocks($activeBlocks, $menu);
@@ -47,6 +53,47 @@ class MenuAssembler
         }
 
         return $data;
+    }
+
+    private function transformTreeItems(Collection $items): array
+    {
+        $byParent = $items
+            ->filter(fn (MenuItem $item) => $item->active)
+            ->groupBy(fn (MenuItem $item) => $item->parent_id ?: 0);
+
+        return $this->buildTreeLevel($byParent, 0, 0);
+    }
+
+    private function buildTreeLevel(Collection $byParent, int $parentId, int $depth): array
+    {
+        if ($depth >= 5) {
+            return [];
+        }
+
+        return ($byParent->get($parentId) ?? collect())
+            ->sortBy([['order', 'asc'], ['id', 'asc']])
+            ->map(function (MenuItem $item) use ($byParent, $depth) {
+                $node = [
+                    'id' => $item->id,
+                    'label' => $item->label ?? '',
+                    'href' => $item->href ?? '#',
+                    'type' => $item->depth === 0 ? 'mega' : 'standard',
+                ];
+
+                if ($item->badge) {
+                    $node['badge'] = $item->badge;
+                    $node['isHot'] = strtoupper($item->badge) === 'HOT';
+                }
+
+                $children = $this->buildTreeLevel($byParent, $item->id, $depth + 1);
+                if ($children !== []) {
+                    $node['children'] = $children;
+                }
+
+                return $node;
+            })
+            ->values()
+            ->all();
     }
 
     /**

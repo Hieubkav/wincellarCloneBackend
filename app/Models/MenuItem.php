@@ -2,51 +2,54 @@
 
 namespace App\Models;
 
-use App\Observers\MenuObserver;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[ObservedBy(MenuObserver::class)]
-class Menu extends Model
+class MenuItem extends Model
 {
     use HasFactory;
 
-    /**
-     * @var list<string>
-     */
     protected $fillable = [
-        'title',
-        'type',
+        'menu_id',
+        'parent_id',
+        'label',
         'href',
         'semantic_type',
         'route_payload',
+        'badge',
+        'icon',
+        'depth',
         'order',
         'active',
+        'open_in_new_tab',
     ];
 
-    /**
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
+            'route_payload' => 'array',
+            'depth' => 'int',
             'order' => 'int',
             'active' => 'bool',
-            'route_payload' => 'array',
+            'open_in_new_tab' => 'bool',
         ];
     }
 
-    public function blocks(): HasMany
+    public function menu(): BelongsTo
     {
-        return $this->hasMany(MenuBlock::class)
-            ->orderBy('order');
+        return $this->belongsTo(Menu::class);
     }
 
-    public function items(): HasMany
+    public function parent(): BelongsTo
     {
-        return $this->hasMany(MenuItem::class)
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id')
             ->orderBy('order')
             ->orderBy('id');
     }

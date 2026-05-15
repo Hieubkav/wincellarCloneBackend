@@ -155,6 +155,7 @@ Route::prefix('admin')
 
             // Menus CRUD
             Route::get('ia', AdminIaController::class)->name('ia.index');
+            Route::get('menus/route-suggestions', [AdminMenuController::class, 'routeSuggestions'])->name('menus.route-suggestions');
             Route::get('menus', [AdminMenuController::class, 'index'])->name('menus.index');
             Route::get('menus/{id}', [AdminMenuController::class, 'show'])->name('menus.show');
             Route::post('menus', [AdminMenuController::class, 'store'])->name('menus.store');
@@ -162,6 +163,7 @@ Route::prefix('admin')
             Route::delete('menus/{id}', [AdminMenuController::class, 'destroy'])->name('menus.destroy');
             Route::post('menus/bulk-delete', [AdminMenuController::class, 'bulkDestroy'])->name('menus.bulk-destroy');
             Route::post('menus/reorder', [AdminMenuController::class, 'reorder'])->name('menus.reorder');
+            Route::post('menus/{id}/items/bulk-save', [AdminMenuController::class, 'bulkSaveItems'])->name('menus.items.bulk-save');
 
             // Menu Blocks
             Route::post('menus/{menuId}/blocks', [AdminMenuController::class, 'storeBlock'])->name('menus.blocks.store');

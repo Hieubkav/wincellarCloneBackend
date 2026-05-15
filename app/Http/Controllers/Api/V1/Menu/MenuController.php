@@ -23,6 +23,9 @@ class MenuController extends Controller
         $payload = Cache::remember($cacheKey, 600, function () {
             $menus = Menu::query()
                 ->with([
+                    'items' => function ($query) {
+                        $query->active()->orderBy('order')->orderBy('id');
+                    },
                     'blocks' => function ($query) {
                         $query->active()->orderBy('order');
                     },

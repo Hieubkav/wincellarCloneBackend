@@ -3,17 +3,27 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Article;
+use App\Models\CatalogAttributeGroup;
 use App\Models\Menu;
 use App\Models\MenuBlock;
 use App\Models\MenuBlockItem;
+use App\Models\MenuItem;
+use App\Models\ProductFilterGroup;
+use App\Models\ProductType;
+use App\Support\Content\ArticleContentCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class AdminMenuController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
         $includeItems = $request->boolean('with_items');
+        $includeTree = $request->boolean('with_tree');
         $sortable = ['order', 'title', 'active', 'created_at'];
         $sortBy = $request->input('sort_by', 'order');
         $sortDir = strtolower((string) $request->input('sort_dir', 'asc')) === 'desc' ? 'desc' : 'asc';
@@ -36,6 +46,7 @@ class AdminMenuController extends Controller
                 'updated_at',
             ])
             ->withCount('blocks')
+            ->withCount('items')
             ->orderBy($sortBy, $sortDir)
             ->orderBy('id');
 
@@ -51,6 +62,12 @@ class AdminMenuController extends Controller
             $query->with([
                 'blocks' => fn ($q) => $q->select(['id', 'menu_id', 'title', 'order', 'active']),
                 'blocks.items' => fn ($q) => $q->select(['id', 'menu_block_id', 'label', 'href', 'semantic_type', 'route_payload', 'badge', 'order', 'active']),
+            ]);
+        }
+
+        if ($includeTree) {
+            $query->with([
+                'items' => fn ($q) => $q->select(['id', 'menu_id', 'parent_id', 'label', 'href', 'semantic_type', 'route_payload', 'badge', 'icon', 'depth', 'order', 'active', 'open_in_new_tab']),
             ]);
         }
 
@@ -96,6 +113,8 @@ class AdminMenuController extends Controller
                 'order' => $m->order,
                 'active' => $m->active,
                 'blocks_count' => $m->blocks_count,
+                'items_count' => $m->items_count,
+                'items' => $includeTree ? $this->formatMenuItems($m->items) : null,
                 'created_at' => $m->created_at?->toIso8601String(),
             ]);
 
@@ -112,7 +131,7 @@ class AdminMenuController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $menu = Menu::with(['blocks.items'])->findOrFail($id);
+        $menu = Menu::with(['blocks.items', 'items'])->findOrFail($id);
 
         return response()->json([
             'data' => [
@@ -140,6 +159,7 @@ class AdminMenuController extends Controller
                         'active' => $i->active,
                     ]),
                 ]),
+                'items' => $this->formatMenuItems($menu->items),
                 'created_at' => $menu->created_at?->toIso8601String(),
                 'updated_at' => $menu->updated_at?->toIso8601String(),
             ],
@@ -234,6 +254,91 @@ class AdminMenuController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Cập nhật thứ tự thành công',
+        ]);
+    }
+
+    public function bulkSaveItems(Request $request, int $menuId): JsonResponse
+    {
+        $menu = Menu::findOrFail($menuId);
+        $validated = $request->validate([
+            'items' => ['required', 'array'],
+            'items.*.id' => ['nullable', 'integer'],
+            'items.*.client_id' => ['nullable', 'string', 'max:80'],
+            'items.*.parent_id' => ['nullable'],
+            'items.*.parent_client_id' => ['nullable', 'string', 'max:80'],
+            'items.*.label' => ['required', 'string', 'max:255'],
+            'items.*.href' => ['nullable', 'string', 'max:255'],
+            'items.*.semantic_type' => ['nullable', 'string', 'max:50'],
+            'items.*.route_payload' => ['nullable', 'array'],
+            'items.*.badge' => ['nullable', 'string', 'max:50'],
+            'items.*.icon' => ['nullable', 'string', 'max:80'],
+            'items.*.depth' => ['required', 'integer', 'min:0', 'max:4'],
+            'items.*.order' => ['required', 'integer', 'min:0'],
+            'items.*.active' => ['boolean'],
+            'items.*.open_in_new_tab' => ['boolean'],
+        ]);
+
+        $items = array_values($validated['items']);
+        $this->assertValidTree($items);
+
+        $saved = DB::transaction(function () use ($menu, $items) {
+            $existingIds = $menu->items()->pluck('id')->all();
+            $keptIds = collect($items)->pluck('id')->filter()->map(fn ($id) => (int) $id)->all();
+            $clientIdMap = [];
+            $idMap = [];
+
+            $menu->items()->whereIn('id', array_diff($existingIds, $keptIds))->delete();
+
+            foreach ($items as $index => $item) {
+                $id = isset($item['id']) ? (int) $item['id'] : null;
+                $node = $id ? $menu->items()->find($id) : null;
+                $payload = [
+                    'menu_id' => $menu->id,
+                    'parent_id' => null,
+                    'label' => $item['label'],
+                    'href' => $item['href'] ?? null,
+                    'semantic_type' => $item['semantic_type'] ?? null,
+                    'route_payload' => $item['route_payload'] ?? null,
+                    'badge' => $item['badge'] ?? null,
+                    'icon' => $item['icon'] ?? null,
+                    'depth' => (int) $item['depth'],
+                    'order' => (int) ($item['order'] ?? $index),
+                    'active' => $item['active'] ?? true,
+                    'open_in_new_tab' => $item['open_in_new_tab'] ?? false,
+                ];
+
+                $node = $node ? tap($node)->update($payload) : MenuItem::create($payload);
+                $idMap[$index] = $node->id;
+
+                if (! empty($item['client_id'])) {
+                    $clientIdMap[$item['client_id']] = $node->id;
+                }
+            }
+
+            foreach ($items as $index => $item) {
+                $parentId = $this->resolveParentId($item, $clientIdMap);
+
+                if ($parentId !== null) {
+                    MenuItem::where('id', $idMap[$index])->update(['parent_id' => $parentId]);
+                }
+            }
+
+            $this->bumpCacheVersion();
+
+            return $menu->items()->orderBy('order')->orderBy('id')->get();
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã lưu menu 5 cấp',
+            'data' => $this->formatMenuItems($saved),
+        ]);
+    }
+
+    public function routeSuggestions(): JsonResponse
+    {
+        return response()->json([
+            'data' => $this->buildRouteSuggestionGroups(),
         ]);
     }
 
@@ -349,5 +454,198 @@ class AdminMenuController extends Controller
             'success' => true,
             'message' => 'Xóa item thành công',
         ]);
+    }
+
+    private function formatMenuItems($items): array
+    {
+        return $items
+            ->sortBy([['order', 'asc'], ['id', 'asc']])
+            ->map(fn (MenuItem $item) => [
+                'id' => $item->id,
+                'menu_id' => $item->menu_id,
+                'parent_id' => $item->parent_id,
+                'label' => $item->label,
+                'href' => $item->href,
+                'semantic_type' => $item->semantic_type,
+                'route_payload' => $item->route_payload,
+                'badge' => $item->badge,
+                'icon' => $item->icon,
+                'depth' => $item->depth,
+                'order' => $item->order,
+                'active' => $item->active,
+                'open_in_new_tab' => $item->open_in_new_tab,
+            ])
+            ->values()
+            ->all();
+    }
+
+    private function assertValidTree(array $items): void
+    {
+        $previousDepth = 0;
+
+        foreach ($items as $index => $item) {
+            $depth = (int) $item['depth'];
+
+            if ($index === 0 && $depth !== 0) {
+                throw ValidationException::withMessages(['items' => 'Item đầu tiên phải ở tầng 1.']);
+            }
+
+            if ($depth > $previousDepth + 1) {
+                throw ValidationException::withMessages(['items' => 'Menu không được nhảy tầng khi thiếu parent.']);
+            }
+
+            $previousDepth = $depth;
+        }
+    }
+
+    private function resolveParentId(array $item, array $clientIdMap): ?int
+    {
+        if (! empty($item['parent_client_id']) && isset($clientIdMap[$item['parent_client_id']])) {
+            return (int) $clientIdMap[$item['parent_client_id']];
+        }
+
+        if (! empty($item['parent_id']) && is_numeric($item['parent_id'])) {
+            return (int) $item['parent_id'];
+        }
+
+        return null;
+    }
+
+    private function bumpCacheVersion(): void
+    {
+        $version = (int) Cache::get('api_cache_version', 0);
+        Cache::put('api_cache_version', $version + 1);
+        Cache::put('last_cache_clear', now()->toIso8601String());
+    }
+
+    private function buildRouteSuggestionGroups(): array
+    {
+        $groups = [
+            [
+                'key' => 'core',
+                'label' => 'Trang chính',
+                'items' => [
+                    $this->routeItem('Trang chủ', '/', 'core'),
+                    $this->routeItem('Sản phẩm', '/san-pham', 'core'),
+                    $this->routeItem('Bài viết', '/bai-viet', 'core'),
+                    $this->routeItem('Liên hệ', '/lien-he', 'core'),
+                ],
+            ],
+            [
+                'key' => 'content-hubs',
+                'label' => 'Hub nội dung',
+                'items' => collect(ArticleContentCatalog::categories())
+                    ->map(fn (array $category) => $this->routeItem($category['label'], '/'.$category['key'], 'content_hub', ['category' => $category['key']]))
+                    ->values()
+                    ->all(),
+            ],
+            [
+                'key' => 'content-slots',
+                'label' => 'Trang nội dung',
+                'items' => collect(ArticleContentCatalog::slots())
+                    ->map(fn (array $slot) => $this->routeItem($slot['label'], $slot['path'], 'content_slot', ['slot' => $slot['key']]))
+                    ->values()
+                    ->all(),
+            ],
+        ];
+
+        $productTypes = ProductType::query()
+            ->active()
+            ->with(['categories' => fn ($query) => $query->active()->orderBy('order')->orderBy('name')])
+            ->orderBy('order')
+            ->orderBy('name')
+            ->get();
+
+        $groups[] = [
+            'key' => 'product-types',
+            'label' => 'Nhóm sản phẩm',
+            'items' => $productTypes
+                ->map(fn (ProductType $type) => $this->routeItem($type->name, "/san-pham/{$type->slug}", 'product_type', ['type' => $type->slug]))
+                ->values()
+                ->all(),
+        ];
+
+        $groups[] = [
+            'key' => 'product-categories',
+            'label' => 'Danh mục sản phẩm',
+            'items' => $productTypes
+                ->flatMap(fn (ProductType $type) => $type->categories->map(fn ($category) => $this->routeItem(
+                    "{$type->name} / {$category->name}",
+                    "/san-pham/{$type->slug}/{$category->slug}",
+                    'product_category',
+                    ['type' => $type->slug, 'category' => $category->slug]
+                )))
+                ->values()
+                ->all(),
+        ];
+
+        $groups[] = [
+            'key' => 'attribute-filters',
+            'label' => 'Thuộc tính lọc',
+            'items' => CatalogAttributeGroup::query()
+                ->where('is_filterable', true)
+                ->with(['terms' => fn ($query) => $query->active()->orderBy('position')->orderBy('name')])
+                ->orderBy('position')
+                ->orderBy('name')
+                ->get()
+                ->flatMap(fn (CatalogAttributeGroup $group) => $group->terms->map(fn ($term) => $this->routeItem(
+                    "{$group->name} / {$term->name}",
+                    "/san-pham/{$group->slug}/{$term->slug}",
+                    'attribute_filter',
+                    ['attribute_group' => $group->slug, 'term' => $term->slug]
+                )))
+                ->values()
+                ->all(),
+        ];
+
+        $groups[] = [
+            'key' => 'filter-presets',
+            'label' => 'Bộ lọc SEO',
+            'items' => ProductFilterGroup::query()
+                ->active()
+                ->with(['presets' => fn ($query) => $query->active()->orderBy('position')->orderBy('name')])
+                ->orderBy('position')
+                ->orderBy('name')
+                ->get()
+                ->flatMap(fn (ProductFilterGroup $group) => $group->presets->map(fn ($preset) => $this->routeItem(
+                    "{$group->name} / {$preset->name}",
+                    '/'.trim($group->route_prefix ?: 'san-pham', '/')."/{$group->slug}/{$preset->slug}",
+                    'filter_preset',
+                    ['group' => $group->slug, 'preset' => $preset->slug]
+                )))
+                ->values()
+                ->all(),
+        ];
+
+        $articleItems = Article::query()
+            ->where('active', true)
+            ->select(['title', 'slug'])
+            ->orderByDesc('published_at')
+            ->orderByDesc('id')
+            ->limit(100)
+            ->get()
+            ->map(fn (Article $article) => $this->routeItem($article->title, "/bai-viet/{$article->slug}", 'article', ['slug' => $article->slug]))
+            ->values()
+            ->all();
+
+        if ($articleItems !== []) {
+            $groups[] = [
+                'key' => 'articles',
+                'label' => 'Bài viết',
+                'items' => $articleItems,
+            ];
+        }
+
+        return $groups;
+    }
+
+    private function routeItem(string $label, string $path, string $source, ?array $payload = null): array
+    {
+        return [
+            'label' => $label,
+            'path' => $path,
+            'source' => $source,
+            'route_payload' => $payload,
+        ];
     }
 }
