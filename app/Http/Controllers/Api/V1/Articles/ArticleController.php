@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\Articles\ArticleIndexRequest;
 use App\Http\Resources\V1\ArticleCollection;
 use App\Http\Resources\V1\ArticleResource;
 use App\Models\Article;
+use App\Support\Content\ArticleContentCatalog;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -34,6 +35,10 @@ class ArticleController extends Controller
             if (! empty($ids)) {
                 $query->whereIn('articles.id', $ids);
             }
+        }
+
+        if ($request->filled('category_key')) {
+            $query->where('category_key', $request->input('category_key'));
         }
 
         $this->applySorting($query, $request->input('sort'));
@@ -65,6 +70,40 @@ class ArticleController extends Controller
             ->with(['coverImage'])
             ->active()
             ->where('id', '!=', $article->id)
+            ->latest('created_at')
+            ->limit(3)
+            ->get();
+
+        $article->setRelation('relatedArticles', $relatedArticles);
+
+        return new ArticleResource($article);
+    }
+
+    public function contentPage(string $section, string $slug): JsonResource
+    {
+        $slot = "{$section}/{$slug}";
+        if (! in_array($slot, ArticleContentCatalog::slotKeys(), true)) {
+            throw ApiException::notFound('Content page', $slot);
+        }
+
+        $article = Article::query()
+            ->with(['coverImage', 'images', 'author'])
+            ->active()
+            ->whereJsonContains('content_slots', $slot)
+            ->latest('published_at')
+            ->latest('created_at')
+            ->first();
+
+        if (! $article) {
+            throw ApiException::notFound('Content page', $slot);
+        }
+
+        $relatedArticles = Article::query()
+            ->select('articles.*')
+            ->with(['coverImage'])
+            ->active()
+            ->where('id', '!=', $article->id)
+            ->when($article->category_key, fn ($query) => $query->where('category_key', $article->category_key))
             ->latest('created_at')
             ->limit(3)
             ->get();

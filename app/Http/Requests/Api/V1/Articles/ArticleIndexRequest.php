@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Api\V1\Articles;
 
+use App\Support\Content\ArticleContentCatalog;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ArticleIndexRequest extends FormRequest
 {
@@ -12,6 +14,7 @@ class ArticleIndexRequest extends FormRequest
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
             'sort' => ['nullable', 'string', 'max:25'],
+            'category_key' => ['nullable', 'string', Rule::in(ArticleContentCatalog::categoryKeys())],
         ];
     }
 

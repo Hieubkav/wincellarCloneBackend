@@ -2,10 +2,12 @@
 
 namespace App\Support\InformationArchitecture;
 
+use App\Models\Article;
 use App\Models\CatalogTerm;
 use App\Models\Menu;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
+use App\Support\Content\ArticleContentCatalog;
 use Illuminate\Support\Collection;
 
 class NganIaTemplate
@@ -157,6 +159,7 @@ class NganIaTemplate
         $typeSlugs = ProductType::query()->where('active', true)->pluck('slug')->all();
         $categorySlugs = ProductCategory::query()->where('active', true)->pluck('slug')->all();
         $termSlugs = CatalogTerm::query()->where('is_active', true)->pluck('slug')->all();
+        $contentSlotCounts = self::contentSlotCounts();
 
         $typeAliases = [
             'ruou-vang' => ['ruou-vang', 'ruou-vang-sam-panh', 'vang_sampanh'],
@@ -164,7 +167,7 @@ class NganIaTemplate
             'phu-kien' => ['phu-kien', 'phu_kien_khac'],
         ];
 
-        $items = collect(self::flattenGroups())->map(function (array $item) use ($menuHrefs, $typeSlugs, $categorySlugs, $termSlugs, $typeAliases) {
+        $items = collect(self::flattenGroups())->map(function (array $item) use ($menuHrefs, $typeSlugs, $categorySlugs, $termSlugs, $typeAliases, $contentSlotCounts) {
             $source = $item['source'] ?? 'static_hub';
             $path = $item['path'];
             $menuCovered = $menuHrefs->contains($path);
@@ -191,6 +194,16 @@ class NganIaTemplate
                 $message = $resolvable
                     ? 'Đường dẫn khớp với dữ liệu hiện có.'
                     : 'Thiếu dữ liệu hoặc đường dẫn chưa khớp với sơ đồ đề xuất.';
+            }
+
+            if ($source === 'static_child') {
+                $slot = ltrim($path, '/');
+                if (in_array($slot, ArticleContentCatalog::slotKeys(), true)) {
+                    $resolvable = ($contentSlotCounts[$slot] ?? 0) > 0;
+                    $message = $resolvable
+                        ? 'Đã có bài viết thật cho trang này.'
+                        : 'Trang đã có đường dẫn, nhưng chưa gắn bài viết thật.';
+                }
             }
 
             $severity = $resolvable ? ($menuCovered ? 'pass' : 'warning') : 'missing';
@@ -260,6 +273,30 @@ class NganIaTemplate
             ->map(fn ($href) => rtrim((string) $href, '/') ?: '/')
             ->unique()
             ->values();
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private static function contentSlotCounts(): array
+    {
+        $counts = array_fill_keys(ArticleContentCatalog::slotKeys(), 0);
+
+        Article::query()
+            ->where('active', true)
+            ->whereNotNull('content_slots')
+            ->select(['id', 'content_slots'])
+            ->chunkById(100, function (Collection $articles) use (&$counts): void {
+                foreach ($articles as $article) {
+                    foreach (($article->content_slots ?? []) as $slot) {
+                        if (array_key_exists($slot, $counts)) {
+                            $counts[$slot]++;
+                        }
+                    }
+                }
+            });
+
+        return $counts;
     }
 
     /**

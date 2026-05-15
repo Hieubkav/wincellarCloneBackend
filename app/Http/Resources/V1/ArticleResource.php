@@ -23,22 +23,24 @@ class ArticleResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'excerpt' => $this->excerpt,
+            'category_key' => $this->category_key,
+            'content_slots' => $this->when($request->routeIs('api.v1.articles.show') || $request->routeIs('api.v1.articles.content-page'), $this->content_slots ?? []),
 
             // Conditional fields for detail view
-            'content' => $this->when($request->routeIs('api.v1.articles.show'), $this->content),
+            'content' => $this->when($request->routeIs('api.v1.articles.show') || $request->routeIs('api.v1.articles.content-page'), $this->content),
 
             // Images
             'cover_image_url' => $coverUrl,
             'cover_image_canonical_url' => $coverCanonicalUrl,
 
             'gallery' => $this->when(
-                $request->routeIs('api.v1.articles.show') && $this->relationLoaded('images'),
+                ($request->routeIs('api.v1.articles.show') || $request->routeIs('api.v1.articles.content-page')) && $this->relationLoaded('images'),
                 $this->gallery_for_output
             ),
 
             // Author (detail view only)
             'author' => $this->when(
-                $request->routeIs('api.v1.articles.show') && $this->relationLoaded('author') && $this->author,
+                ($request->routeIs('api.v1.articles.show') || $request->routeIs('api.v1.articles.content-page')) && $this->relationLoaded('author') && $this->author,
                 function () {
                     return [
                         'id' => $this->author->id,
@@ -48,18 +50,18 @@ class ArticleResource extends JsonResource
             ),
 
             // Timestamps
-            'published_at' => $this->created_at?->toIso8601String(),
-            'updated_at' => $this->when($request->routeIs('api.v1.articles.show'), $this->updated_at?->toIso8601String()),
+            'published_at' => ($this->published_at ?: $this->created_at)?->toIso8601String(),
+            'updated_at' => $this->when($request->routeIs('api.v1.articles.show') || $request->routeIs('api.v1.articles.content-page'), $this->updated_at?->toIso8601String()),
 
             // SEO meta (detail view only)
-            'meta' => $this->when($request->routeIs('api.v1.articles.show'), [
+            'meta' => $this->when($request->routeIs('api.v1.articles.show') || $request->routeIs('api.v1.articles.content-page'), [
                 'title' => $this->meta_title,
                 'description' => $this->meta_description,
             ]),
 
             // Related articles (detail view only)
             'related_articles' => $this->when(
-                $request->routeIs('api.v1.articles.show') && $this->relationLoaded('relatedArticles'),
+                ($request->routeIs('api.v1.articles.show') || $request->routeIs('api.v1.articles.content-page')) && $this->relationLoaded('relatedArticles'),
                 function () {
                     return $this->relatedArticles->map(function ($article) {
                         return [
@@ -71,7 +73,7 @@ class ArticleResource extends JsonResource
                                 ? ($article->coverImage?->canonical_url ?: $article->cover_image_url ?: '/placeholder/article.svg')
                                 : ($article->cover_image_url ?: '/placeholder/article.svg'),
                             'cover_image_canonical_url' => $article->relationLoaded('coverImage') ? $article->coverImage?->canonical_url : null,
-                            'published_at' => $article->created_at?->toIso8601String(),
+                            'published_at' => ($article->published_at ?: $article->created_at)?->toIso8601String(),
                         ];
                     });
                 }
@@ -91,7 +93,7 @@ class ArticleResource extends JsonResource
                     'href' => route('api.v1.articles.index', ['author' => $this->author_id]),
                     'method' => 'GET',
                 ]),
-                'related' => $this->when($request->routeIs('api.v1.articles.show'), [
+                'related' => $this->when($request->routeIs('api.v1.articles.show') || $request->routeIs('api.v1.articles.content-page'), [
                     'href' => route('api.v1.articles.index', ['per_page' => 6]),
                     'method' => 'GET',
                 ]),

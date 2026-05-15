@@ -9,3 +9,6 @@ Route::prefix('bai-viet')
         Route::get('/', [ArticleController::class, 'index'])->name('index');
         Route::get('{slug}', [ArticleController::class, 'show'])->name('show');
     });
+
+Route::get('noi-dung/{section}/{slug}', [ArticleController::class, 'contentPage'])
+    ->name('articles.content-page');

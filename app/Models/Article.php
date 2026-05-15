@@ -24,7 +24,9 @@ class Article extends Model
         'title',
         'slug',
         'excerpt',
+        'category_key',
         'content',
+        'content_slots',
         'author_id',
         'active',
         'meta_title',
@@ -40,6 +42,7 @@ class Article extends Model
         return [
             'active' => 'bool',
             'published_at' => 'datetime',
+            'content_slots' => 'array',
         ];
     }
 

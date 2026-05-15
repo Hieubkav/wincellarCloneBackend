@@ -59,6 +59,7 @@ Route::prefix('admin')
             Route::post('products/bulk-update', [AdminProductController::class, 'bulkUpdate'])->name('products.bulk-update');
 
             // Articles CRUD
+            Route::get('articles/content-options', [AdminArticleController::class, 'contentOptions'])->name('articles.content-options');
             Route::get('articles/list-for-select', [AdminArticleController::class, 'listForSelect'])->name('articles.list-for-select');
             Route::get('articles', [AdminArticleController::class, 'index'])->name('articles.index');
             Route::get('articles/{id}', [AdminArticleController::class, 'show'])->name('articles.show');
