@@ -196,7 +196,7 @@ class WebsitePageTemplate
                 'label' => 'Thuộc tính & giá trị lọc',
                 'path' => '/admin/attribute-groups',
                 'source' => 'dynamic_source',
-                'message' => CatalogAttributeGroup::query()->where('is_filterable', true)->count().' nhóm filter, '.CatalogTerm::query()->where('active', true)->count().' giá trị active. Route public: /san-pham/{slug-nhom}/{slug-gia-tri}.',
+                'message' => CatalogAttributeGroup::query()->where('is_filterable', true)->count().' nhóm filter, '.CatalogTerm::query()->active()->count().' giá trị active. Route public: /san-pham/{slug-nhom}/{slug-gia-tri}.',
             ],
             [
                 'label' => 'Bộ lọc SEO / bộ sưu tập',
