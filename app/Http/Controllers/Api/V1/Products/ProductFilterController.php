@@ -7,6 +7,7 @@ use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
 use App\Models\ProductCategory;
 use App\Models\ProductFilterGroup;
+use App\Models\ProductFilterPreset;
 use App\Models\ProductType;
 use App\Support\Catalog\AttributeIconResolver;
 use App\Support\Product\TermCountCache;
@@ -31,7 +32,13 @@ class ProductFilterController extends Controller
         }
 
         $cacheTtl = 3600;
-        $cacheKey = 'product_filter_options_v5:'.($type?->id ?? 'all');
+        $filterPresetVersion = implode(':', [
+            ProductFilterGroup::query()->count(),
+            ProductFilterGroup::query()->max('updated_at') ?? 0,
+            ProductFilterPreset::query()->count(),
+            ProductFilterPreset::query()->max('updated_at') ?? 0,
+        ]);
+        $cacheKey = '*************************:'.($type?->id ?? 'all').':'.$filterPresetVersion;
 
         $data = cache()->remember($cacheKey, $cacheTtl, function () use ($type) {
             // Categories filtered by type (or all if none selected)
