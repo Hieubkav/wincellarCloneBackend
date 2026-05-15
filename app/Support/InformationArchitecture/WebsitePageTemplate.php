@@ -3,7 +3,6 @@
 namespace App\Support\InformationArchitecture;
 
 use App\Models\Article;
-use App\Models\CatalogTerm;
 use App\Models\Menu;
 use App\Models\ProductCategory;
 use App\Models\ProductType;
@@ -30,60 +29,7 @@ class WebsitePageTemplate
             [
                 'key' => 'products',
                 'label' => 'Sản phẩm',
-                'items' => [
-                    self::productNode('Rượu vang', 'ruou-vang', [
-                        ['Vang đỏ', 'vang-do', 'category'],
-                        ['Vang trắng', 'vang-trang', 'category'],
-                        ['Vang hồng', 'vang-hong', 'category'],
-                        ['Vang sủi', 'vang-sui', 'category'],
-                        ['Champagne / Sâm panh', 'champagne', 'category'],
-                        ['Vang ngọt', 'vang-ngot', 'category'],
-                        ['Vang cường hóa', 'vang-cuong-hoa', 'category'],
-                        ['Vang không cồn', 'vang-khong-con', 'category'],
-                        ['Vang organic', 'vang-organic', 'term'],
-                        ['Pháp', 'phap', 'term'],
-                        ['Ý', 'y', 'term'],
-                        ['Tây Ban Nha', 'tay-ban-nha', 'term'],
-                        ['Chile', 'chile', 'term'],
-                        ['Úc', 'uc', 'term'],
-                        ['Mỹ', 'my', 'term'],
-                        ['Argentina', 'argentina', 'term'],
-                        ['New Zealand', 'new-zealand', 'term'],
-                        ['Dưới 500k', 'duoi-500k', 'price_preset'],
-                        ['500k - 1 triệu', '500k-1-trieu', 'price_preset'],
-                        ['1 - 2 triệu', '1-2-trieu', 'price_preset'],
-                        ['2 - 5 triệu', '2-5-trieu', 'price_preset'],
-                        ['Trên 5 triệu', 'tren-5-trieu', 'price_preset'],
-                        ['Tiệc tối', 'tiec-toi', 'term'],
-                        ['Sinh nhật', 'sinh-nhat', 'term'],
-                        ['Quà biếu', 'qua-bieu', 'term'],
-                        ['Lễ Tết', 'le-tet', 'term'],
-                    ]),
-                    self::productNode('Rượu mạnh', 'ruou-manh', [
-                        ['Whisky', 'whisky', 'category'],
-                        ['Single Malt', 'whisky/single-malt', 'term'],
-                        ['Blended', 'whisky/blended', 'term'],
-                        ['Bourbon', 'whisky/bourbon', 'term'],
-                        ['Japanese Whisky', 'whisky/japanese-whisky', 'term'],
-                        ['Cognac', 'cognac', 'category'],
-                        ['Gin', 'gin', 'category'],
-                        ['Sake / Soju / Umeshu', 'sake-soju-umeshu', 'category'],
-                        ['Rượu mạnh khác', 'khac', 'category'],
-                        ['Dưới 1 triệu', 'duoi-1-trieu', 'price_preset'],
-                        ['1 - 3 triệu', '1-3-trieu', 'price_preset'],
-                        ['3 - 5 triệu', '3-5-trieu', 'price_preset'],
-                        ['Trên 5 triệu', 'tren-5-trieu', 'price_preset'],
-                        ['Quà biếu', 'qua-bieu', 'term'],
-                        ['Sự kiện', 'su-kien', 'term'],
-                        ['Doanh nghiệp', 'doanh-nghiep', 'term'],
-                    ]),
-                    self::productNode('Phụ kiện', 'phu-kien', [
-                        ['Ly rượu vang', 'ly-ruou-vang', 'category'],
-                        ['Decanter', 'decanter', 'category'],
-                        ['Dụng cụ khui vang', 'dung-cu-khui-vang', 'category'],
-                        ['Phụ kiện cao cấp', 'phu-kien-cao-cap', 'category'],
-                    ]),
-                ],
+                'items' => self::productNodes(),
             ],
             self::staticHub('thuong-hieu', 'Thương hiệu', [
                 ['Thương hiệu nổi bật', 'noi-bat'],
@@ -156,44 +102,17 @@ class WebsitePageTemplate
     public static function compliance(): array
     {
         $menuHrefs = self::menuHrefs();
-        $typeSlugs = ProductType::query()->where('active', true)->pluck('slug')->all();
-        $categorySlugs = ProductCategory::query()->where('active', true)->pluck('slug')->all();
-        $termSlugs = CatalogTerm::query()->where('is_active', true)->pluck('slug')->all();
         $contentSlotCounts = self::contentSlotCounts();
 
-        $typeAliases = [
-            'ruou-vang' => ['ruou-vang', 'ruou-vang-sam-panh', 'vang_sampanh'],
-            'ruou-manh' => ['ruou-manh', 'ruou_manh'],
-            'phu-kien' => ['phu-kien', 'phu_kien_khac'],
-        ];
-
-        $items = collect(self::flattenGroups())->map(function (array $item) use ($menuHrefs, $typeSlugs, $categorySlugs, $termSlugs, $typeAliases, $contentSlotCounts) {
+        $items = collect(self::flattenGroups())->map(function (array $item) use ($menuHrefs, $contentSlotCounts) {
             $source = $item['source'] ?? 'static_hub';
             $path = $item['path'];
             $menuCovered = $menuHrefs->contains($path);
             $resolvable = true;
             $message = 'Đã có trang tương ứng.';
 
-            if ($source === 'product_type' || str_starts_with($source, 'product_') || $source === 'price_preset') {
-                $typeSlug = $item['type_slug'] ?? null;
-                $childSlug = $item['child_slug'] ?? null;
-                $aliases = $typeSlug ? ($typeAliases[$typeSlug] ?? [$typeSlug]) : [];
-                $typeResolved = collect($aliases)->contains(fn ($alias) => in_array($alias, $typeSlugs, true));
-                $childResolved = true;
-
-                if ($source === 'product_category') {
-                    $childResolved = in_array($childSlug, $categorySlugs, true);
-                }
-
-                if ($source === 'product_term') {
-                    $childResolved = collect(explode('/', (string) $childSlug))
-                        ->every(fn ($slug) => in_array($slug, $termSlugs, true) || in_array($slug, $categorySlugs, true));
-                }
-
-                $resolvable = $typeResolved && $childResolved;
-                $message = $resolvable
-                    ? 'Đường dẫn khớp với dữ liệu hiện có.'
-                    : 'Thiếu dữ liệu hoặc đường dẫn chưa khớp với sơ đồ đề xuất.';
+            if ($source === 'product_type' || $source === 'product_category') {
+                $message = 'Đường dẫn lấy từ nhóm sản phẩm và danh mục hiện có.';
             }
 
             if ($source === 'static_child') {
@@ -300,25 +219,40 @@ class WebsitePageTemplate
     }
 
     /**
-     * @param  array<int, array{0: string, 1: string, 2: string}>  $children
+     * @return array<int, array<string, mixed>>
+     */
+    private static function productNodes(): array
+    {
+        return ProductType::query()
+            ->active()
+            ->with(['categories' => fn ($query) => $query->active()->orderBy('order')->orderBy('name')])
+            ->orderBy('order')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (ProductType $type) => self::productNode($type))
+            ->values()
+            ->all();
+    }
+
+    /**
      * @return array<string, mixed>
      */
-    private static function productNode(string $label, string $typeSlug, array $children): array
+    private static function productNode(ProductType $type): array
     {
         return [
-            'label' => $label,
-            'path' => "/san-pham/{$typeSlug}",
+            'label' => $type->name,
+            'path' => "/san-pham/{$type->slug}",
             'source' => 'product_type',
-            'type_slug' => $typeSlug,
-            'route_payload' => ['typeSlug' => $typeSlug],
-            'children' => array_map(fn ($child) => [
-                'label' => $child[0],
-                'path' => "/san-pham/{$typeSlug}/{$child[1]}",
-                'source' => $child[2] === 'category' ? 'product_category' : $child[2],
-                'type_slug' => $typeSlug,
-                'child_slug' => $child[1],
-                'route_payload' => ['typeSlug' => $typeSlug, 'childSlug' => $child[1]],
-            ], $children),
+            'type_slug' => $type->slug,
+            'route_payload' => ['typeSlug' => $type->slug],
+            'children' => $type->categories->map(fn (ProductCategory $category) => [
+                'label' => $category->name,
+                'path' => "/san-pham/{$type->slug}/{$category->slug}",
+                'source' => 'product_category',
+                'type_slug' => $type->slug,
+                'child_slug' => $category->slug,
+                'route_payload' => ['typeSlug' => $type->slug, 'childSlug' => $category->slug],
+            ])->values()->all(),
         ];
     }
 
