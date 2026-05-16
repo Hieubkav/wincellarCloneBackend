@@ -98,6 +98,13 @@ class Product extends Model
         return $this->hasMany(TrackingEvent::class);
     }
 
+    public function combos(): HasMany
+    {
+        return $this->hasMany(ProductCombo::class)
+            ->orderBy('position')
+            ->orderBy('id');
+    }
+
     public function trackingDailyAggregates(): HasMany
     {
         return $this->hasMany(TrackingEventAggregateDaily::class);

@@ -84,6 +84,7 @@ class ProductController extends Controller
                 'terms.group',
                 'categories',
                 'type',
+                'combos' => fn ($relation) => $relation->where('active', true)->orderBy('position')->orderBy('id'),
             ])
             ->active()
             ->where('slug', $slug)

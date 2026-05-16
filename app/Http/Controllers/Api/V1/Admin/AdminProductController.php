@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Image;
 use App\Models\Product;
 use App\Models\ProductCategory;
+use App\Models\ProductCombo;
 use App\Models\ProductType;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -320,7 +321,7 @@ class AdminProductController extends Controller
     {
         $controllerStart = microtime(true);
         $queryStart = microtime(true);
-        $product = Product::with(['coverImage', 'images', 'categories', 'type', 'terms.group'])
+        $product = Product::with(['coverImage', 'images', 'categories', 'type', 'terms.group', 'combos'])
             ->findOrFail($id);
         $queryMs = (microtime(true) - $queryStart) * 1000;
 
@@ -335,6 +336,7 @@ class AdminProductController extends Controller
             'shopee_url' => $product->shopee_url,
             'price' => $product->price,
             'original_price' => $product->original_price,
+            'combos' => $product->combos->map(fn (ProductCombo $combo) => $this->mapCombo($combo))->values(),
             'extra_attrs' => $product->extra_attrs,
             'term_ids' => $product->terms->pluck('id'),
             'active' => $product->active,
@@ -375,6 +377,7 @@ class AdminProductController extends Controller
             'shopee_url' => ['nullable', 'string', 'max:500'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'original_price' => ['nullable', 'numeric', 'min:0'],
+            ...$this->comboValidationRules(),
             'active' => ['boolean'],
             'type_id' => ['nullable', 'exists:product_types,id'],
             'category_ids' => ['nullable', 'array'],
@@ -395,11 +398,22 @@ class AdminProductController extends Controller
             $this->assertCategoriesMatchType($typeId, $validated['category_ids']);
         }
 
-        $product = Product::create($validated);
+        $combos = $validated['combos'] ?? null;
+        unset($validated['combos']);
 
-        if (! empty($validated['category_ids'])) {
-            $product->categories()->sync($validated['category_ids']);
-        }
+        $product = DB::transaction(function () use ($validated, $combos) {
+            $product = Product::create($validated);
+
+            if (! empty($validated['category_ids'])) {
+                $product->categories()->sync($validated['category_ids']);
+            }
+
+            if ($combos !== null) {
+                $this->syncCombos($product, $combos);
+            }
+
+            return $product;
+        });
 
         if ($request->has('image_paths')) {
             $this->syncProductImages($product, $request->input('image_paths', []));
@@ -431,6 +445,7 @@ class AdminProductController extends Controller
             'shopee_url' => ['nullable', 'string', 'max:500'],
             'price' => ['nullable', 'numeric', 'min:0'],
             'original_price' => ['nullable', 'numeric', 'min:0'],
+            ...$this->comboValidationRules($product),
             'active' => ['boolean'],
             'type_id' => ['nullable', 'exists:product_types,id'],
             'category_ids' => ['nullable', 'array'],
@@ -450,11 +465,21 @@ class AdminProductController extends Controller
             $this->assertCategoriesMatchType($typeId, $product->categories->pluck('id')->all());
         }
 
-        $product->update($validated);
+        $hasCombos = array_key_exists('combos', $validated);
+        $combos = $validated['combos'] ?? [];
+        unset($validated['combos']);
 
-        if (isset($validated['category_ids'])) {
-            $product->categories()->sync($validated['category_ids']);
-        }
+        DB::transaction(function () use ($product, $validated, $hasCombos, $combos) {
+            $product->update($validated);
+
+            if (isset($validated['category_ids'])) {
+                $product->categories()->sync($validated['category_ids']);
+            }
+
+            if ($hasCombos) {
+                $this->syncCombos($product, $combos);
+            }
+        });
 
         if ($request->has('image_paths')) {
             $this->syncProductImages($product, $request->input('image_paths', []));
@@ -617,6 +642,71 @@ class AdminProductController extends Controller
                 'category_ids' => ['Danh mục phải cùng phân loại với sản phẩm.'],
             ]);
         }
+    }
+
+    private function comboValidationRules(?Product $product = null): array
+    {
+        $comboIdRule = Rule::exists('product_combos', 'id');
+        if ($product instanceof Product) {
+            $comboIdRule->where('product_id', $product->id);
+        }
+
+        return [
+            'combos' => ['nullable', 'array', 'max:20'],
+            'combos.*.id' => [
+                'nullable',
+                'integer',
+                $comboIdRule,
+            ],
+            'combos.*.name' => ['required', 'string', 'max:255'],
+            'combos.*.price' => ['nullable', 'numeric', 'min:0'],
+            'combos.*.position' => ['nullable', 'integer', 'min:0'],
+            'combos.*.active' => ['boolean'],
+        ];
+    }
+
+    private function syncCombos(Product $product, array $combos): void
+    {
+        $items = collect($combos)
+            ->map(function (array $combo, int $index) {
+                return [
+                    'id' => isset($combo['id']) ? (int) $combo['id'] : null,
+                    'name' => trim((string) $combo['name']),
+                    'price' => array_key_exists('price', $combo) && $combo['price'] !== null && $combo['price'] !== ''
+                        ? (int) $combo['price']
+                        : null,
+                    'position' => (int) ($combo['position'] ?? $index),
+                    'active' => $combo['active'] ?? true,
+                ];
+            })
+            ->values();
+
+        $keptIds = $items->pluck('id')->filter()->all();
+        $product->combos()->whereNotIn('id', $keptIds)->delete();
+
+        $items->each(function (array $combo) use ($product): void {
+            $id = $combo['id'];
+            unset($combo['id']);
+
+            if ($id) {
+                $product->combos()->whereKey($id)->update($combo);
+
+                return;
+            }
+
+            $product->combos()->create($combo);
+        });
+    }
+
+    private function mapCombo(ProductCombo $combo): array
+    {
+        return [
+            'id' => $combo->id,
+            'name' => $combo->name,
+            'price' => $combo->price,
+            'position' => $combo->position,
+            'active' => $combo->active,
+        ];
     }
 
     private function attachCoverImage(Product $product, string $filePath): void

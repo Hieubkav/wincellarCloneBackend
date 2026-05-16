@@ -37,6 +37,14 @@ class ProductResource extends JsonResource
             'original_price' => $this->original_price,
             'discount_percent' => $this->discount_percent,
             'show_contact_cta' => $this->should_show_contact_cta,
+            'combos' => $this->when($request->routeIs('api.v1.products.show') && $this->relationLoaded('combos'), function () {
+                return $this->combos->map(fn ($combo) => [
+                    'id' => $combo->id,
+                    'name' => $combo->name,
+                    'price' => $combo->price,
+                    'position' => $combo->position,
+                ])->values();
+            }),
 
             // Images
             'main_image_url' => $mainImageUrl,
