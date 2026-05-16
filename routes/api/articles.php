@@ -13,6 +13,9 @@ Route::prefix('bai-viet')
 Route::get('articles/{categorySlug}/{slug}', [ArticleController::class, 'showInCategory'])
     ->name('articles.show-in-category');
 
+Route::get('article-categories', [ArticleController::class, 'categories'])
+    ->name('articles.categories.index');
+
 Route::get('article-categories/{slug}', [ArticleController::class, 'category'])
     ->name('articles.categories.show');
 

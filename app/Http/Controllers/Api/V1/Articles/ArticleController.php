@@ -58,6 +58,29 @@ class ArticleController extends Controller
         return new ArticleCollection($paginator);
     }
 
+    public function categories(): JsonResponse
+    {
+        $categories = ArticleCategory::query()
+            ->select(['id', 'name', 'slug', 'description', 'active', 'position'])
+            ->withCount(['articles' => fn ($query) => $query->active()])
+            ->active()
+            ->orderBy('position')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json([
+            'data' => $categories->map(fn (ArticleCategory $category) => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'description' => $category->description,
+                'active' => $category->active,
+                'position' => $category->position,
+                'articles_count' => $category->articles_count,
+            ])->values(),
+        ]);
+    }
+
     public function category(string $slug): JsonResponse
     {
         $category = ArticleCategory::query()
