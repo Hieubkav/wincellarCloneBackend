@@ -586,7 +586,7 @@ class AdminMenuController extends Controller
             'label' => 'Danh mục sản phẩm',
             'items' => $productTypes
                 ->flatMap(fn (ProductType $type) => $type->categories->map(fn ($category) => $this->routeItem(
-                    "{$type->name} / {$category->name}",
+                    $category->name,
                     "/san-pham/{$type->slug}/{$category->slug}",
                     'product_category',
                     ['type' => $type->slug, 'category' => $category->slug]
