@@ -12,6 +12,7 @@ use App\Models\ArticleCategory;
 use App\Support\Content\ArticleContentCatalog;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class ArticleController extends Controller
@@ -55,6 +56,32 @@ class ArticleController extends Controller
         $paginator = $query->paginate($perPage, ['articles.*'], 'page', $page);
 
         return new ArticleCollection($paginator);
+    }
+
+    public function category(string $slug): JsonResponse
+    {
+        $category = ArticleCategory::query()
+            ->select(['id', 'name', 'slug', 'description', 'active', 'position'])
+            ->withCount(['articles' => fn ($query) => $query->active()])
+            ->active()
+            ->where('slug', $slug)
+            ->first();
+
+        if (! $category) {
+            throw ApiException::notFound('Article category', $slug);
+        }
+
+        return response()->json([
+            'data' => [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+                'description' => $category->description,
+                'active' => $category->active,
+                'position' => $category->position,
+                'articles_count' => $category->articles_count,
+            ],
+        ]);
     }
 
     public function show(string $slug): JsonResource
