@@ -626,7 +626,7 @@ class AdminMenuController extends Controller
                 ->get()
                 ->flatMap(fn (ProductFilterGroup $group) => $productTypes
                     ->flatMap(fn (ProductType $type) => $group->presets->map(fn ($preset) => $this->routeItem(
-                        "{$type->name} / {$group->name} / {$preset->name}",
+                        $preset->name,
                         "/san-pham/{$type->slug}/{$preset->slug}",
                         'filter_preset',
                         ['type' => $type->slug, 'group' => $group->slug, 'preset' => $preset->slug]
