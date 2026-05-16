@@ -34,11 +34,13 @@ class AdminProductFilterPresetController extends Controller
             'route_prefix' => ['nullable', 'string', 'max:80'],
             'position' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
+            'show_in_filters' => ['boolean'],
         ]);
 
         $validated['slug'] = Str::slug($validated['slug'] ?? $validated['name']);
         $validated['route_prefix'] = trim($validated['route_prefix'] ?? 'san-pham', '/');
         $validated['active'] = $validated['active'] ?? true;
+        $validated['show_in_filters'] = $validated['show_in_filters'] ?? false;
 
         $group = ProductFilterGroup::create($validated);
 
@@ -58,6 +60,7 @@ class AdminProductFilterPresetController extends Controller
             'route_prefix' => ['nullable', 'string', 'max:80'],
             'position' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
+            'show_in_filters' => ['boolean'],
         ]);
 
         if (array_key_exists('slug', $validated) || array_key_exists('name', $validated)) {
@@ -148,6 +151,7 @@ class AdminProductFilterPresetController extends Controller
             'route_prefix' => $group->route_prefix,
             'position' => $group->position,
             'active' => $group->active,
+            'show_in_filters' => $group->show_in_filters,
             'presets' => $group->presets->map(fn (ProductFilterPreset $preset) => [
                 'id' => $preset->id,
                 'group_id' => $preset->group_id,

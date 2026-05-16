@@ -254,6 +254,7 @@ class ProductFilterController extends Controller
     {
         return ProductFilterGroup::query()
             ->active()
+            ->where('show_in_filters', true)
             ->with(['presets' => fn ($query) => $query->active()->orderBy('position')->orderBy('name')])
             ->orderBy('position')
             ->orderBy('name')
@@ -263,6 +264,7 @@ class ProductFilterController extends Controller
                 'name' => $group->name,
                 'slug' => $group->slug,
                 'route_prefix' => $group->route_prefix,
+                'show_in_filters' => $group->show_in_filters,
                 'presets' => $group->presets->map(fn ($preset) => [
                     'id' => $preset->id,
                     'name' => $preset->name,

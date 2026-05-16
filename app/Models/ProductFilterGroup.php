@@ -16,6 +16,7 @@ class ProductFilterGroup extends Model
         'route_prefix',
         'position',
         'active',
+        'show_in_filters',
     ];
 
     protected function casts(): array
@@ -23,6 +24,7 @@ class ProductFilterGroup extends Model
         return [
             'position' => 'int',
             'active' => 'bool',
+            'show_in_filters' => 'bool',
         ];
     }
 

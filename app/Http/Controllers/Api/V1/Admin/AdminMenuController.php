@@ -520,6 +520,13 @@ class AdminMenuController extends Controller
 
     private function buildRouteSuggestionGroups(): array
     {
+        $productTypes = ProductType::query()
+            ->active()
+            ->select(['name', 'slug'])
+            ->orderBy('order')
+            ->orderBy('name')
+            ->get();
+
         $groups = [
             [
                 'key' => 'core',
@@ -612,16 +619,18 @@ class AdminMenuController extends Controller
             'label' => 'Bộ lọc SEO',
             'items' => ProductFilterGroup::query()
                 ->active()
+                ->where('show_in_filters', true)
                 ->with(['presets' => fn ($query) => $query->active()->orderBy('position')->orderBy('name')])
                 ->orderBy('position')
                 ->orderBy('name')
                 ->get()
-                ->flatMap(fn (ProductFilterGroup $group) => $group->presets->map(fn ($preset) => $this->routeItem(
-                    "{$group->name} / {$preset->name}",
-                    '/'.trim($group->route_prefix ?: 'san-pham', '/')."/{$group->slug}/{$preset->slug}",
-                    'filter_preset',
-                    ['group' => $group->slug, 'preset' => $preset->slug]
-                )))
+                ->flatMap(fn (ProductFilterGroup $group) => $productTypes
+                    ->flatMap(fn (ProductType $type) => $group->presets->map(fn ($preset) => $this->routeItem(
+                        "{$type->name} / {$group->name} / {$preset->name}",
+                        "/san-pham/{$type->slug}/{$preset->slug}",
+                        'filter_preset',
+                        ['type' => $type->slug, 'group' => $group->slug, 'preset' => $preset->slug]
+                    ))))
                 ->values()
                 ->all(),
         ];
