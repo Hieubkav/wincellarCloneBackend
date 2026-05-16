@@ -7,6 +7,7 @@ use App\Models\ProductFilterGroup;
 use App\Models\ProductFilterPreset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -119,6 +120,26 @@ class AdminProductFilterPresetController extends Controller
         ProductFilterPreset::query()->where('group_id', $groupId)->findOrFail($presetId)->delete();
 
         return response()->json(['success' => true, 'message' => 'Xóa bộ lọc thành công']);
+    }
+
+    public function reorderPresets(Request $request, int $groupId): JsonResponse
+    {
+        $group = ProductFilterGroup::findOrFail($groupId);
+        $validated = $request->validate([
+            'items' => ['present', 'array'],
+            'items.*.id' => ['required', 'integer', Rule::exists('product_filter_presets', 'id')->where('group_id', $group->id)],
+            'items.*.position' => ['required', 'integer', 'min:0'],
+        ]);
+
+        DB::transaction(function () use ($validated, $group): void {
+            collect($validated['items'])
+                ->each(fn (array $item) => ProductFilterPreset::query()
+                    ->where('group_id', $group->id)
+                    ->whereKey((int) $item['id'])
+                    ->update(['position' => (int) $item['position']]));
+        });
+
+        return response()->json(['success' => true, 'message' => 'Đã sắp xếp preset']);
     }
 
     private function validatePreset(Request $request, ProductFilterGroup $group, ?ProductFilterPreset $preset = null): array

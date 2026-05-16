@@ -111,6 +111,7 @@ Route::prefix('admin')
             Route::post('product-filter-groups/{groupId}/presets', [AdminProductFilterPresetController::class, 'storePreset'])->name('product-filter-presets.store');
             Route::put('product-filter-groups/{groupId}/presets/{presetId}', [AdminProductFilterPresetController::class, 'updatePreset'])->name('product-filter-presets.update');
             Route::delete('product-filter-groups/{groupId}/presets/{presetId}', [AdminProductFilterPresetController::class, 'destroyPreset'])->name('product-filter-presets.destroy');
+            Route::post('product-filter-groups/{groupId}/presets/reorder', [AdminProductFilterPresetController::class, 'reorderPresets'])->name('product-filter-presets.reorder');
 
             // Catalog Baseline
             Route::post('catalog/baseline/seed', [AdminCatalogBaselineController::class, 'seed'])->name('catalog.baseline.seed');
