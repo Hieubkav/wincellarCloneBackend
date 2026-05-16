@@ -67,7 +67,7 @@ class ProductFilterController extends Controller
                 ->where('active', true)
                 ->orderBy('order')
                 ->orderBy('id')
-                ->get(['id', 'name', 'slug']);
+                ->get(['id', 'name', 'slug', 'description']);
 
             // Attribute groups by type (filterable only)
             // Nếu có type → show filters của type đó
@@ -100,6 +100,7 @@ class ProductFilterController extends Controller
                     'id' => $type->id,
                     'name' => $type->name,
                     'slug' => $type->slug,
+                    'description' => $type->description,
                 ] : null,
                 'categories' => $categories->map(fn ($category) => [
                     'id' => $category->id,
@@ -111,6 +112,7 @@ class ProductFilterController extends Controller
                     'id' => $t->id,
                     'name' => $t->name,
                     'slug' => $t->slug,
+                    'description' => $t->description,
                 ])->values(),
                 'price' => [
                     'min' => (int) ($ranges->price_min ?? 0),

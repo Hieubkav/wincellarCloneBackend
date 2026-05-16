@@ -25,6 +25,7 @@ class AdminProductTypeController extends Controller
                 'id',
                 'name',
                 'slug',
+                'description',
                 'order',
                 'active',
                 'created_at',
@@ -53,6 +54,7 @@ class AdminProductTypeController extends Controller
                 'id' => $type->id,
                 'name' => $type->name,
                 'slug' => $type->slug,
+                'description' => $type->description,
                 'order' => $type->order,
                 'active' => $type->active,
                 'products_count' => $type->products_count,
@@ -80,6 +82,7 @@ class AdminProductTypeController extends Controller
                 'id' => $type->id,
                 'name' => $type->name,
                 'slug' => $type->slug,
+                'description' => $type->description,
                 'order' => $type->order,
                 'active' => $type->active,
                 'created_at' => $type->created_at?->toIso8601String(),
@@ -101,6 +104,7 @@ class AdminProductTypeController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:product_types,slug'],
+            'description' => ['nullable', 'string', 'max:1000'],
             'order' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
         ]);
@@ -123,6 +127,7 @@ class AdminProductTypeController extends Controller
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'string', 'max:255', Rule::unique('product_types', 'slug')->ignore($id)],
+            'description' => ['nullable', 'string', 'max:1000'],
             'order' => ['nullable', 'integer', 'min:0'],
             'active' => ['boolean'],
         ]);
