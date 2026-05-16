@@ -50,6 +50,7 @@ class ArticleCollection extends ResourceCollection
                 'author' => request()->input('author'),
                 'q' => request()->input('q'),
                 'category_key' => request()->input('category_key'),
+                'category_slug' => request()->input('category_slug'),
             ],
             'api_version' => 'v1',
             'timestamp' => now()->toIso8601String(),

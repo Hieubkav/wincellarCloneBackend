@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\Articles\ArticleIndexRequest;
 use App\Http\Resources\V1\ArticleCollection;
 use App\Http\Resources\V1\ArticleResource;
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Support\Content\ArticleContentCatalog;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -19,7 +20,7 @@ class ArticleController extends Controller
     {
         $query = Article::query()
             ->select('articles.*')
-            ->with(['coverImage'])
+            ->with(['coverImage', 'articleCategory:id,name,slug'])
             ->active();
 
         // Support fetching by IDs (for home components preview)
@@ -38,7 +39,11 @@ class ArticleController extends Controller
         }
 
         if ($request->filled('category_key')) {
-            $query->where('category_key', $request->input('category_key'));
+            $this->applyCategoryFilter($query, $request->input('category_key'));
+        }
+
+        if ($request->filled('category_slug')) {
+            $this->applyCategoryFilter($query, $request->input('category_slug'));
         }
 
         $this->applySorting($query, $request->input('sort'));
@@ -55,7 +60,7 @@ class ArticleController extends Controller
     public function show(string $slug): JsonResource
     {
         $article = Article::query()
-            ->with(['coverImage', 'images', 'author'])
+            ->with(['coverImage', 'images', 'author', 'articleCategory:id,name,slug'])
             ->active()
             ->where('slug', $slug)
             ->first();
@@ -67,10 +72,39 @@ class ArticleController extends Controller
         // Load related articles (3 most recent, excluding current)
         $relatedArticles = Article::query()
             ->select('articles.*')
-            ->with(['coverImage'])
+            ->with(['coverImage', 'articleCategory:id,name,slug'])
             ->active()
             ->where('id', '!=', $article->id)
-            ->when($article->category_key, fn ($query) => $query->where('category_key', $article->category_key))
+            ->when($article->article_category_id, fn ($query) => $query->where('article_category_id', $article->article_category_id))
+            ->when(! $article->article_category_id && $article->category_key, fn ($query) => $query->where('category_key', $article->category_key))
+            ->latest('created_at')
+            ->limit(3)
+            ->get();
+
+        $article->setRelation('relatedArticles', $relatedArticles);
+
+        return new ArticleResource($article);
+    }
+
+    public function showInCategory(string $categorySlug, string $slug): JsonResource
+    {
+        $article = Article::query()
+            ->with(['coverImage', 'images', 'author', 'articleCategory:id,name,slug'])
+            ->active()
+            ->where('slug', $slug)
+            ->whereHas('articleCategory', fn ($query) => $query->where('slug', $categorySlug)->active())
+            ->first();
+
+        if (! $article) {
+            throw ApiException::notFound('Article', "{$categorySlug}/{$slug}");
+        }
+
+        $relatedArticles = Article::query()
+            ->select('articles.*')
+            ->with(['coverImage', 'articleCategory:id,name,slug'])
+            ->active()
+            ->where('id', '!=', $article->id)
+            ->where('article_category_id', $article->article_category_id)
             ->latest('created_at')
             ->limit(3)
             ->get();
@@ -88,7 +122,7 @@ class ArticleController extends Controller
         }
 
         $article = Article::query()
-            ->with(['coverImage', 'images', 'author'])
+            ->with(['coverImage', 'images', 'author', 'articleCategory:id,name,slug'])
             ->active()
             ->whereJsonContains('content_slots', $slot)
             ->latest('published_at')
@@ -101,10 +135,11 @@ class ArticleController extends Controller
 
         $relatedArticles = Article::query()
             ->select('articles.*')
-            ->with(['coverImage'])
+            ->with(['coverImage', 'articleCategory:id,name,slug'])
             ->active()
             ->where('id', '!=', $article->id)
-            ->when($article->category_key, fn ($query) => $query->where('category_key', $article->category_key))
+            ->when($article->article_category_id, fn ($query) => $query->where('article_category_id', $article->article_category_id))
+            ->when(! $article->article_category_id && $article->category_key, fn ($query) => $query->where('category_key', $article->category_key))
             ->latest('created_at')
             ->limit(3)
             ->get();
@@ -128,5 +163,18 @@ class ArticleController extends Controller
         $config = $mapping[$sortKey] ?? $mapping['-created_at'];
 
         $query->orderBy($config[0], $config[1]);
+    }
+
+    private function applyCategoryFilter(Builder $query, string $slug): void
+    {
+        $category = ArticleCategory::query()->where('slug', $slug)->first();
+
+        if ($category) {
+            $query->where('article_category_id', $category->id);
+
+            return;
+        }
+
+        $query->where('category_key', $slug);
     }
 }

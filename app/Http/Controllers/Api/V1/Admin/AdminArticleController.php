@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Support\Content\ArticleContentCatalog;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,19 @@ class AdminArticleController extends Controller
     {
         return response()->json([
             'data' => [
-                'categories' => ArticleContentCatalog::categories(),
+                'categories' => ArticleCategory::query()
+                    ->active()
+                    ->orderBy('position')
+                    ->orderBy('name')
+                    ->get(['id', 'name', 'slug', 'description'])
+                    ->map(fn (ArticleCategory $category) => [
+                        'id' => $category->id,
+                        'key' => $category->slug,
+                        'label' => $category->name,
+                        'description' => $category->description ?? '',
+                        'slug' => $category->slug,
+                    ])
+                    ->values(),
                 'slots' => ArticleContentCatalog::slots(),
             ],
         ]);
@@ -26,7 +39,7 @@ class AdminArticleController extends Controller
     {
         $query = Article::query()
             ->where('active', true)
-            ->with('coverImage')
+            ->with(['coverImage', 'articleCategory:id,name,slug'])
             ->orderBy('title', 'asc');
 
         // Support fetching by IDs for preview
@@ -47,6 +60,12 @@ class AdminArticleController extends Controller
                 'value' => $a->id,
                 'label' => $a->title.' (#'.$a->id.')',
                 'category_key' => $a->category_key,
+                'article_category_id' => $a->article_category_id,
+                'article_category' => $a->articleCategory ? [
+                    'id' => $a->articleCategory->id,
+                    'name' => $a->articleCategory->name,
+                    'slug' => $a->articleCategory->slug,
+                ] : null,
                 'content_slots' => $a->content_slots ?? [],
                 'cover_image' => $a->coverImage ? [
                     'id' => $a->coverImage->id,
@@ -62,7 +81,7 @@ class AdminArticleController extends Controller
     public function index(Request $request): JsonResponse
     {
         $controllerStart = microtime(true);
-        $sortable = ['id', 'title', 'published_at', 'active', 'created_at', 'category_key'];
+        $sortable = ['id', 'title', 'published_at', 'active', 'created_at', 'category_key', 'article_category_id'];
         $sortBy = $request->input('sort_by', 'id');
         $sortDir = strtolower((string) $request->input('sort_dir', 'desc')) === 'asc' ? 'asc' : 'desc';
 
@@ -77,12 +96,13 @@ class AdminArticleController extends Controller
                 'slug',
                 'excerpt',
                 'category_key',
+                'article_category_id',
                 'content_slots',
                 'active',
                 'published_at',
                 'created_at',
             ])
-            ->with(['coverImage:id,file_path,alt,disk,model_id,model_type'])
+            ->with(['coverImage:id,file_path,alt,disk,model_id,model_type', 'articleCategory:id,name,slug'])
             ->orderBy($sortBy, $sortDir)
             ->orderBy('id', 'desc');
 
@@ -95,7 +115,11 @@ class AdminArticleController extends Controller
         }
 
         if ($request->filled('category_key')) {
-            $query->where('category_key', $request->input('category_key'));
+            $category = ArticleCategory::query()
+                ->where('slug', $request->input('category_key'))
+                ->first();
+            $query->when($category, fn ($q) => $q->where('article_category_id', $category->id))
+                ->when(! $category, fn ($q) => $q->where('category_key', $request->input('category_key')));
         }
 
         $perPage = min($request->integer('per_page', 20), 100);
@@ -110,6 +134,12 @@ class AdminArticleController extends Controller
             'slug' => $a->slug,
             'excerpt' => $a->excerpt,
             'category_key' => $a->category_key,
+            'article_category_id' => $a->article_category_id,
+            'article_category' => $a->articleCategory ? [
+                'id' => $a->articleCategory->id,
+                'name' => $a->articleCategory->name,
+                'slug' => $a->articleCategory->slug,
+            ] : null,
             'content_slots' => $a->content_slots ?? [],
             'active' => $a->active,
             'cover_image_url' => $a->cover_image_url,
@@ -141,7 +171,7 @@ class AdminArticleController extends Controller
     {
         $controllerStart = microtime(true);
         $queryStart = microtime(true);
-        $article = Article::with(['coverImage', 'images'])->findOrFail($id);
+        $article = Article::with(['coverImage', 'images', 'articleCategory:id,name,slug'])->findOrFail($id);
         $queryMs = (microtime(true) - $queryStart) * 1000;
 
         $transformStart = microtime(true);
@@ -151,6 +181,12 @@ class AdminArticleController extends Controller
             'slug' => $article->slug,
             'excerpt' => $article->excerpt,
             'category_key' => $article->category_key,
+            'article_category_id' => $article->article_category_id,
+            'article_category' => $article->articleCategory ? [
+                'id' => $article->articleCategory->id,
+                'name' => $article->articleCategory->name,
+                'slug' => $article->articleCategory->slug,
+            ] : null,
             'content_slots' => $article->content_slots ?? [],
             'content' => $article->content,
             'meta_title' => $article->meta_title,
@@ -187,7 +223,8 @@ class AdminArticleController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', 'unique:articles,slug'],
             'excerpt' => ['nullable', 'string', 'max:500'],
-            'category_key' => ['nullable', 'string', Rule::in(ArticleContentCatalog::categoryKeys())],
+            'category_key' => ['nullable', 'string', 'max:255'],
+            'article_category_id' => ['nullable', 'integer', 'exists:article_categories,id'],
             'content_slots' => ['nullable', 'array'],
             'content_slots.*' => ['string', Rule::in(ArticleContentCatalog::slotKeys())],
             'content' => ['nullable', 'string'],
@@ -203,6 +240,7 @@ class AdminArticleController extends Controller
         $validated['active'] = $validated['active'] ?? true;
         $validated['published_at'] = $validated['published_at'] ?? now();
         $validated['content_slots'] = array_values(array_unique($validated['content_slots'] ?? []));
+        $validated = $this->resolveArticleCategory($validated);
 
         $imagePaths = $validated['image_paths'] ?? [];
         unset($validated['image_paths']);
@@ -228,7 +266,8 @@ class AdminArticleController extends Controller
             'title' => ['sometimes', 'string', 'max:255'],
             'slug' => ['sometimes', 'string', 'max:255', Rule::unique('articles', 'slug')->ignore($id)],
             'excerpt' => ['nullable', 'string', 'max:500'],
-            'category_key' => ['nullable', 'string', Rule::in(ArticleContentCatalog::categoryKeys())],
+            'category_key' => ['nullable', 'string', 'max:255'],
+            'article_category_id' => ['nullable', 'integer', 'exists:article_categories,id'],
             'content_slots' => ['nullable', 'array'],
             'content_slots.*' => ['string', Rule::in(ArticleContentCatalog::slotKeys())],
             'content' => ['nullable', 'string'],
@@ -245,6 +284,7 @@ class AdminArticleController extends Controller
         if (array_key_exists('content_slots', $validated)) {
             $validated['content_slots'] = array_values(array_unique($validated['content_slots'] ?? []));
         }
+        $validated = $this->resolveArticleCategory($validated);
 
         $article->update($validated);
 
@@ -297,5 +337,38 @@ class AdminArticleController extends Controller
         $audit['controller_ms'] = (int) round((microtime(true) - $controllerStart) * 1000);
 
         return $audit;
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return array<string, mixed>
+     */
+    private function resolveArticleCategory(array $validated): array
+    {
+        if (! empty($validated['article_category_id'])) {
+            $category = ArticleCategory::find($validated['article_category_id']);
+            $validated['category_key'] = $category?->slug;
+
+            return $validated;
+        }
+
+        if (array_key_exists('category_key', $validated) && filled($validated['category_key'])) {
+            $category = ArticleCategory::query()
+                ->where('slug', $validated['category_key'])
+                ->orWhere('name', $validated['category_key'])
+                ->first();
+
+            if ($category) {
+                $validated['article_category_id'] = $category->id;
+                $validated['category_key'] = $category->slug;
+            }
+        }
+
+        if (array_key_exists('category_key', $validated) && blank($validated['category_key'])) {
+            $validated['category_key'] = null;
+            $validated['article_category_id'] = null;
+        }
+
+        return $validated;
     }
 }

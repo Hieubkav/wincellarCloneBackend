@@ -25,6 +25,7 @@ class Article extends Model
         'slug',
         'excerpt',
         'category_key',
+        'article_category_id',
         'content',
         'content_slots',
         'author_id',
@@ -49,6 +50,11 @@ class Article extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function articleCategory(): BelongsTo
+    {
+        return $this->belongsTo(ArticleCategory::class);
     }
 
     public function trackingEvents(): HasMany

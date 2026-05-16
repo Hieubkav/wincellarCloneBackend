@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\AdminArticleController;
+use App\Http\Controllers\Api\V1\Admin\AdminArticleCategoryController;
 use App\Http\Controllers\Api\V1\Admin\AdminAuthController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogAttributeGroupController;
 use App\Http\Controllers\Api\V1\Admin\AdminCatalogBaselineController;
@@ -68,6 +69,13 @@ Route::prefix('admin')
             Route::put('articles/{id}', [AdminArticleController::class, 'update'])->name('articles.update');
             Route::delete('articles/{id}', [AdminArticleController::class, 'destroy'])->name('articles.destroy');
             Route::post('articles/bulk-delete', [AdminArticleController::class, 'bulkDestroy'])->name('articles.bulk-destroy');
+
+            // Article Categories CRUD
+            Route::get('article-categories', [AdminArticleCategoryController::class, 'index'])->name('article-categories.index');
+            Route::get('article-categories/{id}', [AdminArticleCategoryController::class, 'show'])->name('article-categories.show');
+            Route::post('article-categories', [AdminArticleCategoryController::class, 'store'])->name('article-categories.store');
+            Route::put('article-categories/{id}', [AdminArticleCategoryController::class, 'update'])->name('article-categories.update');
+            Route::delete('article-categories/{id}', [AdminArticleCategoryController::class, 'destroy'])->name('article-categories.destroy');
 
             // Categories CRUD
             Route::get('categories', [AdminCategoryController::class, 'index'])->name('categories.index');

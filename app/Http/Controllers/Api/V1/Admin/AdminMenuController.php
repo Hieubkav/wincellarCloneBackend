@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Models\CatalogAttributeGroup;
 use App\Models\Menu;
 use App\Models\MenuBlock;
@@ -549,9 +550,13 @@ class AdminMenuController extends Controller
             ],
             [
                 'key' => 'content-hubs',
-                'label' => 'Hub bài viết',
-                'items' => collect(ArticleContentCatalog::categories())
-                    ->map(fn (array $category) => $this->routeItem($category['label'], $this->articleCategoryHubPath($category['key']), 'content_hub', ['category' => $category['key']]))
+                'label' => 'Danh mục bài viết',
+                'items' => ArticleCategory::query()
+                    ->active()
+                    ->orderBy('position')
+                    ->orderBy('name')
+                    ->get(['name', 'slug'])
+                    ->map(fn (ArticleCategory $category) => $this->routeItem($category->name, "/{$category->slug}", 'article_category', ['category' => $category->slug]))
                     ->values()
                     ->all(),
             ],
@@ -637,12 +642,13 @@ class AdminMenuController extends Controller
 
         $articleItems = Article::query()
             ->where('active', true)
-            ->select(['title', 'slug', 'category_key'])
+            ->select(['id', 'title', 'slug', 'category_key', 'article_category_id'])
+            ->with('articleCategory:id,name,slug')
             ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->limit(100)
             ->get()
-            ->map(fn (Article $article) => $this->routeItem($article->title, $this->articleHref($article), 'article', ['slug' => $article->slug, 'category' => $article->category_key]))
+            ->map(fn (Article $article) => $this->routeItem($article->title, $this->articleHref($article), 'article', ['slug' => $article->slug, 'category' => $article->articleCategory?->slug ?? $article->category_key]))
             ->values()
             ->all();
 
@@ -669,7 +675,7 @@ class AdminMenuController extends Controller
 
     private function articleHref(Article $article): string
     {
-        $hub = $this->articleCategoryHub($article->category_key);
+        $hub = $article->articleCategory?->slug ?? $this->articleCategoryHub($article->category_key);
 
         return $hub ? "/{$hub}/{$article->slug}" : "/bai-viet/{$article->slug}";
     }

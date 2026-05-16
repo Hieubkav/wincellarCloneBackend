@@ -3,6 +3,7 @@
 namespace App\Support\InformationArchitecture;
 
 use App\Models\Article;
+use App\Models\ArticleCategory;
 use App\Models\CatalogAttributeGroup;
 use App\Models\CatalogTerm;
 use App\Models\Menu;
@@ -31,20 +32,8 @@ class WebsitePageTemplate
             ],
             self::staticHub('thuong-hieu', 'Thương hiệu'),
             self::staticHub('bo-suu-tap', 'Bộ sưu tập'),
-            self::staticHub('qua-tang', 'Quà tặng'),
-            self::staticHub('kien-thuc', 'Kiến thức'),
-            self::staticHub('dich-vu', 'Dịch vụ'),
+            self::articleCategoryGroup(),
             self::staticHub('cua-hang', 'Hệ thống cửa hàng'),
-            self::staticHub('ho-tro', 'Hỗ trợ khách hàng'),
-            self::staticHub('gioi-thieu', 'Giới thiệu'),
-            [
-                'key' => 'news-events',
-                'label' => 'Tin tức & sự kiện',
-                'items' => [
-                    ['label' => 'Tin tức', 'path' => '/tin-tuc', 'source' => 'static_hub'],
-                    ['label' => 'Sự kiện', 'path' => '/su-kien', 'source' => 'static_hub'],
-                ],
-            ],
             [
                 'key' => 'dynamic-sources',
                 'label' => 'Nguồn động',
@@ -204,6 +193,39 @@ class WebsitePageTemplate
                 'source' => 'dynamic_source',
                 'message' => ProductFilterGroup::query()->active()->count().' nhóm preset active. Route public theo route_prefix + slug nhóm + slug preset.',
             ],
+            [
+                'label' => 'Danh mục bài viết',
+                'path' => '/admin/article-categories',
+                'source' => 'dynamic_source',
+                'message' => ArticleCategory::query()->active()->count().' danh mục bài viết active. Route public: /{danh-muc} và /{danh-muc}/{bai-viet}.',
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private static function articleCategoryGroup(): array
+    {
+        $items = ArticleCategory::query()
+            ->active()
+            ->orderBy('position')
+            ->orderBy('name')
+            ->get(['name', 'slug', 'description'])
+            ->map(fn (ArticleCategory $category) => [
+                'label' => $category->name,
+                'path' => "/{$category->slug}",
+                'source' => 'article_category',
+                'message' => 'Route danh mục bài viết sinh từ dữ liệu quản trị.',
+                'route_payload' => ['article_category_slug' => $category->slug],
+            ])
+            ->values()
+            ->all();
+
+        return [
+            'key' => 'article-categories',
+            'label' => 'Danh mục bài viết',
+            'items' => $items,
         ];
     }
 
