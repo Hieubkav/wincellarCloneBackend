@@ -38,7 +38,13 @@ class ProductFilterController extends Controller
             ProductFilterPreset::query()->count(),
             ProductFilterPreset::query()->max('updated_at') ?? 0,
         ]);
-        $cacheKey = '*************************:'.($type?->id ?? 'all').':'.$filterPresetVersion;
+        $attributeVersion = implode(':', [
+            CatalogAttributeGroup::query()->count(),
+            CatalogAttributeGroup::query()->max('updated_at') ?? 0,
+            CatalogTerm::query()->count(),
+            CatalogTerm::query()->max('updated_at') ?? 0,
+        ]);
+        $cacheKey = '*************************:'.($type?->id ?? 'all').':'.$filterPresetVersion.':'.$attributeVersion;
 
         $data = cache()->remember($cacheKey, $cacheTtl, function () use ($type) {
             // Categories filtered by type (or all if none selected)
@@ -111,6 +117,7 @@ class ProductFilterController extends Controller
                     'max' => (int) ($ranges->price_max ?? 0),
                 ],
                 'attribute_filters' => $dynamicFilters,
+                'route_attribute_filters' => static::routeAttributeFilters(),
                 'filter_groups' => static::filterGroups(),
             ];
         });
@@ -248,6 +255,18 @@ class ProductFilterController extends Controller
         }
 
         return $filters;
+    }
+
+    protected static function routeAttributeFilters(): array
+    {
+        $attributeGroups = CatalogAttributeGroup::query()
+            ->where('is_filterable', true)
+            ->with(['terms' => fn ($q) => $q->active()->orderBy('position')->orderBy('id')])
+            ->orderBy('position')
+            ->orderBy('name')
+            ->get(['id', 'code', 'slug', 'name', 'filter_type', 'input_type', 'display_config', 'icon_path']);
+
+        return static::buildDynamicFilters($attributeGroups);
     }
 
     protected static function filterGroups(): Collection
