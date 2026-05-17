@@ -44,7 +44,11 @@ class ProductFilterController extends Controller
             CatalogTerm::query()->count(),
             CatalogTerm::query()->max('updated_at') ?? 0,
         ]);
-        $cacheKey = '*************************:'.($type?->id ?? 'all').':'.$filterPresetVersion.':'.$attributeVersion;
+        $typeVersion = implode(':', [
+            ProductType::query()->count(),
+            ProductType::query()->max('updated_at') ?? 0,
+        ]);
+        $cacheKey = '*************************:'.($type?->id ?? 'all').':'.$typeVersion.':'.$filterPresetVersion.':'.$attributeVersion;
 
         $data = cache()->remember($cacheKey, $cacheTtl, function () use ($type) {
             // Categories filtered by type (or all if none selected)
