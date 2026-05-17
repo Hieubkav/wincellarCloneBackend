@@ -34,12 +34,12 @@ class WatermarkService
 
         $type = $setting->product_watermark_type ?? 'image';
 
-        if ($type === 'image') {
-            return $this->applyImageWatermark($image, $setting);
+        if ($type === 'image' || $type === 'both') {
+            $image = $this->applyImageWatermark($image, $setting);
         }
 
-        if ($type === 'text') {
-            return $this->applyTextWatermark($image, $setting);
+        if ($type === 'text' || $type === 'both') {
+            $image = $this->applyTextWatermark($image, $setting);
         }
 
         return $image;
@@ -329,13 +329,15 @@ class WatermarkService
 
         $type = $setting->product_watermark_type ?? 'image';
 
-        if ($type === 'image') {
+        if ($type === 'image' || $type === 'both') {
             $position = $setting->product_watermark_position ?? 'none';
 
-            return $position !== 'none' && $setting->productWatermarkImage !== null;
+            if ($position !== 'none' && $setting->productWatermarkImage !== null) {
+                return true;
+            }
         }
 
-        if ($type === 'text') {
+        if ($type === 'text' || $type === 'both') {
             return ! empty($setting->product_watermark_text);
         }
 

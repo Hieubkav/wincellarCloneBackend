@@ -191,7 +191,7 @@ class AdminSettingController extends Controller
             'favicon_image_id' => ['nullable', 'integer', 'exists:images,id'],
             'og_image_id' => ['nullable', 'integer', 'exists:images,id'],
             'product_watermark_image_id' => ['nullable', 'integer', 'exists:images,id'],
-            'product_watermark_type' => ['nullable', 'string', 'in:image,text'],
+            'product_watermark_type' => ['nullable', 'string', 'in:none,image,text,both'],
             'product_watermark_position' => ['nullable', 'string', 'in:none,top_left,top_right,bottom_left,bottom_right'],
             'product_watermark_size' => ['nullable', 'string', 'in:64x64,96x96,128x128,160x160,192x192'],
             'product_watermark_text' => ['nullable', 'string', 'max:100'],
